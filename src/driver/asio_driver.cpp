@@ -74,8 +74,8 @@ public:
       return ASIOFalse;
     }
     cfg_.channels = static_cast<uint16_t>(source.channels);
-    cfg_.inputs = std::min(cfg_.inputs, source.channels);
-    cfg_.outputs = std::min(cfg_.outputs, source.outputs);
+    cfg_.inputs = source.channels;
+    cfg_.outputs = source.outputs;
     if (!cfg_.inputs && !cfg_.outputs) { std::strcpy(error_, "Enable at least one input or output"); return ASIOFalse; }
     physical_outputs_=source.outputs; wire_outputs_=source.outputs;
     source_frames_=source.frames; source_v2_=source.v2; source_v3_=source.v3;
@@ -125,7 +125,7 @@ public:
     return ASIOTrue;
   } catch(const std::bad_alloc&) { std::strcpy(error_,"Audio memory allocation failed"); return ASIOFalse; }
   void getDriverName(char* name) override { if (name) std::strcpy(name, "Pi AoIP"); }
-  long getDriverVersion() override { return 220; }
+  long getDriverVersion() override { return 231; }
   void getErrorMessage(char* text) override { if (text) std::strcpy(text, error_); }
   ASIOError start() override {
     if (socket_ == INVALID_SOCKET || !callbacks_ || running_) return ASE_InvalidMode;
@@ -200,7 +200,9 @@ public:
   }
   ASIOError getLatencies(long* input, long* output) override {
     if (!input || !output) return ASE_InvalidParameter;
-    *input = cfg_.inputs ? block_ + cfg_.safety + source_frames_ : 0;
+    const auto capture_frames=source_v3_ ? std::min(source_frames_,
+      aoip::low_latency_frames(cfg_.channels,cfg_.rate,cfg_.bits,unsigned(block_))) : source_frames_;
+    *input = cfg_.inputs ? block_ + cfg_.safety + capture_frames : 0;
     *output = cfg_.outputs ? block_ + (source_v3_ ? 0 : output_packet_frames()) : 0;
     return ASE_OK;
   }

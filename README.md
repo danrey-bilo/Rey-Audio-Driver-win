@@ -14,7 +14,7 @@ installer. Runs inside a 64-bit ASIO host.
 
 | Parameter | Support |
 |---|---|
-| Inputs / outputs | Independently configurable from 0 to 64 |
+| Inputs / outputs | Physical counts discovered from the device; individual channel masks |
 | Sample rate / format | Up to 192 kHz, PCM16/24/32 |
 | ASIO buffer | 16 / 32 / 64 / 128 / 256 / 512 / 1024 / 2048 frames |
 | Threads | Separate network receive, ASIO callback and network transmit threads |

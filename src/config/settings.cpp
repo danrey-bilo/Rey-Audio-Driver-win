@@ -43,9 +43,8 @@ void read_ini(const wchar_t* path, Config& c) {
   if (bits > 0 && aoip::valid_bits(bits)) c.bits = static_cast<uint16_t>(bits);
   if (block > 0 && aoip::valid_buffer(block)) c.block = block;
   if (guard >= 0 && guard <= 2048) c.safety = guard;
-  int inputs = number(L"Inputs", c.inputs), outputs = number(L"Outputs", c.outputs);
-  if (inputs >= 0 && inputs <= 64) c.inputs = static_cast<uint16_t>(inputs);
-  if (outputs >= 0 && outputs <= 64) c.outputs = static_cast<uint16_t>(outputs);
+  // Physical I/O counts come exclusively from device discovery. Ignore old
+  // Inputs/Outputs keys; use channel masks to disable individual channels.
   auto mask = [&](const wchar_t* name,uint64_t& selected) {
     wchar_t text[32]{},fallback[32]{};
     std::swprintf(fallback,32,L"%016llx",static_cast<unsigned long long>(selected));

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Win11AsioAoIP VERSION 2.2.0 LANGUAGES CXX)
+project(Win11AsioAoIP VERSION 2.3.1 LANGUAGES CXX)
 if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(FATAL_ERROR "Use Windows x64 (AMD64) and a 64-bit toolchain")
 endif()

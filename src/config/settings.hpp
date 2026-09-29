@@ -34,9 +34,9 @@ struct Config {
   uint32_t rate = 192000;
   uint16_t channels = 8;
   uint16_t bits = 32;
-  long block = 32;
+  long block = 64;
   unsigned inputs = 65535, outputs = 65535;
-  unsigned safety = 512;
+  unsigned safety = 256;
   uint64_t input_mask = UINT64_MAX, output_mask = UINT64_MAX;
   bool energy_saving = true;
 };

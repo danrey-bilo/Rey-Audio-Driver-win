@@ -2,8 +2,8 @@
 
 #include <winver.h>
 1 VERSIONINFO
-FILEVERSION 2,2,0,0
-PRODUCTVERSION 2,2,0,0
+FILEVERSION 2,3,1,0
+PRODUCTVERSION 2,3,1,0
 FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
 FILEFLAGS 0
 FILEOS VOS_NT_WINDOWS32
@@ -15,11 +15,11 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "PiAoIP Project"
       VALUE "FileDescription", "PiAoIP ASIO audio transport"
-      VALUE "FileVersion", "2.2.0.0"
+      VALUE "FileVersion", "2.3.1.0"
       VALUE "InternalName", "PiAoipAsio"
       VALUE "OriginalFilename", "PiAoipAsio.dll"
       VALUE "ProductName", "PiAoIP"
-      VALUE "ProductVersion", "2.2.0"
+      VALUE "ProductVersion", "2.3.1"
     END
   END
   BLOCK "VarFileInfo"

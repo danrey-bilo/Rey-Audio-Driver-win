@@ -52,18 +52,39 @@ bool load_driver() {
   }
   return SUCCEEDED(CoCreateInstance(piaoip::kClsid,nullptr,CLSCTX_INPROC_SERVER,piaoip::kClsid,reinterpret_cast<void**>(&driver)));
 }
+bool activate_panel() {
+  HWND panel=nullptr;
+  EnumThreadWindows(GetCurrentThreadId(),[](HWND child,LPARAM target)->BOOL {
+    wchar_t title[128]{}; GetWindowTextW(child,title,128);
+    if(!std::wcscmp(title,L"Pi AoIP configuration")) {
+      *reinterpret_cast<HWND*>(target)=child; return FALSE;
+    }
+    return TRUE;
+  },reinterpret_cast<LPARAM>(&panel));
+  if(!panel) return false;
+  ShowWindow(panel,IsIconic(panel) ? SW_RESTORE : SW_SHOW);
+  BringWindowToTop(panel); SetForegroundWindow(panel); SetActiveWindow(panel);
+  return true;
+}
 void show_panel() {
-  if(panel_open) return;
+  if(panel_open) { trace("PANEL_ACTIVATE",activate_panel()); return; }
+  // A tray click grants foreground activation. Establish it before the DLL
+  // creates its modal dialog, including when another application is active.
+  SetForegroundWindow(tray_window);
   panel_open=true;
   if(driver) { driver->Release(); driver=nullptr; }
-  if(load_driver()) driver->controlPanel();
+  if(load_driver()) { trace("PANEL_OPEN",true); driver->controlPanel(); }
   else MessageBoxW(nullptr,L"Установите PiAoIP или поместите PiAoipAsio.dll рядом с PiAoipControl.exe.",L"PiAoIP",MB_OK|MB_ICONERROR);
   panel_open=false;
   if(quit_pending) PostMessageW(tray_window,WM_CLOSE,0,0);
 }
 void update_icon() {
   if(connected) {
-    if(!present) { present=Shell_NotifyIconW(NIM_ADD,&icon)!=FALSE; trace("NIM_ADD",present,GetLastError()); icon.uVersion=NOTIFYICON_VERSION_4; Shell_NotifyIconW(NIM_SETVERSION,&icon); }
+    if(!present) {
+      present=Shell_NotifyIconW(NIM_ADD,&icon)!=FALSE; trace("NIM_ADD",present,GetLastError());
+      icon.uVersion=NOTIFYICON_VERSION_4;
+      trace("NIM_SETVERSION",Shell_NotifyIconW(NIM_SETVERSION,&icon)!=FALSE,GetLastError());
+    }
     else Shell_NotifyIconW(NIM_MODIFY,&icon);
   } else if(present) { Shell_NotifyIconW(NIM_DELETE,&icon); present=false; }
 }
@@ -97,7 +118,9 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM wparam,LPARAM lpara
   }
   if(message==kTray) {
     const auto event=LOWORD(lparam);
-    if(event==NIN_SELECT || event==NIN_KEYSELECT || event==WM_LBUTTONDBLCLK) PostMessageW(window,WM_COMMAND,kOpen,0);
+    trace("TRAY_CALLBACK",true,event);
+    if(event==NIN_SELECT || event==NIN_KEYSELECT || event==WM_LBUTTONUP || event==WM_LBUTTONDBLCLK)
+      PostMessageW(window,WM_COMMAND,kOpen,0);
     if(event==WM_CONTEXTMENU || event==WM_RBUTTONUP) {
       HMENU menu=CreatePopupMenu(); AppendMenuW(menu,MF_STRING,kOpen,L"Настройки PiAoIP…");
       AppendMenuW(menu,MF_SEPARATOR,0,nullptr); AppendMenuW(menu,MF_STRING,kExit,L"Закрыть значок в трее");

@@ -64,7 +64,9 @@ INT_PTR CALLBACK channel_dialog_proc(HWND window,UINT message,WPARAM wparam,LPAR
   return FALSE;
 }
 void edit_channels(HWND owner,SettingsDialog& state) {
-  ChannelDialog selected{state.current,GetDlgItemInt(owner,3001,nullptr,FALSE),GetDlgItemInt(owner,3005,nullptr,FALSE)};
+  if(state.selected_device<0 || state.selected_device>=int(state.devices.size())) return;
+  const auto& device=state.devices[state.selected_device];
+  ChannelDialog selected{state.current,device.channels,device.outputs};
   selected.inputs=std::min(64u,selected.inputs); selected.outputs=std::min(64u,selected.outputs);
   alignas(DWORD) uint8_t storage[256]{};
   auto* dialog=reinterpret_cast<DLGTEMPLATE*>(storage);
@@ -81,9 +83,7 @@ void edit_channels(HWND owner,SettingsDialog& state) {
 void refresh_rates(HWND window, SettingsDialog& state, unsigned preferred) {
   if (state.selected_device < 0 || state.selected_device >= static_cast<int>(state.devices.size())) return;
   const auto& device = state.devices[state.selected_device];
-  BOOL valid_channels=FALSE;
-  unsigned channels=std::max(1u,GetDlgItemInt(window,3001,&valid_channels,FALSE));
-  if(!device.v2 || !valid_channels) channels=device.channels;
+  const unsigned channels=device.channels;
   BOOL valid_bits = FALSE;
   unsigned bits = GetDlgItemInt(window, 3003, &valid_bits, FALSE);
   if (!valid_bits || !channels || !bits) return;
@@ -113,7 +113,7 @@ void show_device(HWND window, SettingsDialog& state, int index) {
   state.selected_device = index;
   const auto& device = state.devices[index];
   SetDlgItemTextA(window, 3000, device.ip);
-  auto fill = [&](int id, const std::vector<unsigned>& options, unsigned selected) {
+  auto fill = [&](int id, const std::vector<unsigned>& options, unsigned selected, bool editable=false) {
     HWND combo = GetDlgItem(window, id);
     SendMessageA(combo, CB_RESETCONTENT, 0, 0);
     LRESULT chosen = CB_ERR;
@@ -123,15 +123,16 @@ void show_device(HWND window, SettingsDialog& state, int index) {
       LRESULT item = SendMessageA(combo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(label));
       if (value == selected) chosen = item;
     }
+    if(chosen==CB_ERR && editable) {
+      char label[32]{}; std::snprintf(label,sizeof(label),"%u",selected);
+      SetWindowTextA(combo,label); return;
+    }
     if (chosen == CB_ERR && !options.empty()) chosen = 0;
     if (chosen != CB_ERR) SendMessageA(combo, CB_SETCURSEL, chosen, 0);
   };
-  std::vector<unsigned> inputs, outputs;
-  for(unsigned n=0;n<=device.max_channels;++n) inputs.push_back(n);
-  for(unsigned n=0;n<=device.max_outputs;++n) outputs.push_back(n);
-  fill(3001,inputs,std::min(state.current.inputs,device.channels));
-  fill(3005,outputs,std::min(state.current.outputs,device.outputs));
-  fill(3010,{0,16,32,64,128,256,384,448,480,512,1024,2048},state.current.safety);
+  SetDlgItemInt(window,3001,device.channels,FALSE);
+  SetDlgItemInt(window,3005,device.outputs,FALSE);
+  fill(3010,{0,16,32,64,96,128,192,224,256,384,448,480,512,1024,2048},state.current.safety,true);
   fill(3003, device.supported_bits, device.bits);
   fill(3004, device.buffers, state.current.block);
   refresh_rates(window, state, device.rate);
@@ -215,15 +216,19 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     add(0,"STATIC","AUDIO FORMAT",0,16,178,200,13,3303);
     auto combo=[&](int id,const char* label,int x,int y,int width,const char* value) {
       add(0,"STATIC",label,0,x,y,width,13,0);
-      HWND control=add(0,"COMBOBOX","",WS_TABSTOP|CBS_DROPDOWNLIST|WS_VSCROLL,x,y+16,width,150,id);
+      HWND control=add(0,"COMBOBOX","",WS_TABSTOP|(id==3010 ? CBS_DROPDOWN : CBS_DROPDOWNLIST)|WS_VSCROLL,x,y+16,width,150,id);
       SendMessageA(control,CB_ADDSTRING,0,reinterpret_cast<LPARAM>(value));
       SendMessageA(control,CB_SETCURSEL,0,0);
     };
-    combo(3001,"Inputs",16,199,86,"32"); combo(3005,"Outputs",114,199,86,"32");
+    add(0,"STATIC","Device inputs",0,16,199,86,13,0);
+    add(0,"STATIC","Waiting for Pi",0,16,216,86,21,3001);
+    add(0,"STATIC","Device outputs",0,114,199,86,13,0);
+    add(0,"STATIC","Waiting for Pi",0,114,216,86,21,3005);
     combo(3002,"Sample rate / Hz",212,199,102,"192000"); combo(3003,"PCM / bits",326,199,86,"32");
     add(0,"STATIC","LATENCY",0,16,246,180,13,3304);
     combo(3004,"ASIO buffer / frames",16,266,184,"32");
-    combo(3010,"Network guard / frames",212,266,200,"128");
+    combo(3010,"LAN receive buffer / frames",212,266,200,"128");
+    SendDlgItemMessageA(window,3010,CB_LIMITTEXT,4,0);
     add(0,"STATIC","",0,16,310,396,16,3121);
     add(0,"STATIC","STREAM HEALTH",0,16,336,180,13,3305);
     add(0,"STATIC","Open this panel from the running ASIO host for live counters.",0,16,356,396,29,3120);
@@ -233,12 +238,19 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     CheckDlgButton(window,3110,state->current.energy_saving ? BST_CHECKED : BST_UNCHECKED);
     HWND channels=add(0,"BUTTON","",WS_TABSTOP|BS_PUSHBUTTON,316,426,96,24,3111);
     SetWindowTextW(channels,L"Каналы…");
+    EnableWindow(channels,FALSE);
     add(0,"STATIC","Energy saving: opened channels only; exact PCM zero suspends audio packets.",0,16,454,396,26,3112);
     add(0,"BUTTON","Measure RTT",WS_TABSTOP|BS_PUSHBUTTON,16,486,93,24,kMeasure);
     add(0,"BUTTON","Close",WS_TABSTOP|BS_PUSHBUTTON,227,486,81,24,IDCANCEL);
     add(0,"BUTTON","Apply",WS_TABSTOP|BS_DEFPUSHBUTTON,321,486,91,24,IDOK);
     SetTimer(window,2,500,nullptr);
     PostMessageA(window, WM_COMMAND, MAKEWPARAM(kScan, BN_CLICKED), 0);
+    ShowWindow(window,SW_SHOW); BringWindowToTop(window); SetForegroundWindow(window);
+    PostMessageA(window,WM_APP+2,0,0);
+    return TRUE;
+  }
+  if(message==WM_APP+2) {
+    BringWindowToTop(window); SetForegroundWindow(window); SetActiveWindow(window);
     return TRUE;
   }
   if(message==WM_CTLCOLORDLG || message==WM_CTLCOLORSTATIC) {
@@ -253,7 +265,7 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     unsigned rate=GetDlgItemInt(window,3002,nullptr,FALSE),block=GetDlgItemInt(window,3004,nullptr,FALSE);
     unsigned guard=GetDlgItemInt(window,3010,nullptr,FALSE);
     if(rate) {
-      std::snprintf(label,sizeof(label),"Block %.3f ms   /   Network guard %.3f ms   /   Digital RTT measured separately",block*1000.0/rate,guard*1000.0/rate);
+      std::snprintf(label,sizeof(label),"ASIO %.3f ms   /   LAN %.3f ms (%u frames; 0-2048)",block*1000.0/rate,guard*1000.0/rate,guard);
       SetDlgItemTextA(window,3121,label);
     }
     if(state->driver) {
@@ -326,7 +338,7 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     show_device(window, *state, static_cast<int>(SendDlgItemMessageA(window, kDeviceList, LB_GETCURSEL, 0, 0)));
     return TRUE;
   }
-  if ((LOWORD(wparam) == 3003 || LOWORD(wparam) == 3001) && HIWORD(wparam) == CBN_SELCHANGE) {
+  if (LOWORD(wparam) == 3003 && HIWORD(wparam) == CBN_SELCHANGE) {
     BOOL valid = FALSE;
     unsigned selected_rate = GetDlgItemInt(window, 3002, &valid, FALSE);
     refresh_rates(window, *state, valid ? selected_rate : 0);
@@ -432,16 +444,19 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     return TRUE;
   }
   const auto& device = state->devices[state->selected_device];
-  BOOL valid_in=FALSE,valid_out=FALSE,valid_guard=FALSE;
-  unsigned inputs=GetDlgItemInt(window,3001,&valid_in,FALSE);
-  unsigned outputs=GetDlgItemInt(window,3005,&valid_out,FALSE);
+  BOOL valid_guard=FALSE;
+  const unsigned inputs=device.channels, outputs=device.outputs;
   unsigned guard=GetDlgItemInt(window,3010,&valid_guard,FALSE);
-  if(!valid_in || !valid_out || !valid_guard || inputs>device.max_channels || outputs>device.max_outputs ||
-      guard>2048 || !aoip::valid_profile({inputs,outputs,rate,bits,block},device.link_mbps)) {
-    MessageBoxA(window,"Choose a supported input/output configuration and at least one active direction.","Pi AoIP",MB_OK|MB_ICONERROR); return TRUE;
+  char guard_text[16]{}; GetDlgItemTextA(window,3010,guard_text,sizeof(guard_text));
+  for(const char* digit=guard_text;*digit;++digit) if(*digit<'0' || *digit>'9') valid_guard=FALSE;
+  if(!valid_guard || guard>2048) {
+    MessageBoxA(window,"Enter a LAN receive buffer from 0 to 2048 frames.","Pi AoIP",MB_OK|MB_ICONERROR);
+    SetFocus(GetDlgItem(window,3010)); return TRUE;
   }
-  unsigned channels=device.v2 ? std::max(1u,inputs) : device.channels;
-  unsigned wire_outputs=device.v2 ? outputs : device.outputs;
+  if(!aoip::valid_profile({inputs,outputs,rate,bits,block},device.link_mbps)) {
+    MessageBoxA(window,"The selected format exceeds this device's link limits.","Pi AoIP",MB_OK|MB_ICONERROR); return TRUE;
+  }
+  const unsigned channels=device.channels, wire_outputs=device.outputs;
   auto offered = [](const std::vector<unsigned>& list, unsigned value) {
     return std::find(list.begin(), list.end(), value) != list.end();
   };
@@ -468,8 +483,8 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
   std::swprintf(temporary, MAX_PATH + 8, L"%ls.tmp", state->path);
   char body[512]{};
   int length = std::snprintf(body, sizeof(body),
-      "[AoIP]\r\nPeerIp=%s\r\nRate=%u\r\nBits=%u\r\nBufferFrames=%u\r\nInputs=%u\r\nOutputs=%u\r\nSafetyFrames=%u\r\nInputMask=%016llx\r\nOutputMask=%016llx\r\nEnergySaving=%u\r\n",
-      peer, rate, bits, block, inputs, outputs, guard,static_cast<unsigned long long>(state->current.input_mask),
+      "[AoIP]\r\nPeerIp=%s\r\nRate=%u\r\nBits=%u\r\nBufferFrames=%u\r\nSafetyFrames=%u\r\nInputMask=%016llx\r\nOutputMask=%016llx\r\nEnergySaving=%u\r\n",
+      peer, rate, bits, block, guard,static_cast<unsigned long long>(state->current.input_mask),
       static_cast<unsigned long long>(state->current.output_mask),IsDlgButtonChecked(window,3110)==BST_CHECKED ? 1 : 0);
   HANDLE file = CreateFileW(temporary, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
   DWORD written = 0;
@@ -571,8 +586,16 @@ bool show_settings_dialog(const Config& config, void* driver) {
     if(activation!=INVALID_HANDLE_VALUE) ReleaseActCtx(activation);
     return false;
   }
-  DialogBoxIndirectParamA(g_module, dialog, GetActiveWindow(), settings_dialog_proc,
+  HWND owner=GetActiveWindow();
+  // A hidden tray message window must not own a dialog that the user needs
+  // to find in the taskbar. A visible ASIO host retains its normal ownership.
+  if(owner && !IsWindowVisible(owner)) owner=nullptr;
+  const auto result=DialogBoxIndirectParamA(g_module, dialog, owner, settings_dialog_proc,
       reinterpret_cast<LPARAM>(&state));
+  if(result==-1) {
+    char text[128]{}; std::snprintf(text,sizeof(text),"Cannot open Pi AoIP settings (Windows error %lu).",GetLastError());
+    MessageBoxA(owner,text,"Pi AoIP",MB_OK|MB_ICONERROR);
+  }
   if(state.scanner.joinable()) state.scanner.join();
   WSACleanup();
   if(state.heading_font) DeleteObject(state.heading_font);
