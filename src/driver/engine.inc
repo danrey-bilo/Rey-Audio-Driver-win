@@ -33,9 +33,11 @@
     }
     aoip::Packet packet;
     uint64_t previous=0;
+    unsigned fast_after_gap=0;
     HANDLE events[]={stop_event_,socket_event_};
     while(running_.load(std::memory_order_relaxed)) {
       bool received=false;
+      unsigned batch_count=0;
       for(unsigned batch=0; batch<256 && running_; ++batch) {
         int n=recv(socket_,reinterpret_cast<char*>(packet.data),sizeof(packet.data),0);
         if(n==SOCKET_ERROR) {
@@ -50,12 +52,29 @@
         }
         if(source_v3_ && aoip::get16(packet.data+34)!=expected_rx_epoch_.load()) continue;
         const bool silent=source_v3_ && aoip::get64(packet.data+40)==0;
-        if(previous && !silent) max_counter(stats_.max_rx_gap_ns,packet.time_ns-previous);
+        if(previous && !silent) {
+          const uint64_t gap=packet.time_ns-previous;
+          max_counter(stats_.max_rx_gap_ns,gap);
+          if(timing_trace_enabled_) {
+            // 5 us buckets preserve tail information without logging on the
+            // real-time receive thread. The final bucket also covers >2.55 ms.
+            ++rx_gap_hist_[std::min<uint64_t>(gap/5000,rx_gap_hist_.size()-1)];
+            if(gap>=500000) ++rx_gap_over_500us_;
+            if(gap>=1000000) { ++rx_gap_over_1000us_; fast_after_gap=1; }
+            else if(fast_after_gap && gap<=20000) {
+              ++fast_after_gap; max_counter(rx_fast_after_gap_,fast_after_gap);
+            } else fast_after_gap=0;
+            if(gap>=1500000) ++rx_gap_over_1500us_;
+          }
+        }
         previous=silent ? 0 : packet.time_ns;
         ++stats_.rx_packets;
         if(!rx_queue_->push(packet)) ++stats_.rx_queue_overflows;
+        else if(timing_trace_enabled_) max_counter(rx_max_queue_depth_,rx_queue_->size());
+        ++batch_count;
         received=true;
       }
+      if(timing_trace_enabled_) max_counter(rx_max_batch_,batch_count);
       if(received) { SetEvent(rx_event_); continue; }
       if(WaitForMultipleObjects(2,events,FALSE,100)==WAIT_OBJECT_0) break;
       WSANETWORKEVENTS network{};
@@ -283,6 +302,10 @@
       // Bound work even if a faulty sender floods the socket. A queue holds
       // <=1024 packets; old frames are discarded using the source timeline.
       for(unsigned batch=0; batch<1024 && rx_queue_->pop(packet); ++batch) {
+        if(timing_trace_enabled_) {
+          const uint64_t read_at=now_ns();
+          if(read_at>packet.time_ns) max_counter(audio_max_packet_age_ns_,read_at-packet.time_ns);
+        }
         const auto first=aoip::get64(packet.data+16);
         const bool v2=aoip::get16(packet.data+4)>=2;
         const bool silence=source_v3_ && aoip::get64(packet.data+40)==0;
@@ -381,6 +404,11 @@
   std::atomic<uint64_t> first_callback_ns_{0},silent_output_blocks_{0},suppressed_output_frames_{0},output_signal_mask_{0},control_failures_{0};
   std::atomic<uint64_t> audio_cpu_ns_{0},rx_cpu_ns_{0},tx_cpu_ns_{0};
   std::atomic<uint64_t> max_tx_queue_age_ns_{0};
+  bool timing_trace_enabled_=false,timing_trace_printed_=false;
+  std::atomic<uint64_t> rx_gap_over_500us_{0},rx_gap_over_1000us_{0},rx_gap_over_1500us_{0};
+  std::atomic<uint64_t> rx_max_batch_{0},rx_fast_after_gap_{0},rx_max_queue_depth_{0};
+  std::array<std::atomic<uint64_t>,512> rx_gap_hist_{};
+  std::atomic<uint64_t> audio_max_packet_age_ns_{0};
   ASIOCallbacks* callbacks_=nullptr;
   using ResetCallback=long (*)(long,long,void*,double*);
   std::atomic<ResetCallback> reset_callback_{nullptr};

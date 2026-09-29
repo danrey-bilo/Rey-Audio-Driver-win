@@ -50,6 +50,8 @@ public:
     if(wsa_) { WSACleanup(); wsa_=false; }
     cfg_ = Config{};
     read_config(cfg_);
+    char timing_trace[4]{};
+    timing_trace_enabled_=GetEnvironmentVariableA("PIAOIP_TIMING_TRACE",timing_trace,sizeof(timing_trace))==1 && timing_trace[0]=='1';
     wchar_t profile[MAX_PATH]{};
     if(config_event_) { CloseHandle(config_event_); config_event_=nullptr; }
     if(profile_path(profile)) config_event_=settings_changed_event(profile);
@@ -136,6 +138,10 @@ public:
     silence_first_=UINT64_MAX;
     audio_cpu_ns_=0; rx_cpu_ns_=0; tx_cpu_ns_=0;
     max_tx_queue_age_ns_=0;
+    rx_gap_over_500us_=0; rx_gap_over_1000us_=0; rx_gap_over_1500us_=0;
+    rx_max_batch_=0; rx_fast_after_gap_=0; rx_max_queue_depth_=0;
+    for(auto& bucket:rx_gap_hist_) bucket=0;
+    audio_max_packet_age_ns_=0; timing_trace_printed_=false;
     session_=uint32_t((start_requested_ns_>>4)^uint64_t(GetCurrentProcessId()))|1u;
     std::array<char,aoip::packet_bytes> stale{};
     for (unsigned i=0;i<4096;++i) if(recv(socket_,stale.data(),int(stale.size()),0)==SOCKET_ERROR) break;
@@ -192,6 +198,34 @@ public:
     if(sender_.joinable()) sender_.join();
     if(heartbeat_.joinable()) heartbeat_.join();
     unsubscribe_source();
+    if(timing_trace_enabled_ && !timing_trace_printed_) {
+      timing_trace_printed_=true;
+      uint64_t samples=0;
+      for(const auto& bucket:rx_gap_hist_) samples+=bucket.load();
+      const auto percentile_upper_us=[&](unsigned percent) {
+        if(!samples) return uint64_t(0);
+        const uint64_t rank=(samples*percent+99)/100;
+        uint64_t cumulative=0;
+        for(size_t i=0;i<rx_gap_hist_.size();++i) {
+          cumulative+=rx_gap_hist_[i].load();
+          if(cumulative>=rank) return i+1==rx_gap_hist_.size() ?
+            (stats_.max_rx_gap_ns.load()+999)/1000 : uint64_t(i+1)*5;
+        }
+        return uint64_t(0);
+      };
+      std::fprintf(stderr,"RX_TIMING samples=%llu gap_p50_lt_us=%llu gap_p95_lt_us=%llu gap_p99_lt_us=%llu gap500=%llu gap1000=%llu gap1500=%llu max_batch=%llu fast_after_gap=%llu max_queue_depth=%llu audio_packet_age_max_us=%.1f\n",
+        static_cast<unsigned long long>(samples),
+        static_cast<unsigned long long>(percentile_upper_us(50)),
+        static_cast<unsigned long long>(percentile_upper_us(95)),
+        static_cast<unsigned long long>(percentile_upper_us(99)),
+        static_cast<unsigned long long>(rx_gap_over_500us_.load()),
+        static_cast<unsigned long long>(rx_gap_over_1000us_.load()),
+        static_cast<unsigned long long>(rx_gap_over_1500us_.load()),
+        static_cast<unsigned long long>(rx_max_batch_.load()),
+        static_cast<unsigned long long>(rx_fast_after_gap_.load()),
+        static_cast<unsigned long long>(rx_max_queue_depth_.load()),
+        audio_max_packet_age_ns_.load()/1000.);
+    }
     return ASE_OK;
   }
   ASIOError getChannels(long* inputs, long* outputs) override {
