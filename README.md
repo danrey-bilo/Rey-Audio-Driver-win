@@ -19,14 +19,16 @@ installer. Runs inside a 64-bit ASIO host.
 | ASIO buffer | 16 / 32 / 64 / 128 / 256 / 512 / 1024 / 2048 frames |
 | Threads | Separate network receive, ASIO callback and network transmit threads |
 | Reliability | SPSC queues, Timeline, TX deadlines and dropout counters |
-| Settings | Discovery, profile, guard, RTT and per-user INI |
+| Settings | Discovery, profile, guard, RTT, individual channel switches and per-user INI |
+| Energy saving | v3 opened channels, exact PCM-zero suppression and leased start/stop |
+| Quick access | Connected-device tray icon and startup registration |
 | Installation | MSI: ASIO/COM registration, settings panel, UDP firewall rule, repair and uninstall |
 
 ## How it works
 
 ```mermaid
 flowchart LR
-  PI[Pi4-AoIP] --> RX[Network RX]
+  PI[Pi4 / Pi5 AoIP] --> RX[Network RX]
   RX --> T[Timeline + guard]
   T --> A[ASIO callback / DAW]
   A --> Q[Output SPSC]

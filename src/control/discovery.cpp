@@ -53,7 +53,8 @@ bool profile_fits_link(unsigned channels, unsigned rate, unsigned bits,
 bool parse_device(const char* reply, const sockaddr_in& address, SettingsDialog::Device& device) {
   int consumed = 0;
   char rates[128]{}, bits[32]{}, buffers[64]{};
-  device.v2 = std::strncmp(reply, "PIAOIP_DEVICE_V2 ", 16) == 0;
+  device.v3 = std::strncmp(reply, "PIAOIP_DEVICE_V3 ", 16) == 0;
+  device.v2 = device.v3 || std::strncmp(reply, "PIAOIP_DEVICE_V2 ", 16) == 0;
   char copy[512]{};
   std::snprintf(copy, sizeof(copy), "%s", reply);
   if (device.v2) copy[15] = '1';
@@ -74,8 +75,16 @@ bool parse_device(const char* reply, const sockaddr_in& address, SettingsDialog:
   if (device.v2) {
     int end = 0;
     valid = valid && std::sscanf(reply + consumed, " outputs=%u max_outputs=%u%n",
-      &device.outputs, &device.max_outputs, &end) == 2 && consumed + end == int(std::strlen(reply)) &&
+      &device.outputs, &device.max_outputs, &end) == 2 &&
       device.max_outputs <= 64 && device.outputs <= device.max_outputs;
+    consumed+=end;
+    if(device.v3) {
+      unsigned masks=0,lease=0; end=0;
+      valid=valid && std::sscanf(reply+consumed," masks=%u lease_ms=%u%n",&masks,&lease,&end)==2 &&
+        masks==1 && lease>=2000 && lease<=10000;
+      consumed+=end;
+    }
+    valid=valid && consumed==int(std::strlen(reply));
   } else {
     valid = valid && consumed == int(std::strlen(reply));
     device.outputs = device.max_outputs = device.channels;
@@ -90,6 +99,8 @@ bool parse_device(const char* reply, const sockaddr_in& address, SettingsDialog:
 
 bool query_device(const char* ip, SettingsDialog::Device& device, DWORD timeout) {
   char reply[512]{}; sockaddr_in responder{};
+  if (control_request(ip,nullptr,"PIAOIP_DISCOVER_V3",reply,responder,std::min(timeout,DWORD(100))) &&
+      parse_device(reply,responder,device)) return true;
   if (control_request(ip, nullptr, "PIAOIP_DISCOVER_V2", reply, responder, timeout) &&
       parse_device(reply, responder, device)) return true;
   return control_request(ip, nullptr, "PIAOIP_DISCOVER_V1", reply, responder, timeout) &&

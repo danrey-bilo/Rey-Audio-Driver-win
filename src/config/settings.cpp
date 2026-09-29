@@ -46,6 +46,25 @@ void read_ini(const wchar_t* path, Config& c) {
   int inputs = number(L"Inputs", c.inputs), outputs = number(L"Outputs", c.outputs);
   if (inputs >= 0 && inputs <= 64) c.inputs = static_cast<uint16_t>(inputs);
   if (outputs >= 0 && outputs <= 64) c.outputs = static_cast<uint16_t>(outputs);
+  auto mask = [&](const wchar_t* name,uint64_t& selected) {
+    wchar_t text[32]{},fallback[32]{};
+    std::swprintf(fallback,32,L"%016llx",static_cast<unsigned long long>(selected));
+    GetPrivateProfileStringW(L"AoIP",name,fallback,text,32,path);
+    const size_t length=std::wcslen(text);
+    if (!length || length>16) return;
+    uint64_t value=0;
+    for (size_t i=0;i<length;++i) {
+      const wchar_t ch=text[i];
+      unsigned digit=ch>=L'0' && ch<=L'9' ? unsigned(ch-L'0') : ch>=L'a' && ch<=L'f' ? unsigned(ch-L'a'+10) :
+        ch>=L'A' && ch<=L'F' ? unsigned(ch-L'A'+10) : 16;
+      if (digit>15) return;
+      value=(value<<4)|digit;
+    }
+    selected=value;
+  };
+  mask(L"InputMask",c.input_mask); mask(L"OutputMask",c.output_mask);
+  int energy=number(L"EnergySaving",c.energy_saving ? 1 : 0);
+  if(energy==0 || energy==1) c.energy_saving=energy!=0;
 }
 void read_legacy_registry(Config& c) {
   constexpr auto key = L"Software\\PiAoIP\\ASIO";
@@ -104,5 +123,16 @@ void read_config(Config& c) {
   if (!is_file(path) && !GetEnvironmentVariableW(L"PIAOIP_CONFIG_PATH", nullptr, 0))
     read_previous_install(c);
   read_ini(path, c);
+}
+HANDLE settings_changed_event(const wchar_t* profile) {
+  std::wstring lower(profile); CharLowerBuffW(lower.data(),DWORD(lower.size()));
+  uint64_t hash=14695981039346656037ull;
+  for(wchar_t ch:lower) { hash^=uint16_t(ch); hash*=1099511628211ull; }
+  wchar_t name[96]{}; std::swprintf(name,96,L"Local\\PiAoIP.Settings.%016llx",static_cast<unsigned long long>(hash));
+  return CreateEventW(nullptr,FALSE,FALSE,name);
+}
+void notify_settings_changed(const wchar_t* profile) {
+  HANDLE event=settings_changed_event(profile);
+  if(event) { SetEvent(event); CloseHandle(event); }
 }
 }

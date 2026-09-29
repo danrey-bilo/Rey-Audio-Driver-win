@@ -8,6 +8,8 @@ std::atomic<long> g_objects{0};
 struct ChannelBuffer {
   long channel = 0;
   bool input = true;
+  bool enabled = true;
+  int packed = -1;
   std::unique_ptr<uint8_t[]> halves[2];
 };
 
@@ -22,6 +24,8 @@ public:
     if (stop_event_) CloseHandle(stop_event_);
     if (rx_event_) CloseHandle(rx_event_);
     if (tx_event_) CloseHandle(tx_event_);
+    if (start_event_) CloseHandle(start_event_);
+    if (config_event_) CloseHandle(config_event_);
     if (wsa_) WSACleanup();
     --g_objects;
   }
@@ -46,6 +50,9 @@ public:
     if(wsa_) { WSACleanup(); wsa_=false; }
     cfg_ = Config{};
     read_config(cfg_);
+    wchar_t profile[MAX_PATH]{};
+    if(config_event_) { CloseHandle(config_event_); config_event_=nullptr; }
+    if(profile_path(profile)) config_event_=settings_changed_event(profile);
     block_ = cfg_.block;
     WSADATA wsa{};
     if (WSAStartup(MAKEWORD(2, 2), &wsa)) return ASIOFalse;
@@ -70,7 +77,8 @@ public:
     cfg_.inputs = std::min(cfg_.inputs, source.channels);
     cfg_.outputs = std::min(cfg_.outputs, source.outputs);
     if (!cfg_.inputs && !cfg_.outputs) { std::strcpy(error_, "Enable at least one input or output"); return ASIOFalse; }
-    wire_outputs_=source.outputs; source_frames_=source.frames; source_v2_=source.v2;
+    physical_outputs_=source.outputs; wire_outputs_=source.outputs;
+    source_frames_=source.frames; source_v2_=source.v2; source_v3_=source.v3;
     cfg_.rate = source.rate;
     cfg_.bits = static_cast<uint16_t>(source.bits);
     if (std::find(source.buffers.begin(), source.buffers.end(),
@@ -105,7 +113,8 @@ public:
     if (!stop_event_) stop_event_=CreateEventW(nullptr,TRUE,FALSE,nullptr);
     if (!rx_event_) rx_event_=CreateEventW(nullptr,FALSE,FALSE,nullptr);
     if (!tx_event_) tx_event_=CreateEventW(nullptr,FALSE,FALSE,nullptr);
-    if (!stop_event_ || !rx_event_ || !tx_event_ || socket_event_==WSA_INVALID_EVENT ||
+    if (!start_event_) start_event_=CreateEventW(nullptr,TRUE,FALSE,nullptr);
+    if (!stop_event_ || !rx_event_ || !tx_event_ || !start_event_ || !config_event_ || socket_event_==WSA_INVALID_EVENT ||
         WSAEventSelect(socket_,socket_event_,FD_READ | FD_CLOSE)) return ASIOFalse;
     int send_buffer=64*1024;
     setsockopt(socket_,SOL_SOCKET,SO_SNDBUF,reinterpret_cast<const char*>(&send_buffer),sizeof(send_buffer));
@@ -116,20 +125,18 @@ public:
     return ASIOTrue;
   } catch(const std::bad_alloc&) { std::strcpy(error_,"Audio memory allocation failed"); return ASIOFalse; }
   void getDriverName(char* name) override { if (name) std::strcpy(name, "Pi AoIP"); }
-  long getDriverVersion() override { return 2; }
+  long getDriverVersion() override { return 220; }
   void getErrorMessage(char* text) override { if (text) std::strcpy(text, error_); }
   ASIOError start() override {
     if (socket_ == INVALID_SOCKET || !callbacks_ || running_) return ASE_InvalidMode;
-    char request[160]{}, reply[512]{};
-    std::snprintf(request,sizeof(request),source_v2_ ?
-      "PIAOIP_SUBSCRIBE_V2 port=%u channels=%u rate=%u bits=%u outputs=%u" :
-      "PIAOIP_SUBSCRIBE_V1 port=%u channels=%u rate=%u bits=%u",
-      cfg_.port,cfg_.channels,cfg_.rate,cfg_.bits,wire_outputs_);
-    sockaddr_in responder{};
-    if (!control_request(cfg_.peer,nullptr,request,reply,responder,500) ||
-        std::strcmp(reply,source_v2_ ? "PIAOIP_SUBSCRIBED_V2" : "PIAOIP_SUBSCRIBED_V1")) {
-      std::strcpy(error_,"Pi rejected stream subscription"); return ASE_HWMalfunction;
-    }
+    if(worker_.joinable() || receiver_.joinable() || sender_.joinable() || heartbeat_.joinable()) stop();
+    start_requested_ns_=now_ns(); first_callback_ns_=0;
+    silent_output_blocks_=0; suppressed_output_frames_=0; output_signal_mask_=0; control_failures_=0;
+    output_silent_=false; remote_silent_=false; expected_rx_epoch_=0;
+    silence_first_=UINT64_MAX;
+    audio_cpu_ns_=0; rx_cpu_ns_=0; tx_cpu_ns_=0;
+    max_tx_queue_age_ns_=0;
+    session_=uint32_t((start_requested_ns_>>4)^uint64_t(GetCurrentProcessId()))|1u;
     std::array<char,aoip::packet_bytes> stale{};
     for (unsigned i=0;i<4096;++i) if(recv(socket_,stale.data(),int(stale.size()),0)==SOCKET_ERROR) break;
     rx_queue_->reset(); tx_queue_->reset(); timeline_.reset(0); stats_.reset();
@@ -137,12 +144,43 @@ public:
     tx_epoch_=uint16_t((now_ns()>>8)%65535+1);
     partial_frames_=0; pending_half_=-1;
     ResetEvent(stop_event_); ResetEvent(rx_event_); ResetEvent(tx_event_);
+    ResetEvent(start_event_);
+    ResetEvent(config_event_);
     running_=true;
     try {
-      receiver_=std::thread([this]{receive_loop();});
-      sender_=std::thread([this]{send_loop();});
+      if(!source_v3_ || input_map_.count) receiver_=std::thread([this]{receive_loop();});
+      if(wire_outputs_) sender_=std::thread([this]{send_loop();});
       worker_=std::thread([this]{audio_loop();});
     } catch (...) { stop(); return ASE_NoMemory; }
+    char request[256]{}, reply[512]{};
+    unsigned requested_frames=0;
+    if(source_v3_) {
+      const unsigned frames=std::min(source_frames_,aoip::low_latency_frames(cfg_.channels,cfg_.rate,cfg_.bits,unsigned(block_)));
+      requested_frames=frames;
+      std::snprintf(request,sizeof(request),
+        "PIAOIP_SUBSCRIBE_V3 port=%u channels=%u rate=%u bits=%u outputs=%u in_mask=%016llx out_mask=%016llx frames=%u session=%u energy=%u",
+        cfg_.port,cfg_.channels,cfg_.rate,cfg_.bits,physical_outputs_,
+        static_cast<unsigned long long>(input_map_.mask),static_cast<unsigned long long>(output_map_.mask),frames,session_,cfg_.energy_saving ? 1 : 0);
+    } else std::snprintf(request,sizeof(request),source_v2_ ?
+      "PIAOIP_SUBSCRIBE_V2 port=%u channels=%u rate=%u bits=%u outputs=%u" :
+      "PIAOIP_SUBSCRIBE_V1 port=%u channels=%u rate=%u bits=%u",
+      cfg_.port,cfg_.channels,cfg_.rate,cfg_.bits,physical_outputs_);
+    sockaddr_in responder{};
+    bool accepted=false;
+    for(unsigned attempt=0;attempt<(source_v3_ ? 2u : 1u) && !accepted;++attempt) {
+      if(!control_request(cfg_.peer,nullptr,request,reply,responder,source_v3_ ? 8 : 500)) continue;
+      if(source_v3_) {
+        unsigned session=0,epoch=0,inputs=0,outputs=0,frames=0; int end=0;
+        accepted=std::sscanf(reply,"PIAOIP_SUBSCRIBED_V3 session=%u epoch=%u inputs=%u outputs=%u frames=%u%n",
+          &session,&epoch,&inputs,&outputs,&frames,&end)==5 && end==int(std::strlen(reply)) && session==session_ &&
+          epoch>0 && epoch<=65535 && inputs==input_map_.count && outputs==output_map_.count && frames==requested_frames;
+        if(accepted) { tx_epoch_=uint16_t(epoch); expected_rx_epoch_=uint16_t(epoch); }
+      } else accepted=std::strcmp(reply,source_v2_ ? "PIAOIP_SUBSCRIBED_V2" : "PIAOIP_SUBSCRIBED_V1")==0;
+    }
+    if(!accepted) { std::strcpy(error_,"Pi rejected stream subscription"); stop(); return ASE_HWMalfunction; }
+    SetEvent(start_event_);
+    try { heartbeat_=std::thread([this]{heartbeat_loop();}); }
+      catch(...) { stop(); return ASE_NoMemory; }
     return ASE_OK;
   }
   ASIOError stop() override {
@@ -152,6 +190,8 @@ public:
     if(worker_.joinable()) worker_.join();
     if(receiver_.joinable()) receiver_.join();
     if(sender_.joinable()) sender_.join();
+    if(heartbeat_.joinable()) heartbeat_.join();
+    unsubscribe_source();
     return ASE_OK;
   }
   ASIOError getChannels(long* inputs, long* outputs) override {
@@ -161,7 +201,7 @@ public:
   ASIOError getLatencies(long* input, long* output) override {
     if (!input || !output) return ASE_InvalidParameter;
     *input = cfg_.inputs ? block_ + cfg_.safety + source_frames_ : 0;
-    *output = cfg_.outputs ? block_ + output_packet_frames() : 0;
+    *output = cfg_.outputs ? block_ + (source_v3_ ? 0 : output_packet_frames()) : 0;
     return ASE_OK;
   }
   ASIOError getBufferSize(long* min, long* max, long* preferred, long* granularity) override {
@@ -205,10 +245,11 @@ public:
     if (!info || info->channel < 0 || unsigned(info->channel) >= (info->isInput ? cfg_.inputs : cfg_.outputs)) return ASE_InvalidParameter;
     info->isActive = ASIOFalse;
     for (auto& item : buffers_)
-      if (item.channel == info->channel && item.input == (info->isInput != 0)) info->isActive = ASIOTrue;
+      if (item.enabled && item.channel == info->channel && item.input == (info->isInput != 0)) info->isActive = ASIOTrue;
     info->channelGroup = 0;
     info->type = cfg_.bits == 16 ? ASIOSTInt16LSB : cfg_.bits == 24 ? ASIOSTInt32LSB24 : ASIOSTInt32LSB;
-    std::snprintf(info->name, sizeof(info->name), "Pi %s %ld", info->isInput ? "input" : "output", info->channel + 1);
+    const bool enabled=((info->isInput ? cfg_.input_mask : cfg_.output_mask) & (uint64_t(1)<<info->channel))!=0;
+    std::snprintf(info->name, sizeof(info->name), "Pi %s %ld%s", info->isInput ? "input" : "output", info->channel + 1,enabled ? "" : " (off)");
     return ASE_OK;
   }
   ASIOError createBuffers(ASIOBufferInfo* info, long count, long frames, ASIOCallbacks* callbacks) override try {
@@ -225,10 +266,19 @@ public:
     time_info_ = callbacks->bufferSwitchTimeInfo && callbacks->asioMessage &&
       callbacks->asioMessage(kAsioSupportsTimeInfo,0,nullptr,nullptr)==1;
     int asio_bytes = cfg_.bits == 16 ? 2 : 4;
+    uint64_t requested_inputs=0,requested_outputs=0;
+    for(long i=0;i<count;++i) (info[i].isInput ? requested_inputs : requested_outputs) |= uint64_t(1)<<info[i].channelNum;
+    input_map_.assign(source_v3_ ? cfg_.input_mask & (cfg_.energy_saving ? requested_inputs : aoip::channel_mask(cfg_.inputs)) : aoip::channel_mask(cfg_.channels),cfg_.channels);
+    output_map_.assign(source_v3_ ? cfg_.output_mask & (cfg_.energy_saving ? requested_outputs : aoip::channel_mask(cfg_.outputs)) : aoip::channel_mask(physical_outputs_),physical_outputs_);
+    wire_outputs_=output_map_.count;
+    timeline_.prepare(std::max(1u,input_map_.count));
+    input_scratch_.assign(size_t(2048)*std::max(1u,input_map_.count),0);
     for (long i = 0; i < count; ++i) {
       ChannelBuffer item;
       item.channel = info[i].channelNum;
       item.input = info[i].isInput != 0;
+      item.enabled=((item.input ? cfg_.input_mask : cfg_.output_mask) & (uint64_t(1)<<item.channel))!=0;
+      item.packed=(item.input ? input_map_ : output_map_).packed[unsigned(item.channel)];
       for (int half = 0; half < 2; ++half) {
         item.halves[half] = std::make_unique<uint8_t[]>(size_t(frames) * asio_bytes);
         std::memset(item.halves[half].get(), 0, size_t(frames) * asio_bytes);
@@ -237,6 +287,7 @@ public:
       info[i].buffers[0] = buffers_.back().halves[0].get();
       info[i].buffers[1] = buffers_.back().halves[1].get();
     }
+    reset_callback_.store(callbacks->asioMessage);
     return ASE_OK;
   } catch(const std::bad_alloc&) {
     buffers_.clear(); callbacks_=nullptr;
@@ -245,6 +296,7 @@ public:
   }
   ASIOError disposeBuffers() override {
     stop();
+    reset_callback_=nullptr;
     buffers_.clear(); callbacks_ = nullptr; return ASE_OK;
   }
   ASIOError controlPanel() override {
@@ -261,6 +313,22 @@ public:
     return ASE_OK;
   }
   ASIOError future(long selector, void* data) override {
+    if(selector==aoip::stream_diagnostics_selector && data) {
+      auto& out=*static_cast<aoip::StreamDiagnostics*>(data);
+      if(out.size!=sizeof(out) || out.version!=1) return ASE_InvalidParameter;
+      out.input_mask=input_map_.mask; out.output_mask=output_map_.mask;
+      out.enabled_inputs=cfg_.input_mask & aoip::channel_mask(cfg_.inputs);
+      out.enabled_outputs=cfg_.output_mask & aoip::channel_mask(cfg_.outputs);
+      out.wire_inputs=input_map_.count; out.wire_outputs=wire_outputs_;
+      out.start_to_callback_ns=first_callback_ns_.load(); out.silent_output_blocks=silent_output_blocks_.load();
+      out.suppressed_output_frames=suppressed_output_frames_.load(); out.output_signal_mask=output_signal_mask_.load();
+      out.control_failures=control_failures_.load(); out.energy_saving=cfg_.energy_saving ? 1 : 0;
+      out.audio_cpu_ns=audio_cpu_ns_.load(); out.rx_cpu_ns=rx_cpu_ns_.load(); out.tx_cpu_ns=tx_cpu_ns_.load();
+      out.max_tx_queue_age_ns=max_tx_queue_age_ns_.load();
+      out.masked_transport=source_v3_ ? 1 : 0; out.source_silent=remote_silent_.load() ? 1 : 0;
+      out.running=running_.load() ? 1 : 0;
+      return ASE_SUCCESS;
+    }
     if (selector==aoip::diagnostics_selector && data) {
       auto* out=static_cast<aoip::Diagnostics*>(data);
       if(out->size!=sizeof(*out) || out->version!=1) return ASE_InvalidParameter;

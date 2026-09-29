@@ -5,11 +5,12 @@
 #include <cstdint>
 namespace piaoip {
 uint64_t now_ns();
+uint64_t thread_cpu_ns();
 void max_counter(std::atomic<uint64_t>& value, uint64_t candidate);
 class RealtimeThread {
   HANDLE mmcss_=nullptr;
 public:
-  explicit RealtimeThread(std::atomic<uint64_t>& failures);
+  explicit RealtimeThread(std::atomic<uint64_t>& failures,unsigned role=0);
   ~RealtimeThread();
 };
 class DeadlineWaiter {
@@ -17,6 +18,6 @@ class DeadlineWaiter {
 public:
   DeadlineWaiter();
   ~DeadlineWaiter();
-  void wait(uint64_t deadline, HANDLE stop_event, HANDLE wake_event=nullptr);
+  void wait(uint64_t deadline, HANDLE stop_event, HANDLE wake_event=nullptr,uint64_t spin_ns=20000);
 };
 }

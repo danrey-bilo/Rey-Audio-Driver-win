@@ -4,6 +4,80 @@
 #include <uxtheme.h>
 #include <cwchar>
 namespace piaoip {
+namespace {
+struct ChannelDialog { Config selected; unsigned inputs,outputs; };
+INT_PTR CALLBACK channel_dialog_proc(HWND window,UINT message,WPARAM wparam,LPARAM lparam) {
+  auto* state=reinterpret_cast<ChannelDialog*>(GetWindowLongPtrW(window,GWLP_USERDATA));
+  if(message==WM_INITDIALOG) {
+    state=reinterpret_cast<ChannelDialog*>(lparam);
+    SetWindowLongPtrW(window,GWLP_USERDATA,reinterpret_cast<LONG_PTR>(state));
+    SetWindowTextW(window,L"Каналы Pi AoIP");
+    auto add=[&](const wchar_t* cls,const wchar_t* caption,DWORD style,int x,int y,int width,int height,int id) {
+      RECT r{x,y,x+width,y+height}; MapDialogRect(window,&r);
+      HWND child=CreateWindowW(cls,caption,WS_CHILD|WS_VISIBLE|style,r.left,r.top,r.right-r.left,r.bottom-r.top,
+        window,reinterpret_cast<HMENU>(static_cast<INT_PTR>(id)),g_module,nullptr);
+      SendMessageW(child,WM_SETFONT,SendMessageW(window,WM_GETFONT,0,0),TRUE);
+      return child;
+    };
+    add(L"STATIC",L"Снимите отметку, чтобы канал не передавался по LAN.",0,12,9,640,14,0);
+    add(L"STATIC",L"Входы — Pi → ПК",0,12,31,300,14,0);
+    add(L"STATIC",L"Выходы — ПК → Pi",0,348,31,300,14,0);
+    for(unsigned direction=0;direction<2;++direction) {
+      const unsigned count=direction ? state->outputs : state->inputs;
+      const uint64_t mask=direction ? state->selected.output_mask : state->selected.input_mask;
+      for(unsigned ch=0;ch<count;++ch) {
+        wchar_t label[8]{}; std::swprintf(label,8,L"%u",ch+1);
+        const int id=(direction ? 4100 : 4000)+int(ch);
+        add(L"BUTTON",label,WS_TABSTOP|BS_AUTOCHECKBOX,12+int(direction)*336+int(ch%8)*41,
+          52+int(ch/8)*22,40,18,id);
+        CheckDlgButton(window,id,(mask & (uint64_t(1)<<ch)) ? BST_CHECKED : BST_UNCHECKED);
+      }
+    }
+    const int bottom=54+int((std::max(state->inputs,state->outputs)+7)/8)*22;
+    add(L"BUTTON",L"Все входы",WS_TABSTOP|BS_PUSHBUTTON,12,bottom,78,22,4200);
+    add(L"BUTTON",L"Нет входов",WS_TABSTOP|BS_PUSHBUTTON,96,bottom,78,22,4201);
+    add(L"BUTTON",L"Все выходы",WS_TABSTOP|BS_PUSHBUTTON,348,bottom,78,22,4202);
+    add(L"BUTTON",L"Нет выходов",WS_TABSTOP|BS_PUSHBUTTON,432,bottom,78,22,4203);
+    add(L"BUTTON",L"Отмена",WS_TABSTOP|BS_PUSHBUTTON,486,bottom+32,78,23,IDCANCEL);
+    add(L"BUTTON",L"Готово",WS_TABSTOP|BS_DEFPUSHBUTTON,576,bottom+32,78,23,IDOK);
+    return TRUE;
+  }
+  if(message==WM_CLOSE) { EndDialog(window,IDCANCEL); return TRUE; }
+  if(message!=WM_COMMAND || !state) return FALSE;
+  const int id=LOWORD(wparam);
+  if(id>=4200 && id<=4203) {
+    const bool output=id>=4202,enable=(id%2)==0;
+    for(unsigned ch=0;ch<(output ? state->outputs : state->inputs);++ch)
+      CheckDlgButton(window,(output ? 4100 : 4000)+int(ch),enable ? BST_CHECKED : BST_UNCHECKED);
+    return TRUE;
+  }
+  if(id==IDOK) {
+    for(unsigned direction=0;direction<2;++direction) {
+      const unsigned count=direction ? state->outputs : state->inputs;
+      uint64_t& mask=direction ? state->selected.output_mask : state->selected.input_mask;
+      mask &= ~aoip::channel_mask(count);
+      for(unsigned ch=0;ch<count;++ch) if(IsDlgButtonChecked(window,(direction ? 4100 : 4000)+int(ch))==BST_CHECKED)
+        mask |= uint64_t(1)<<ch;
+    }
+  }
+  if(id==IDOK || id==IDCANCEL) { EndDialog(window,id); return TRUE; }
+  return FALSE;
+}
+void edit_channels(HWND owner,SettingsDialog& state) {
+  ChannelDialog selected{state.current,GetDlgItemInt(owner,3001,nullptr,FALSE),GetDlgItemInt(owner,3005,nullptr,FALSE)};
+  selected.inputs=std::min(64u,selected.inputs); selected.outputs=std::min(64u,selected.outputs);
+  alignas(DWORD) uint8_t storage[256]{};
+  auto* dialog=reinterpret_cast<DLGTEMPLATE*>(storage);
+  dialog->style=WS_POPUP|WS_CAPTION|WS_SYSMENU|DS_MODALFRAME|DS_SETFONT;
+  dialog->cx=668; dialog->cy=118+WORD((std::max(selected.inputs,selected.outputs)+7)/8)*22;
+  auto* extra=reinterpret_cast<WORD*>(storage+sizeof(DLGTEMPLATE));
+  *extra++=0; *extra++=0; *extra++=0; *extra++=10;
+  const wchar_t face[]=L"Segoe UI"; std::memcpy(extra,face,sizeof(face));
+  if(DialogBoxIndirectParamW(g_module,dialog,owner,channel_dialog_proc,reinterpret_cast<LPARAM>(&selected))==IDOK) {
+    state.current.input_mask=selected.selected.input_mask; state.current.output_mask=selected.selected.output_mask;
+  }
+}
+}
 void refresh_rates(HWND window, SettingsDialog& state, unsigned preferred) {
   if (state.selected_device < 0 || state.selected_device >= static_cast<int>(state.devices.size())) return;
   const auto& device = state.devices[state.selected_device];
@@ -57,7 +131,7 @@ void show_device(HWND window, SettingsDialog& state, int index) {
   for(unsigned n=0;n<=device.max_outputs;++n) outputs.push_back(n);
   fill(3001,inputs,std::min(state.current.inputs,device.channels));
   fill(3005,outputs,std::min(state.current.outputs,device.outputs));
-  fill(3010,{0,16,32,64,128,256,512,1024,2048},state.current.safety);
+  fill(3010,{0,16,32,64,128,256,384,448,480,512,1024,2048},state.current.safety);
   fill(3003, device.supported_bits, device.bits);
   fill(3004, device.buffers, state.current.block);
   refresh_rates(window, state, device.rate);
@@ -66,6 +140,12 @@ void show_device(HWND window, SettingsDialog& state, int index) {
       device.ip, device.channels, device.rate, device.bits, device.link_mbps, device.frames,
       state.is_live && device.rate > 192000 ? " (choose <=192000 Hz for Live)" : "");
   SetDlgItemTextA(window, 3103, status);
+  EnableWindow(GetDlgItem(window,3110),device.v3);
+  EnableWindow(GetDlgItem(window,3111),device.v3);
+  char measure[160]{};
+  unsigned channel=std::min(device.channels,device.outputs);
+  std::snprintf(measure,sizeof(measure),"Digital RTT: route input %u to output %u (PCM32).",channel,channel);
+  SetDlgItemTextA(window,3105,measure);
 }
 
 void refresh_measured_latency(HWND window, const SettingsDialog& state) {
@@ -89,7 +169,7 @@ void refresh_measured_latency(HWND window, const SettingsDialog& state) {
   }
   char label[512]{};
   if (!count)
-    std::snprintf(label, sizeof(label), "Digital roundtrip: waiting for input 32 -> output 32.");
+    std::snprintf(label, sizeof(label), "Digital roundtrip: waiting for input %u -> output %u.",state.measure_channel,state.measure_channel);
   else if(p50>=20000 || p99>=20000)
     std::snprintf(label,sizeof(label),"Measured RTT: min %llu us; max %llu us. Percentiles exceed the 20 ms histogram.",minimum,maximum);
   else
@@ -148,9 +228,15 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     add(0,"STATIC","STREAM HEALTH",0,16,336,180,13,3305);
     add(0,"STATIC","Open this panel from the running ASIO host for live counters.",0,16,356,396,29,3120);
     add(0,"STATIC","Digital RTT: route input 32 to output 32 (32-bit PCM).",0,16,390,396,28,kMeasured);
-    add(0,"BUTTON","Measure RTT",WS_TABSTOP|BS_PUSHBUTTON,16,426,93,24,kMeasure);
-    add(0,"BUTTON","Close",WS_TABSTOP|BS_PUSHBUTTON,227,426,81,24,IDCANCEL);
-    add(0,"BUTTON","Apply",WS_TABSTOP|BS_DEFPUSHBUTTON,321,426,91,24,IDOK);
+    HWND energy=add(0,"BUTTON","",WS_TABSTOP|BS_AUTOCHECKBOX,16,426,284,24,3110);
+    SetWindowTextW(energy,L"Режим энергосбережения");
+    CheckDlgButton(window,3110,state->current.energy_saving ? BST_CHECKED : BST_UNCHECKED);
+    HWND channels=add(0,"BUTTON","",WS_TABSTOP|BS_PUSHBUTTON,316,426,96,24,3111);
+    SetWindowTextW(channels,L"Каналы…");
+    add(0,"STATIC","Energy saving: opened channels only; exact PCM zero suspends audio packets.",0,16,454,396,26,3112);
+    add(0,"BUTTON","Measure RTT",WS_TABSTOP|BS_PUSHBUTTON,16,486,93,24,kMeasure);
+    add(0,"BUTTON","Close",WS_TABSTOP|BS_PUSHBUTTON,227,486,81,24,IDCANCEL);
+    add(0,"BUTTON","Apply",WS_TABSTOP|BS_DEFPUSHBUTTON,321,486,91,24,IDOK);
     SetTimer(window,2,500,nullptr);
     PostMessageA(window, WM_COMMAND, MAKEWPARAM(kScan, BN_CLICKED), 0);
     return TRUE;
@@ -220,6 +306,7 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     return TRUE;
   }
   if (message != WM_COMMAND) return FALSE;
+  if(LOWORD(wparam)==3111 && state) { edit_channels(window,*state); return TRUE; }
   if(LOWORD(wparam)==kScan) {
     if(state->scanning) return TRUE;
     state->scanning=true;
@@ -273,16 +360,28 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
       KillTimer(window, 1);
       SetDlgItemTextA(window, kMeasure, "Measure RTT");
       refresh_measured_latency(window, *state);
-    } else if (control_request(ip, nullptr, "PIAOIP_MEASURE_START_V1", reply, responder, 500) &&
-               std::strcmp(reply, "PIAOIP_MEASURE_STARTED_V1 channel=32") == 0) {
+    } else {
+      const auto& device=state->devices[state->selected_device];
+      uint64_t common=state->current.input_mask & state->current.output_mask & aoip::channel_mask(std::min(device.channels,device.outputs));
+      aoip::StreamDiagnostics stream;
+      if(state->driver && static_cast<IASIO*>(state->driver)->future(aoip::stream_diagnostics_selector,&stream)==ASE_SUCCESS && stream.running)
+        common &= stream.input_mask & stream.output_mask;
+      unsigned channel=0; for(unsigned ch=0;ch<64;++ch) if(common & (uint64_t(1)<<ch)) channel=ch+1;
+      char request[96]{};
+      std::snprintf(request,sizeof(request),device.v3 ? "PIAOIP_MEASURE_START_V2 channel=%u" : "PIAOIP_MEASURE_START_V1",channel);
+      const bool started=channel && control_request(ip,nullptr,request,reply,responder,100) &&
+        std::strncmp(reply,device.v3 ? "PIAOIP_MEASURE_STARTED_V2" : "PIAOIP_MEASURE_STARTED_V1",23)==0;
+      if(started) {
       state->measuring = true;
+      state->measure_channel=device.v3 ? channel : 32;
       std::snprintf(state->measure_peer, sizeof(state->measure_peer), "%s", ip);
       SetDlgItemTextA(window, kMeasure, "Stop RTT");
       SetTimer(window, 1, 1000, nullptr);
       refresh_measured_latency(window, *state);
-    } else {
-      MessageBoxA(window, "Measurement requires at least 32 inputs and outputs, 32-bit PCM, and a return from input 32 to output 32.",
+      } else {
+      MessageBoxA(window, "Run an ASIO host in PCM32 and route an enabled input to the same output channel. Legacy firmware requires channel 32.",
                   "Pi AoIP", MB_OK | MB_ICONINFORMATION);
+      }
     }
     return TRUE;
   }
@@ -369,8 +468,9 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
   std::swprintf(temporary, MAX_PATH + 8, L"%ls.tmp", state->path);
   char body[512]{};
   int length = std::snprintf(body, sizeof(body),
-      "[AoIP]\r\nPeerIp=%s\r\nRate=%u\r\nBits=%u\r\nBufferFrames=%u\r\nInputs=%u\r\nOutputs=%u\r\nSafetyFrames=%u\r\n",
-      peer, rate, bits, block, inputs, outputs, guard);
+      "[AoIP]\r\nPeerIp=%s\r\nRate=%u\r\nBits=%u\r\nBufferFrames=%u\r\nInputs=%u\r\nOutputs=%u\r\nSafetyFrames=%u\r\nInputMask=%016llx\r\nOutputMask=%016llx\r\nEnergySaving=%u\r\n",
+      peer, rate, bits, block, inputs, outputs, guard,static_cast<unsigned long long>(state->current.input_mask),
+      static_cast<unsigned long long>(state->current.output_mask),IsDlgButtonChecked(window,3110)==BST_CHECKED ? 1 : 0);
   HANDLE file = CreateFileW(temporary, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
   DWORD written = 0;
   bool saved = file != INVALID_HANDLE_VALUE;
@@ -384,7 +484,7 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     return TRUE;
   }
   unsigned max_frames = (1472 - 40) / (channels * bits / 8);
-  unsigned frames = device.v2 ? std::min(max_frames,std::max(1u,std::min(block,rate/8000))) : std::min(device.frames,max_frames);
+  unsigned frames = device.v2 ? aoip::low_latency_frames(channels,rate,bits,block) : std::min(device.frames,max_frames);
   if (!profile_fits_link(channels, rate, bits, frames,
                          device.max_pps, device.link_mbps) ||
       !profile_fits_link(wire_outputs,rate,bits,aoip::packet_frames(wire_outputs,bits),device.max_pps,device.link_mbps)) {
@@ -433,6 +533,9 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     return TRUE;
   }
   state->changed = true;
+  aoip::StreamDiagnostics stream;
+  const bool local_stream=state->driver && static_cast<IASIO*>(state->driver)->future(aoip::stream_diagnostics_selector,&stream)==ASE_SUCCESS && stream.running;
+  if(!local_stream) notify_settings_changed(state->path);
   EndDialog(window, IDOK);
   return TRUE;
 }
@@ -451,7 +554,7 @@ bool show_settings_dialog(const Config& config, void* driver) {
   alignas(DWORD) uint8_t storage[256]{};
   auto* dialog=reinterpret_cast<DLGTEMPLATE*>(storage);
   dialog->style=WS_POPUP|WS_CAPTION|WS_SYSMENU|DS_MODALFRAME|DS_SETFONT;
-  dialog->cx=428; dialog->cy=381;
+  dialog->cx=428; dialog->cy=433;
   auto* extra=reinterpret_cast<WORD*>(storage+sizeof(DLGTEMPLATE));
   *extra++=0; *extra++=0; *extra++=0; *extra++=10;
   const wchar_t face[]=L"Segoe UI";
