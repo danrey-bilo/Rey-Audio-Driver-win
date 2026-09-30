@@ -52,6 +52,13 @@ public:
     read_config(cfg_);
     char timing_trace[4]{};
     timing_trace_enabled_=GetEnvironmentVariableA("PIAOIP_TIMING_TRACE",timing_trace,sizeof(timing_trace))==1 && timing_trace[0]=='1';
+    // Per-process experiment; the normal 20 us tail remains the default.
+    // The audio loop additionally caps this at half of its actual block period.
+    active_spin_ns_=uint64_t(cfg_.audio_spin_us)*1000;
+    char spin[16]{}; unsigned spin_us=0; int spin_end=0;
+    const DWORD spin_length=GetEnvironmentVariableA("PIAOIP_AUDIO_SPIN_US",spin,sizeof(spin));
+    if(spin_length && spin_length<sizeof(spin) && std::sscanf(spin,"%u%n",&spin_us,&spin_end)==1 &&
+        spin[spin_end]=='\0' && spin_us<=80) active_spin_ns_=uint64_t(spin_us)*1000;
     wchar_t profile[MAX_PATH]{};
     if(config_event_) { CloseHandle(config_event_); config_event_=nullptr; }
     if(profile_path(profile)) config_event_=settings_changed_event(profile);
@@ -127,7 +134,7 @@ public:
     return ASIOTrue;
   } catch(const std::bad_alloc&) { std::strcpy(error_,"Audio memory allocation failed"); return ASIOFalse; }
   void getDriverName(char* name) override { if (name) std::strcpy(name, "Pi AoIP"); }
-  long getDriverVersion() override { return 231; }
+  long getDriverVersion() override { return 243; }
   void getErrorMessage(char* text) override { if (text) std::strcpy(text, error_); }
   ASIOError start() override {
     if (socket_ == INVALID_SOCKET || !callbacks_ || running_) return ASE_InvalidMode;
@@ -142,6 +149,10 @@ public:
     rx_max_batch_=0; rx_fast_after_gap_=0; rx_max_queue_depth_=0;
     for(auto& bucket:rx_gap_hist_) bucket=0;
     audio_max_packet_age_ns_=0; timing_trace_printed_=false;
+    rx_gap_record_count_=0; audio_late_record_count_=0;
+    rx_gap_records_dropped_=0; audio_late_records_dropped_=0;
+    rx_trace_tid_=0; tx_trace_tid_=0; audio_trace_tid_=0;
+    last_callback_ns_=0;
     session_=uint32_t((start_requested_ns_>>4)^uint64_t(GetCurrentProcessId()))|1u;
     std::array<char,aoip::packet_bytes> stale{};
     for (unsigned i=0;i<4096;++i) if(recv(socket_,stale.data(),int(stale.size()),0)==SOCKET_ERROR) break;
@@ -200,6 +211,25 @@ public:
     unsubscribe_source();
     if(timing_trace_enabled_ && !timing_trace_printed_) {
       timing_trace_printed_=true;
+      LARGE_INTEGER frequency{}; QueryPerformanceFrequency(&frequency);
+      std::fprintf(stderr,"TRACE_THREADS pid=%lu rx_tid=%lu audio_tid=%lu tx_tid=%lu qpc_hz=%llu start_ns=%llu rx_dropped=%llu audio_dropped=%llu\n",
+        GetCurrentProcessId(),rx_trace_tid_,audio_trace_tid_,tx_trace_tid_,
+        static_cast<unsigned long long>(frequency.QuadPart),
+        static_cast<unsigned long long>(start_requested_ns_),
+        static_cast<unsigned long long>(rx_gap_records_dropped_),
+        static_cast<unsigned long long>(audio_late_records_dropped_));
+      for(size_t i=0;i<rx_gap_record_count_;++i) {
+        const auto& r=rx_gap_records_[i];
+        std::fprintf(stderr,"RX_GAP previous_ns=%llu end_ns=%llu recv_begin_ns=%llu wait_begin_ns=%llu wait_end_ns=%llu seq=%u cpu=%u\n",
+          static_cast<unsigned long long>(r.previous),static_cast<unsigned long long>(r.end),
+          static_cast<unsigned long long>(r.recv_begin),static_cast<unsigned long long>(r.wait_begin),
+          static_cast<unsigned long long>(r.wait_end),r.sequence,r.cpu);
+      }
+      for(size_t i=0;i<audio_late_record_count_;++i) {
+        const auto& r=audio_late_records_[i];
+        std::fprintf(stderr,"AUDIO_LATE deadline_ns=%llu actual_ns=%llu cpu=%u\n",
+          static_cast<unsigned long long>(r.deadline),static_cast<unsigned long long>(r.actual),r.cpu);
+      }
       uint64_t samples=0;
       for(const auto& bucket:rx_gap_hist_) samples+=bucket.load();
       const auto percentile_upper_us=[&](unsigned percent) {

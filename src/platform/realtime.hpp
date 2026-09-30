@@ -10,7 +10,7 @@ void max_counter(std::atomic<uint64_t>& value, uint64_t candidate);
 class RealtimeThread {
   HANDLE mmcss_=nullptr;
 public:
-  explicit RealtimeThread(std::atomic<uint64_t>& failures,unsigned role=0);
+  explicit RealtimeThread(std::atomic<uint64_t>& failures,unsigned role=0,int requested_cpu=-1);
   ~RealtimeThread();
 };
 class DeadlineWaiter {

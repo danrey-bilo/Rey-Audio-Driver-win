@@ -1,25 +1,27 @@
-2 24 "controls.manifest"
-
 #include <winver.h>
 #include "resource.h"
+
+1 24 "controls.manifest"
 IDI_PIAOIP ICON "assets/PiAoIP.ico"
+IDI_PIAOIP_GUIDE ICON "assets/PiAoIP-Guide.ico"
+
 1 VERSIONINFO
 FILEVERSION 2,4,3,0
 PRODUCTVERSION 2,4,3,0
 FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
 FILEFLAGS 0
 FILEOS VOS_NT_WINDOWS32
-FILETYPE VFT_DLL
+FILETYPE VFT_APP
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
     BLOCK "040904b0"
     BEGIN
       VALUE "CompanyName", "PiAoIP Project"
-      VALUE "FileDescription", "PiAoIP ASIO audio transport"
+      VALUE "FileDescription", "PiAoIP Settings"
       VALUE "FileVersion", "2.4.3.0"
-      VALUE "InternalName", "PiAoipAsio"
-      VALUE "OriginalFilename", "PiAoipAsio.dll"
+      VALUE "InternalName", "PiAoipControl"
+      VALUE "OriginalFilename", "PiAoipControl.exe"
       VALUE "ProductName", "PiAoIP"
       VALUE "ProductVersion", "2.4.3"
     END

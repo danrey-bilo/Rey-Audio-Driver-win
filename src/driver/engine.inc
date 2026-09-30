@@ -23,7 +23,9 @@
   } stats_;
 
   void receive_loop() {
-    RealtimeThread realtime(stats_.mmcss_failures,1);
+    RealtimeThread realtime(stats_.mmcss_failures,1,cfg_.realtime_cpus[1]);
+    rx_trace_tid_=GetCurrentThreadId();
+    SetThreadDescription(GetCurrentThread(),L"PiAoIP receive");
     if(source_v3_) {
       // A quiet source sends only its three transition notices. Leave them in
       // the socket until subscribe has supplied the epoch, rather than dropping
@@ -33,12 +35,14 @@
     }
     aoip::Packet packet;
     uint64_t previous=0;
+    uint64_t wait_begin=0,wait_end=0;
     unsigned fast_after_gap=0;
     HANDLE events[]={stop_event_,socket_event_};
     while(running_.load(std::memory_order_relaxed)) {
       bool received=false;
       unsigned batch_count=0;
       for(unsigned batch=0; batch<256 && running_; ++batch) {
+        const uint64_t recv_begin=timing_trace_enabled_ ? now_ns() : 0;
         int n=recv(socket_,reinterpret_cast<char*>(packet.data),sizeof(packet.data),0);
         if(n==SOCKET_ERROR) {
           int error=WSAGetLastError();
@@ -56,6 +60,12 @@
           const uint64_t gap=packet.time_ns-previous;
           max_counter(stats_.max_rx_gap_ns,gap);
           if(timing_trace_enabled_) {
+            if(gap>=250000) {
+              if(rx_gap_record_count_<rx_gap_records_.size())
+                rx_gap_records_[rx_gap_record_count_++]={previous,packet.time_ns,recv_begin,wait_begin,wait_end,
+                  aoip::get32(packet.data+12),GetCurrentProcessorNumber()};
+              else ++rx_gap_records_dropped_;
+            }
             // 5 us buckets preserve tail information without logging on the
             // real-time receive thread. The final bucket also covers >2.55 ms.
             ++rx_gap_hist_[std::min<uint64_t>(gap/5000,rx_gap_hist_.size()-1)];
@@ -76,7 +86,10 @@
       }
       if(timing_trace_enabled_) max_counter(rx_max_batch_,batch_count);
       if(received) { SetEvent(rx_event_); continue; }
-      if(WaitForMultipleObjects(2,events,FALSE,100)==WAIT_OBJECT_0) break;
+      if(timing_trace_enabled_) wait_begin=now_ns();
+      const auto wait_result=WaitForMultipleObjects(2,events,FALSE,100);
+      if(timing_trace_enabled_) wait_end=now_ns();
+      if(wait_result==WAIT_OBJECT_0) break;
       WSANETWORKEVENTS network{};
       WSAEnumNetworkEvents(socket_,socket_event_,&network);
     }
@@ -119,7 +132,9 @@
   }
 
   void send_loop() {
-    RealtimeThread realtime(stats_.mmcss_failures,2);
+    RealtimeThread realtime(stats_.mmcss_failures,2,cfg_.realtime_cpus[2]);
+    tx_trace_tid_=GetCurrentThreadId();
+    SetThreadDescription(GetCurrentThread(),L"PiAoIP transmit");
     DeadlineWaiter waiter;
     aoip::Packet packet;
     HANDLE events[]={stop_event_,tx_event_};
@@ -273,6 +288,7 @@
       callbacks_->bufferSwitchTimeInfo(&time,half_,ASIOTrue);
     } else callbacks_->bufferSwitch(half_,ASIOTrue);
     const auto finished=now_ns();
+    last_callback_ns_=finished-before;
     max_counter(stats_.max_callback_ns,finished-before);
     const auto period=uint64_t(block_)*1000000000/cfg_.rate;
     if(finished-before>period) ++stats_.host_overruns;
@@ -288,7 +304,9 @@
 
   void audio_loop() {
     audio_thread_id_=GetCurrentThreadId();
-    RealtimeThread realtime(stats_.mmcss_failures);
+    audio_trace_tid_=GetCurrentThreadId();
+    SetThreadDescription(GetCurrentThread(),L"PiAoIP audio");
+    RealtimeThread realtime(stats_.mmcss_failures,0,cfg_.realtime_cpus[0]);
     DeadlineWaiter waiter;
     HANDLE start_events[]={stop_event_,start_event_};
     if(WaitForMultipleObjects(2,start_events,FALSE,INFINITE)!=WAIT_OBJECT_0+1) { audio_thread_id_=0; return; }
@@ -353,9 +371,19 @@
         // Network arrivals provide an early wake for the Pi clock; Windows
         // timers alone may sleep longer than a small ASIO period. The tail spin
         // is bounded, and silent/local-clock operation uses the timer only.
-        waiter.wait(uint64_t(deadline),stop_event_,input_map_.count && !remote_silent_ ? rx_event_ : nullptr,idle ? 0 : 20000); continue;
+        // Reduce the active tail when the host uses more of its period. A larger
+        // configured tail must not turn a busy DAW callback into a full-core spin.
+        const auto active_budget=uint64_t(nominal*0.70);
+        const auto remaining=last_callback_ns_<active_budget ? active_budget-last_callback_ns_ : 0;
+        waiter.wait(uint64_t(deadline),stop_event_,input_map_.count && !remote_silent_ ? rx_event_ : nullptr,
+          idle ? 0 : std::min({active_spin_ns_,uint64_t(nominal/2),remaining})); continue;
       }
       const uint64_t late=now-uint64_t(deadline);
+      if(timing_trace_enabled_ && late>=250000) {
+        if(audio_late_record_count_<audio_late_records_.size())
+          audio_late_records_[audio_late_record_count_++]={uint64_t(deadline),now,GetCurrentProcessorNumber()};
+        else ++audio_late_records_dropped_;
+      }
       max_counter(stats_.max_wake_late_ns,late);
       if(late>=allowed_lateness()) {
         const uint64_t skipped=uint64_t(double(late)/nominal);
@@ -391,6 +419,8 @@
   WSAEVENT socket_event_=WSA_INVALID_EVENT;
   HANDLE stop_event_=nullptr,rx_event_=nullptr,tx_event_=nullptr,start_event_=nullptr,config_event_=nullptr;
   bool wsa_=false, time_info_=false;
+  uint64_t active_spin_ns_=20000;
+  uint64_t last_callback_ns_=0; // owned by the audio thread, reset before start
   char error_[128]{};
   std::atomic<bool> running_{false}, output_ready_{false};
   std::atomic<DWORD> audio_thread_id_{0};
@@ -405,6 +435,15 @@
   std::atomic<uint64_t> audio_cpu_ns_{0},rx_cpu_ns_{0},tx_cpu_ns_{0};
   std::atomic<uint64_t> max_tx_queue_age_ns_{0};
   bool timing_trace_enabled_=false,timing_trace_printed_=false;
+  // Single-writer fixed storage; formatted only after all audio threads join.
+  // Absolute QPC-derived ns lets ETW correlate gaps without real-time logging.
+  struct RxGapRecord { uint64_t previous,end,recv_begin,wait_begin,wait_end; uint32_t sequence,cpu; };
+  struct AudioLateRecord { uint64_t deadline,actual; uint32_t cpu; };
+  std::array<RxGapRecord,4096> rx_gap_records_{};
+  std::array<AudioLateRecord,4096> audio_late_records_{};
+  size_t rx_gap_record_count_=0,audio_late_record_count_=0;
+  uint64_t rx_gap_records_dropped_=0,audio_late_records_dropped_=0;
+  DWORD rx_trace_tid_=0,tx_trace_tid_=0,audio_trace_tid_=0;
   std::atomic<uint64_t> rx_gap_over_500us_{0},rx_gap_over_1000us_{0},rx_gap_over_1500us_{0};
   std::atomic<uint64_t> rx_max_batch_{0},rx_fast_after_gap_{0},rx_max_queue_depth_{0};
   std::array<std::atomic<uint64_t>,512> rx_gap_hist_{};

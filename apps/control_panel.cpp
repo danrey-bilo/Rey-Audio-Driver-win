@@ -2,6 +2,7 @@
 #include "iasiodrv.h"
 #include <shellapi.h>
 #include <cwchar>
+#include "../src/ui/resource.h"
 namespace piaoip { HMODULE g_module=nullptr; std::atomic<long> g_objects{0}; }
 namespace {
 constexpr wchar_t kWindowClass[]=L"PiAoipTrayWindowV2";
@@ -21,19 +22,8 @@ void trace(const char* event,bool found,unsigned error=0) {
   }
 }
 HICON create_icon() {
-  BITMAPINFO info{}; info.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
-  info.bmiHeader.biWidth=32; info.bmiHeader.biHeight=-32; info.bmiHeader.biPlanes=1;
-  info.bmiHeader.biBitCount=32;
-  uint32_t* pixels=nullptr;
-  HBITMAP color=CreateDIBSection(nullptr,&info,DIB_RGB_COLORS,reinterpret_cast<void**>(&pixels),nullptr,0);
-  if(!color) return nullptr;
-  for(unsigned y=0;y<32;++y) for(unsigned x=0;x<32;++x) pixels[y*32+x]=0xff1c4d92u;
-  const int wave[]={16,16,16,9,23,16,16,6,26,16,16,11,21,16,16,16};
-  for(int i=0;i<15;++i) for(int row=std::min(wave[i],wave[i+1]);row<=std::max(wave[i],wave[i+1]);++row)
-    for(int thickness=0;thickness<2;++thickness) pixels[row*32+2+i*2+thickness]=0xffffffffu;
-  uint8_t mask_bits[128]{}; HBITMAP mask=CreateBitmap(32,32,1,1,mask_bits);
-  ICONINFO data{TRUE,0,0,mask,color}; HICON result=CreateIconIndirect(&data);
-  DeleteObject(mask); DeleteObject(color); return result;
+  return reinterpret_cast<HICON>(LoadImageW(piaoip::g_module,MAKEINTRESOURCEW(IDI_PIAOIP),IMAGE_ICON,
+    GetSystemMetrics(SM_CXSMICON),GetSystemMetrics(SM_CYSMICON),0));
 }
 bool load_driver() {
   if(driver_module) { FreeLibrary(driver_module); driver_module=nullptr; }
@@ -74,7 +64,7 @@ void show_panel() {
   panel_open=true;
   if(driver) { driver->Release(); driver=nullptr; }
   if(load_driver()) { trace("PANEL_OPEN",true); driver->controlPanel(); }
-  else MessageBoxW(nullptr,L"Установите PiAoIP или поместите PiAoipAsio.dll рядом с PiAoipControl.exe.",L"PiAoIP",MB_OK|MB_ICONERROR);
+  else MessageBoxW(nullptr,L"Install PiAoIP or place PiAoipAsio.dll beside PiAoipControl.exe.",L"PiAoIP",MB_OK|MB_ICONERROR);
   panel_open=false;
   if(quit_pending) PostMessageW(tray_window,WM_CLOSE,0,0);
 }
@@ -122,8 +112,8 @@ LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM wparam,LPARAM lpara
     if(event==NIN_SELECT || event==NIN_KEYSELECT || event==WM_LBUTTONUP || event==WM_LBUTTONDBLCLK)
       PostMessageW(window,WM_COMMAND,kOpen,0);
     if(event==WM_CONTEXTMENU || event==WM_RBUTTONUP) {
-      HMENU menu=CreatePopupMenu(); AppendMenuW(menu,MF_STRING,kOpen,L"Настройки PiAoIP…");
-      AppendMenuW(menu,MF_SEPARATOR,0,nullptr); AppendMenuW(menu,MF_STRING,kExit,L"Закрыть значок в трее");
+      HMENU menu=CreatePopupMenu(); AppendMenuW(menu,MF_STRING,kOpen,L"PiAoIP settings…");
+      AppendMenuW(menu,MF_SEPARATOR,0,nullptr); AppendMenuW(menu,MF_STRING,kExit,L"Exit tray icon");
       POINT at{}; GetCursorPos(&at); SetForegroundWindow(window);
       UINT command=TrackPopupMenu(menu,TPM_RETURNCMD|TPM_RIGHTBUTTON,at.x,at.y,0,window,nullptr);
       DestroyMenu(menu); if(command) PostMessageW(window,WM_COMMAND,command,0); PostMessageW(window,WM_NULL,0,0);
@@ -161,6 +151,7 @@ int WINAPI WinMain(HINSTANCE instance,HINSTANCE,char* arguments,int) {
   piaoip::g_module=instance; WSADATA wsa{};
   if(WSAStartup(MAKEWORD(2,2),&wsa)) { CoUninitialize(); CloseHandle(singleton); return 1; }
   WNDCLASSW cls{}; cls.lpfnWndProc=window_proc; cls.hInstance=instance; cls.lpszClassName=kWindowClass;
+  cls.hIcon=LoadIconW(instance,MAKEINTRESOURCEW(IDI_PIAOIP));
   RegisterClassW(&cls); taskbar_created=RegisterWindowMessageW(L"TaskbarCreated");
   HWND window=CreateWindowW(kWindowClass,L"PiAoIP Tray",0,0,0,0,0,nullptr,nullptr,instance,nullptr);
   tray_window=window;

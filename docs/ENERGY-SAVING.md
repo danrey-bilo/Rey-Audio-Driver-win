@@ -1,75 +1,16 @@
-# Каналы, энергосбережение и значок PiAoIP
+**English** | [Русский](ENERGY-SAVING.ru.md)
 
-[Установка](BUILD.md) · [Протокол v3](https://github.com/danrey-bilo/AoIP-lib/blob/main/docs/PROTOCOL-V3.md)
+# Channels, digital silence and tray
 
-В окне **PiAoIP Settings** кнопка **Каналы…** открывает отдельные отметки входов
-и выходов. Снимите отметку, нажмите **Готово**, затем **Apply and restart**.
-Число физических каналов задаёт Pi; Windows показывает его без списков выбора.
-Старые ключи `Inputs/Outputs` в INI игнорируются. Отметки управляют только
-использованием уже существующих каналов.
-Отключённый канал сохраняет номер ASIO, его вход выдаёт нули, PCM по LAN не идёт.
-Настройки сохраняются в пользовательском INI. Смена конфигурации работающего
-хоста вызывает ASIO reset; хост должен поддерживать этот запрос или устройство
-нужно открыть заново.
+Use **Device → Channels** to select inputs/outputs, then **Done → Apply**. The physical channel count is reported by the Pi. An unchecked channel retains its physical ASIO number but contributes no selected network PCM in V3. Settings are saved in the user INI.
 
-**Режим энергосбережения** включает две функции:
+**Settings → Advanced → Reduce traffic during digital silence** enables two behaviors on a V3 peer:
 
-- передавать только включённые каналы, для которых программа создала ASIO-буферы;
-- убирать из пакетов точный цифровой ноль, сохраняя даже самый тихий ненулевой PCM.
+- Select the intersection of manually enabled channels and host-created ASIO buffers.
+- Omit exact integer-zero PCM while preserving every nonzero sample value.
 
-При тишине всего направления идут три коротких сообщения о переходе, затем
-аудиотрафик прекращается. Первое появившееся ненулевое значение отправляется
-в том же блоке без новой подписки. При выключенном энергосбережении вручную
-включённые каналы передаются постоянно во время ASIO start. Отключённые вручную
-каналы остаются выключенными в обоих режимах.
+An entirely silent direction emits three transition markers, then stops audio datagrams. The first nonzero block resumes within the existing session. ASIO callbacks continue while the host keeps the device started. With reduction disabled, manually enabled channels continue to be transported during start. Normal stop unsubscribes; an abandoned V3 session expires after three seconds. Keepalive and tray discovery are control traffic.
 
-Функции требуют v3 на Pi; при v1/v2 элементы недоступны, транспорт остаётся
-совместимым. Служба Pi5 ждёт ASIO start. Штатный stop прекращает аудиопакеты;
-при аварии хоста аренда истекает через 3 секунды. Keepalive раз в секунду и
-проверка устройства для значка раз в 2 секунды остаются: это короткие команды
-управления. Пока DAW держит ASIO запущенным, нулевые callbacks также продолжаются.
-Остановка сетевого трафика не может остановить работу самого ASIO-хоста.
+These features need V3 support. Pi 5 uses the demand-driven service; Pi 4 retains its legacy continuous wrapper. See [protocol V3](https://github.com/danrey-bilo/AoIP-lib/blob/main/docs/PROTOCOL-V3.md).
 
-`PiAoipControl.exe --tray` оставляет приложение в фоне. При подключённом Pi
-появляется значок; щелчок открывает настройки, правый щелчок — меню настроек и
-выхода. При исчезновении устройства значок удаляется, при возвращении — появляется.
-Повторный запуск использует существующий экземпляр. После установки MSI запуск
-`--tray` добавлен в автозагрузку Windows. `--quit` закрывает значок, не меняя DAW.
-
-В 2.3 поддержаны обычный клик, выбор клавиатурой и callback старого режима Shell.
-Повторный выбор восстанавливает уже открытое свёрнутое окно. Панель из трея
-имеет собственное окно в панели задач, а видимая панель ASIO остаётся дочерней
-своему хосту.
-
-## Сетевой буфер для всех профилей
-
-Поле **LAN receive buffer / frames** разрешает выбрать или вручную задать
-любое целое значение 0–2048. Оно доступно для 8×8 и остальных профилей,
-сохраняется как `SafetyFrames` и показывает длительность при выбранной частоте.
-Нестандартное значение сохраняется при повторном открытии и Discover.
-ASIO buffer задаёт блок хоста, а LAN buffer — дополнительный запас приёма.
-Готовый выходной PCM отправляется сразу; накопление большого сетевого блока
-на отправке отсутствует. Меньший запас требует проверки под нагрузкой DAW.
-
-Пример профиля 8×8 / 192 кГц / PCM32:
-
-```ini
-[AoIP]
-PeerIp=192.168.1.2
-Rate=192000
-Bits=32
-BufferFrames=64
-SafetyFrames=448
-InputMask=00000000000000ff
-OutputMask=00000000000000ff
-EnergySaving=1
-```
-
-Драйвер поддерживает физический профиль устройства до 64 каналов в каждом
-направлении; на Pi сейчас требуется хотя бы один вход. Отдельные входная и
-выходная маски могут быть нулевыми. Доступны 44,1–192 кГц, PCM16/24/32,
-ASIO16–2048. Все отметки можно выключить, сохранив
-видимые нулевые ASIO-каналы. 20 мс — критерий повторного запуска ASIO на уже
-работающем устройстве, а не загрузка ОС. Задержка зависит от ПК и нагрузки хоста:
-уменьшать guard следует по missing/late/deadline/skipped/overflow/TX expired,
-а также p50/p95/p99/max RTT, а не только средней задержке.
+`PiAoipControl.exe --tray` monitors connection state. Its icon appears when a Pi is found; click it to open settings and use the right-click menu to exit. `--quit` asks the existing tray instance to close. The MSI configures tray startup at sign-in. Version 2.4.3 uses embedded multi-resolution icons for the EXE, panel, tray, shortcuts and Installed apps.

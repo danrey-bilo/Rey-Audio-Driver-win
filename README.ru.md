@@ -1,94 +1,55 @@
-![Win11-asio-AoIP](docs/assets/header.svg)
+![Win11-asio-AoIP 2.4.3](docs/assets/header.svg)
 
 # Win11-asio-AoIP
 
-В 2.3.1 число физических каналов берётся только с устройства. Сетевой буфер
-задаётся вручную для всех профилей; настройки открываются из трея.
-[Меню каналов, режим энергосбережения и значок в трее](docs/ENERGY-SAVING.md).
-
 [English](README.md) | **Русский**
 
-ASIO-драйвер для **Windows 11 x64**: до 64 входов и 64 выходов по проводной
-сети, настройка профиля из панели драйвера и установка через MSI.
-Работает внутри 64-битного ASIO-хоста.
+Драйвер ASIO для Windows 11 x64: соединяет DAW с совместимым сервисом Raspberry Pi AoIP через проводной Ethernet.
 
-**[Начало работы](docs/BUILD.md)** · **[Архитектура](docs/ARCHITECTURE.md)** · **[Техническое описание](docs/TECHNICAL.md)** · **[Проверки](https://github.com/danrey-bilo/AoIP-debug-tool/blob/main/docs/windows/TESTING.md)** · **[Лицензия](docs/LICENSE-RU.md)**
+**[Скачать 2.4.3](https://github.com/danrey-bilo/Win11-asio-AoIP/releases/tag/v2.4.3)** · **[Описание релиза](docs/RELEASE-2.4.3.ru.md)** · **[Проверки](docs/VALIDATION.ru.md)**
+
+## Начало работы
+
+1. Скачайте [PiAoIP-2.4.3-Windows11-x64.msi](https://github.com/danrey-bilo/Win11-asio-AoIP/releases/download/v2.4.3/PiAoIP-2.4.3-Windows11-x64.msi).
+2. Закройте ASIO-приложения и PiAoIP в трее, затем запустите MSI.
+3. Откройте **PiAoIP Settings → Device → Find and connect** и выберите Pi.
+4. Задайте **Sample rate**, **Bit depth**, **ASIO buffer** и **LAN buffer**, затем нажмите **Apply**.
+5. Выберите **Pi AoIP** в 64-битной DAW и запустите её аудиодвижок.
+
+Панель, трей и установленная справка работают на английском. **Автоматический подбор буферов удалён.** Буферы задаются вручную; проверяйте их в своём проекте DAW. Число физических каналов приходит от Pi, а **Device → Channels** позволяет выбрать используемые каналы.
+
+![Настройки PiAoIP](docs/assets/settings.png)
+
+MSI устанавливает ASIO DLL, приложение настроек/трея, инструкцию и лицензии. Добавляет регистрацию ASIO и правило UDP 50021 для локальной подсети. Оба ярлыка меню «Пуск» и само приложение получили встроенные значки.
+Системные устройства микрофона/динамиков Windows, драйвер ядра и образ Pi в этот пакет не входят.
 
 ## Возможности
 
 | Параметр | Поддержка |
 |---|---|
-| Входы / выходы | Физические 1–64 / 0–64 по discovery; маски отдельных каналов |
-| Частота / разрядность | До 192 кГц, PCM16/24/32 |
-| ASIO buffer | 16 / 32 / 64 / 128 / 256 / 512 / 1024 / 2048 |
-| Потоки | Приём, ASIO callback и отправка разделены |
-| Устойчивость | SPSC, Timeline, ограниченные сроки TX, счётчики срывов |
-| Настройки | Discovery, LAN buffer 0–2048, ASIO buffer, RTT, INI пользователя |
-| Установка | MSI: ASIO/COM, панель, UDP firewall, repair/uninstall |
+| Система | Windows 11 x64; 64-битный ASIO-хост |
+| Главный экран | Частота, разрядность, ASIO-буфер, LAN-буфер |
+| ASIO-буфер | 16–2048 сэмплов, степени двойки |
+| LAN-буфер | 0–2048 сэмплов, вручную |
+| Сессии | Один потоковый ASIO-клиент на пару Pi/ПК |
+| Аудиопрофили | До 64 каналов в направлении; 44,1–192 кГц; PCM16/24/32 |
+| Транспорт | PiAoIP UDP/IPv4 через Ethernet; не AES67 и не Dante |
 
-## Как работает
+## Документация
 
-```mermaid
-flowchart LR
-  PI[Pi4/Pi5-AoIP] --> RX[Network RX]
-  RX --> T[Timeline + guard]
-  T --> A[ASIO callback / DAW]
-  A --> Q[Output SPSC]
-  Q --> TX[Network TX]
-  TX --> PI
-```
+[Установка](docs/INSTALL.ru.md) · [Сборка](docs/BUILD.ru.md) · [API хоста](docs/API.ru.md) · [Архитектура](docs/ARCHITECTURE.ru.md) · [Буферы](docs/BUFFER-GUIDE.ru.md)
 
-Это ASIO DLL. Она **не создаёт системные устройства «микрофон/динамики» Windows**.
-Для Discord, Telegram и WASAPI-приложений требуется отдельный Windows Audio
-драйвер/маршрутизатор. Windows ARM64 и 32-битные хосты не поддерживаются.
-
-## Сборка
-
-Нужны CMake, Ninja, LLVM-MinGW x64/UCRT и отдельно полученный Steinberg ASIO SDK.
-SDK не включён в репозиторий. [Лицензирование ASIO и зависимости](docs/ASIO-SDK.md).
-
-```powershell
-git clone --recurse-submodules https://github.com/danrey-bilo/Win11-asio-AoIP.git
-cd Win11-asio-AoIP
-cmake -S . -B build/windows -G Ninja -DCMAKE_BUILD_TYPE=Release `
-  -DCMAKE_CXX_COMPILER=C:/Tools/llvm-mingw/bin/x86_64-w64-mingw32-clang++.exe `
-  -DCMAKE_RC_COMPILER=C:/Tools/llvm-mingw/bin/x86_64-w64-mingw32-windres.exe `
-  -DASIO_SDK_DIR=C:/SDK/asio
-cmake --build build/windows --parallel 2
-```
-
-DLL драйвера и EXE панели находятся в `build/windows/bin`.
-Сборка не регистрирует драйвер и не устанавливает его в систему.
-[Установка, сеть и настройки](docs/BUILD.md).
-
-## Структура
-
-```text
-src/driver/        IASIO/COM, жизненный цикл и движок потоков
-src/config/        профиль и пользовательский INI
-src/control/       обнаружение и команды UDP
-src/platform/      MMCSS, affinity и таймеры Windows
-src/ui/            панель настроек и ресурсы
-apps/              запуск панели
-external/AoIP-lib/  общая библиотека, закреплённая git submodule
-docs/              API, архитектура и инструкции
-```
-
-**[Подключение своего ASIO-хоста](docs/API.md)** · **[Техническое описание](docs/TECHNICAL.md)**
-
-## Средства разработки
-
-Тесты, запускаемые примеры, диагностика и скрипты сборки установщиков находятся
-в закрытом [AoIP-debug-tool](https://github.com/danrey-bilo/AoIP-debug-tool) для разработчиков проекта.
-Они не входят в библиотеку и не нужны для её сборки.
+Основной язык документации — английский; у актуальных руководств есть русские версии. Версия 2.4.3 — **предварительный выпуск**. Проверка сборки и пакетов не подтверждает физическую работу ADC/DAC или гарантированную задержку. Сервис Pi генерирует и проверяет синтетический PCM; для физической звуковой карты нужен аппаратный аудиобэкенд.
 
 ## Компоненты проекта
 
-| Репозиторий | Ответственность |
+| Репозиторий | Назначение |
 |---|---|
-| [AoIP-lib](https://github.com/danrey-bilo/AoIP-lib) | Протокол, PCM, очереди, временной буфер, UDP peer |
-| [Pi4-AoIP](https://github.com/danrey-bilo/Pi4-AoIP) | Raspberry Pi 4, PREEMPT_RT, Ethernet, CPU0/CPU1, systemd и DEB |
-| [Win11-asio-AoIP](https://github.com/danrey-bilo/Win11-asio-AoIP) | ASIO DLL, сетевые потоки Windows, панель настройки и MSI |
+| [AoIP-lib](https://github.com/danrey-bilo/AoIP-lib) | Протокол и переносимые библиотеки |
+| [Win11-asio-AoIP](https://github.com/danrey-bilo/Win11-asio-AoIP) | Драйвер ASIO и панель Windows |
+| [Pi4-AoIP](https://github.com/danrey-bilo/Pi4-AoIP) | Сервис Raspberry Pi 4 / PREEMPT_RT |
+| [Pi5-AoIP](https://github.com/danrey-bilo/Pi5-AoIP) | Сервис Raspberry Pi 5 / PREEMPT_RT |
 
-Личное некоммерческое использование бесплатно. Для коммерческого использования
-требуется отдельная платная лицензия. [Условия](LICENSE) · [Пояснение](docs/LICENSE-RU.md).
+## Лицензия
+
+Личное некоммерческое использование бесплатно. Для коммерческого использования требуется отдельная платная письменная лицензия. См. [LICENSE](LICENSE) и [русское пояснение](docs/LICENSE-RU.md). У внешнего Steinberg ASIO SDK отдельные условия: [ASIO SDK](docs/ASIO-SDK.ru.md).

@@ -1,31 +1,16 @@
-# Steinberg ASIO SDK
+**English** | [Русский](ASIO-SDK.ru.md)
 
-ASIO SDK — отдельная зависимость Steinberg. Репозиторий содержит собственный код
-драйвера и **не распространяет SDK, его заголовки или готовые ASIO-бинарники**.
-Получите SDK у [Steinberg](https://www.steinberg.net/developers/) и укажите
-путь через `ASIO_SDK_DIR` или `-AsioSdkDir`. SDK не должен попадать в git.
+# External Steinberg ASIO SDK
 
-| Интерфейс | Использование |
+The driver implements its own ASIO code using separately obtained Steinberg interface headers. The repository and full source archive do not contain the SDK. Obtain it from [Steinberg Developers](https://www.steinberg.net/developers/) and set `ASIO_SDK_DIR` when building.
+
+| Header | Use |
 |---|---|
-| `common/asio.h` | Типы, callback, форматы, ASIOTime и коды ошибок |
-| `common/iasiodrv.h` | IASIO, реализуемый DLL и вызываемый хостом |
-| Остальные примеры SDK | Целиком не компилируются в этот проект |
+| `common/asio.h` | ASIO types, callbacks, sample formats and errors |
+| `common/iasiodrv.h` | Driver/host `IASIO` interface |
 
-В использованной версии SDK с интерфейсом ASIO 2.3 указаны варианты GPLv3 и собственная
-лицензия Steinberg. Ограничение нашего проекта «личное использование бесплатно,
-коммерция по отдельной лицензии» не является GPLv3. Нельзя считать GPL-вариант SDK
-разрешением распространять объединённую сборку на этих ограничительных условиях.
+The local SDK license offers the proprietary Steinberg ASIO license or GPLv3. This project's personal/noncommercial and separately licensed commercial terms are not GPLv3. They do not replace or grant rights under the external SDK license.
 
-Для распространения ASIO-сборки по проприетарному варианту нужно соответствующее
-соглашение Steinberg; в лицензии SDK указано требование получить подписанное
-соглашение до публикации такого программного обеспечения. Наличие этого соглашения
-здесь не заявляется. Право распространять SDK отдельно тоже не предоставляется.
-Личная работа с исходниками проекта и условия использования отдельно полученного
-SDK — разные вопросы: соблюдайте оба набора условий.
+The proprietary SDK notice requires a Steinberg-signed agreement before publishing software under that license. SDK redistribution also requires its own permission. Distributors are responsible for satisfying both sets of terms and retaining the required notices. No SDK files are bundled as a developer kit in the MSI or source release.
 
-Платная коммерческая лицензия на этот проект не заменяет соглашение Steinberg.
-Перед распространением бинарников выполните требования обеих лицензий и приложите
-необходимые уведомления. Сборочные скрипты сами не оформляют лицензионных прав.
-
-ASIO is a trademark and software of Steinberg Media Technologies GmbH.
-Актуальные условия: [Steinberg Developers](https://www.steinberg.net/developers/).
+The Windows package includes the SDK license notice alongside the project license. ASIO is a trademark and software of Steinberg Media Technologies GmbH.

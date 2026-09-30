@@ -1,100 +1,46 @@
-# API Windows ASIO и собственный хост
+**English** | [Русский](API.ru.md)
 
-## Настройки пользователя
+# ASIO host and driver API
 
-Откройте `out/PiAoipControl.exe` либо control panel из текущего ASIO-хоста.
-Discover/Check link работают через UDP 50022. Формат, входы/выходы, буфер и guard
-выбираются независимо. Apply подтверждает профиль Pi, сохраняет пользовательский INI
-и запрашивает reset у подключённого хоста. Если хост reset не поддерживает,
-потребуется закрыть и заново открыть аудиоустройство.
+## Configuration
 
-MSI использует `%LOCALAPPDATA%\PiAoIP\PiAoipAsio.ini`, без прав администратора.
-`PIAOIP_CONFIG_PATH` задаёт отдельный файл для тестов. Существующий INI рядом с
-DLL сохраняет переносимый режим, если переменная не задана. Пустой `PeerIp`/`auto`
-при первом запуске означает поиск единственного Pi; несколько устройств нужно
-выбрать вручную в панели.
+Open the control panel from the running ASIO host for live counters, or use `PiAoipControl.exe` for standalone settings. The per-user file is `%LOCALAPPDATA%\PiAoIP\PiAoipAsio.ini`. `PIAOIP_CONFIG_PATH` selects a separate test profile; an existing adjacent INI can provide portable configuration. An empty/`auto` peer selects a single discovered device; ambiguous discovery requires a manual choice.
 
-INI и текущий рабочий профиль описаны в [основной инструкции](BUILD.md).
-Самостоятельная панель не является фоновым аудиосервисом: открытие окна не
-запускает постоянный поток. Живые счётчики доступны в панели работающего экземпляра
-драйвера внутри хоста. Отдельная панель не читает счётчики другого процесса.
+Apply validates the device profile, reconciles a lost control acknowledgement with rediscovery, atomically saves the Windows profile and requests a host reset when applicable. The standalone panel does not run an audio stream or read counters from another process. Buffers are manual.
 
-Текущий транспорт рассчитан на один потоковый ASIO-клиент. Одновременно открытые
-DAW/smoke_host могут конфликтовать за UDP-порт 50021. Для одновременных DAW,
-Discord и системного воспроизведения нужен общий движок и системные endpoints;
-это будущая часть, описанная в [архитектуре](ARCHITECTURE.md).
+## Host lifecycle
 
-## Подключение в собственном хосте
+1. Initialize COM and create the driver `IASIO` instance. CLSID: `{A24D50B2-9111-4A6B-9C29-A01D617BC830}`. This implementation uses the same identifier for its driver interface.
+2. Call `init()`, then query actual channels, rate, buffer sizes and channel types.
+3. Create per-channel `ASIOBufferInfo`, install callbacks and call `createBuffers()`.
+4. Call `start()` and check subscription/start errors.
+5. In the callback, process the indicated half of the double buffer and call `outputReady()` after completing outputs.
+6. Finish with `stop()`, `disposeBuffers()`, `Release()` and COM cleanup.
 
-Отладочный хост собирается отдельно в закрытом AoIP-debug-tool. Команды ниже
-выполняются из его каталога; в установленный драйвер этот хост не входит.
-Полный рабочий пример — [smoke_host.cpp](https://github.com/danrey-bilo/AoIP-debug-tool/blob/main/tools/windows/smoke_host.cpp). Он умеет открывать
-зарегистрированный COM-класс или DLL напрямую через DllGetClassObject.
-При прямой загрузке держите HMODULE открытым до освобождения всех объектов DLL.
+Check every `ASIOError`; use `getErrorMessage()` for details. ASIO channel indices are zero-based, UI channel numbers one-based. Keep a directly loaded DLL open until all objects are released. Do not allocate, access files/network or display UI inside a real-time callback.
 
-Жизненный цикл:
-
-1. Инициализировать COM, создать `IASIO*` через зарегистрированный CLSID.
-   В этой реализации IID драйвера совпадает с CLSID; порядок вызовов показан в smoke_host.
-2. Вызвать `init()` и проверить результат. Драйвер запрашивает профиль Pi;
-   при недоступности устройства инициализация может завершиться ошибкой.
-3. Запросить `getChannels`, `getSampleRate`, `getBufferSize`, `getChannelInfo`.
-   Пользоваться фактическими значениями; старое Description в реестре не
-   определяет число каналов.
-4. Создать ASIOBufferInfo для нужных каналов, заполнить ASIOCallbacks и вызвать
-   `createBuffers`. Нумерация ASIO начинается с 0, пользовательские каналы — с 1.
-5. Вызвать `start()` и проверить ошибку подписки/старта.
-6. В callback обработать указанный half двойного буфера; записать выходы в
-   предоставленном формате. После готовности выхода вызвать `outputReady()`.
-7. Перед закрытием: `stop()`, `disposeBuffers()`, Release, затем CoUninitialize.
-
-Проверяйте ASIOError каждого вызова; при ошибке `getErrorMessage()` объясняет
-причину. Не вызывайте UI/сеть/файлы и не выделяйте память внутри callback.
-Изменение формата и reset выполняйте вне callback с корректным пересозданием буферов.
-
-| PCM сети | Тип канала ASIO | Представление хоста |
+| Wire PCM | ASIO type | Host container |
 |---|---|---|
-| 16 бит | `ASIOSTInt16LSB` | Знаковый int16 |
-| 24 бита | `ASIOSTInt32LSB24` | 24 значащих бита в int32; на проводе 3 байта |
-| 32 бита | `ASIOSTInt32LSB` | Знаковый int32, не float32 |
+| 16 bit | `ASIOSTInt16LSB` | signed int16 |
+| 24 bit | `ASIOSTInt32LSB24` | 24 valid bits in int32 |
+| 32 bit | `ASIOSTInt32LSB` | signed int32, not float |
 
-ASIO-буферы отдельные для каждого канала; PCM на проводе interleaved.
-`bufferSwitchTimeInfo` поддерживается, при отсутствии используется bufferSwitch.
-Для хоста без outputReady действует выход с дополнительным циклом ASIO.
-`setSampleRate` сам по себе не заменяет подтверждённую смену профиля через панель.
+Wire PCM is interleaved; ASIO buffers are per channel. `bufferSwitchTimeInfo` is preferred when supported. A host that does not use `outputReady()` follows the deferred output path and can add an ASIO cycle. `setSampleRate()` alone does not replace a confirmed device-profile change.
 
-## Диагностика и проверка
+## Diagnostics and scope
 
-Для своего хоста доступен `future(aoip::diagnostics_selector, &snapshot)`;
-структура и единицы описаны в [core/diagnostics](https://github.com/danrey-bilo/AoIP-lib/blob/main/docs/CORE-API.md#диагностика-asio--diagnosticshpp).
-Не считайте только RTT: проверяйте missing/late/expired/overflow и счётчики Pi.
+Use `future(aoip::diagnostics_selector, &snapshot)` and `stream_diagnostics_selector` with initialized versioned structures from [AoIP diagnostics.hpp](https://github.com/danrey-bilo/AoIP-lib/blob/main/include/aoip/diagnostics.hpp). Unsupported selectors are errors. Counters cover missing/late frames, deadlines, RX/TX queues, errors/expiry, host overruns and stream activity.
 
-Команды из корня репозитория, при закрытой DAW и работающем Pi:
+One streaming ASIO client is supported per Pi/PC pair. Multiple DAWs can conflict over UDP 50021. Windows shared microphone/speaker endpoints and a kernel audio driver are not supplied.
 
-```powershell
-& .\build\windows\bin\smoke_host.exe registered echo5time 64
-& .\build\windows\bin\smoke_host.exe registered echo5deferred 64
-```
+## Source modules
 
-Первая проверяет эхо с ASIOTimeInfo, вторая — хост без outputReady. Выполняйте
-последовательно. Они действительно открывают аудиопоток и маршрутизируют входы
-на выходы. Параметр 64 задаёт ASIO-буфер для теста; сетевой профиль берётся из Pi.
-Для изолированного кандидата вместо registered передайте полный путь к DLL с её INI.
-
-Диагностический сбой: нет устройства — проверить регистрацию/x64; недоступен Pi —
-LAN/IP/UDP 50022; bind 10048 — другой потоковый клиент занимает порт; растёт missing —
-смотреть RX gap, guard, дедлайны и счётчики Pi. Изменения guard и буфера оцениваются
-по измерениям при реальной нагрузке, не только по заявленному размеру блока.
-
-## Внутренние модули
-
-| Каталог | Обязанность |
+| Directory | Responsibility |
 |---|---|
-| `src/driver` | IASIO, RX/audio/TX, временной буфер и двойные ASIO-буферы |
-| `src/config` | Параметры и INI |
-| `src/control` | UDP discovery/подписка/подтверждение профиля |
-| `src/platform` | Windows-таймеры и приоритеты |
-| `src/ui` | Окно настроек и ресурсы |
+| `src/driver` | IASIO, double buffers, RX/audio/TX workers and Timeline |
+| `src/config` | INI and profile persistence |
+| `src/control` | Discovery and profile/session commands |
+| `src/platform` | Windows timing, MMCSS and scheduling |
+| `src/ui` | Native dialog, English labels, icons and resources |
 
-Эти модули не экспортируют самостоятельный стабильный API. Для переносимой
-обработки используйте core; для доступа к драйверу — IASIO из SDK.
+These internal modules are not a separate stable ABI. Use IASIO for host integration and AoIP core for portable transport code.

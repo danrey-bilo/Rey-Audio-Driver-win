@@ -1,65 +1,22 @@
-# Pi 5 ↔ Windows: редкие паузы при малом LAN-буфере
+**English** | [Русский](LAN-LATENCY-2026-09-29.ru.md)
 
-Проверка: Pi 5, 8 входов × 8 выходов, 192 кГц/PCM32, пакет 16 кадров (83,3 мкс),
-ASIO-буфер 64 кадра, выделенный 1 Гбит/с LAN к Intel I225-V. Источник и приёмник
-в этих тестах синтетические; физический АЦП/ЦАП здесь не измерен. `LAN buffer`
-означает запас воспроизведения в кадрах, а не размер Winsock receive buffer.
+# Historical Windows receive-gap investigation — 2026-09-29
 
-| Конфигурация, 180 с | Расчётная ASIO input + output | Результат Windows | Максимальный промежуток между `recv` |
-|---|---:|---|---:|
-| 64 ASIO / 128 LAN, установленный 2.3.1 | 1,083 + 0,333 = 1,417 мс | missing 112, late 192, deadline misses 6, skipped 896 | 1,602 мс |
-| 64 / 128, диагностическая DLL | 1,417 мс | missing 352, late 384, deadline misses 11, skipped 1536 | 1,587 мс |
-| 64 / 128, `Flow Control` Disabled | 1,417 мс | missing 304, late 304, deadline misses 9, skipped 1152 | 1,239 мс |
-| 64 / 256, диагностическая DLL | 1,750 + 0,333 = 2,083 мс | missing/late 0, но resync 1 и skipped 256 | 1,648 мс |
-| 64 / 128, схема Windows «Высокая производительность» | 1,417 мс | missing 52992, late 53584, deadline misses 36, skipped 4736 | 18,949 мс |
-| 64 / 448, установленный 2.3.1, два прогона | 2,750 + 0,333 = 3,083 мс | missing/late/deadline/overflow 0 в обоих прогонах | 1,947 / 1,744 мс |
+This report records a specific Pi 5 / Windows 11 / Intel I225-V test system and older diagnostic builds. It is not a latency claim for version 2.4.3. The source/sink were synthetic: 8×8, 192 kHz PCM32, 16-frame capture packets and ASIO64. The detailed chronological data remain in the Russian edition.
 
-При 64/256 в одном прогоне было 2 160 363 интервала между принятыми пакетами:
-p50 <85 мкс, p95 <100 мкс, p99 <125 мкс, но 93 интервала ≥500 мкс,
-13 ≥1 мс и 3 ≥1,5 мс. После пауз приложение вычитывало до 19 пакетов подряд;
-максимальная глубина очереди тоже достигала 20. Это свидетельствует о
-накоплении пакетов до их обработки приложением, но не различает задержку
-минипорта/NDIS и пробуждение потока приёма. `recv`-интервал не является
-односторонним временем передачи по кабелю.
+| ASIO/LAN, duration | Observation | Maximum receive gap |
+|---|---|---:|
+| 64/128, 180 s | Missing/late frames and deadline misses in all tested variants | about 1.2–1.7 ms |
+| 64/256, 180 s | Some runs had missing frames or a resync with skipped frames | about 1.65–1.72 ms |
+| 64/320, 180 s | One clean experimental run | 1.636 ms |
+| 64/320, 600 s | 16 missing/late frames | 1.897 ms |
+| 64/384, 180 s | No missing/late/resync/deadline/skipped errors | 1.277 ms |
+| 64/384, installed DLL, 600 s | Same counters and TX errors zero | 1.779 ms |
 
-Pi во время указанных прогонов показывала `lost=0`, `bad=0`,
-`skipped_source_frames=0`, максимальное опоздание отправки 8–10 мкс. Windows
-показывала `rx_overflow=0`, `host_overruns=0`, `mmcss_failures=0`, а загрузка
-потоков Windows в обычных прогонах была примерно 6–10% audio, 6% receive,
-3% transmit одного ядра на поток. Поэтому увеличение размера очереди сокета
-не устраняет проблему: пакеты уже ждут и становятся просроченными.
+A sample of 2,160,363 receive intervals had p50 below 85 µs, p95 below 100 µs and p99 below 125 µs, yet 13 intervals exceeded 1 ms. Packets arrived in batches after these pauses. A `recv` interval is not cable one-way latency.
 
-Проверенные альтернативы не дали улучшения:
+The usable continuous portion of an Intel PktMon capture contained 972,009 consecutive packets over the last 81 seconds. Capture-point intervals were p50 84 µs, p95 94 µs, p99 117 µs and max 1352 µs. Software capture points are not hardware PHY timestamps; NIC, IRQ/DPC, NDIS and capture overhead were not fully separated by that trace. PktMon itself increased stream errors in the test.
 
-- Увеличение пакета до 32 кадров при 64/128 за 180 с дало missing 480,
-  late 576, deadline misses 13; более редкие пакеты уменьшили число ранних
-  пробуждений.
-- Активный опрос сокета занял 98,9% одного ядра и уже за 10 с дал
-  missing 320/late 320. Этот режим не включён в драйвер.
-- Схема «Высокая производительность» не исправила выбросы; исходная
-  «Сбалансированная» восстановлена.
-- У Intel I225-V модерация прерываний уже отключена, счётчики адаптера
-  не показывают ошибок или отброшенных пакетов. Из текущего сеанса изменение
-  `Flow Control` получило `Access denied`; пользователь отключил его в
-  администраторском сеансе. Паузы и пропуски сохранились, так что это не
-  исправление для 128 кадров. После теста прежнее `Rx & Tx Enabled`
-  (`RegistryValue=3`) восстановлено; линк снова 1 Гбит/с.
+Larger capture packets, socket busy polling and a Windows high-performance power plan did not fix the low-buffer case. Polling used about a CPU core and still lost frames. Experimental delayed queue reset was removed because it did not solve the underlying receive pauses. These are historical experiments, not recommended global settings.
 
-Для следующего шага нужна временная метка прихода пакета до Winsock. Попытка
-включить UDP timestamping через `SIO_TIMESTAMPING` успешна, но все 100
-тестовых пакетов вернули значение метки 0. Штатный `pktmon` в текущем сеансе
-также недоступен (`Access denied`). Измерение в повышенном сеансе по
-выделенному UDP-порту отделит паузы NIC/NDIS от пробуждения пользовательского
-потока. После этого имеет смысл по одному проверять драйвер/прерывания Intel,
-сетевые фильтры и параметры обработки прерываний, с повторным
-180-секундным тестом 128 кадров.
-Замена способа чтения сокета без такой локализации не обещает выигрыш в разы.
-
-Диагностическая DLL печатает `RX_TIMING` при остановке потока, если перед
-запуском хоста задано `PIAOIP_TIMING_TRACE=1`. Перцентили — верхние границы
-5-мкс корзин. В установленном MSI 2.3.1 этой дополнительной трассировки нет;
-штатную настройку 64/448 не меняли. Результаты в рабочей папке:
-`dist/Pi5-AoIP-2.3.1/reports/echo-b64-g128-180s-baseline-2.3.1.json`,
-`echo-b64-g128-180s-rxtrace.json`, `echo-b64-g256-180s-rxhist.json`,
-`echo-b64-g128-180s-highpower-rxhist.json`,
-`echo-b64-g128-180s-noflow-rxhist.json` и прежние два прогона 64/448.
+The clean 600-second 64/384 result established only that digital test window. Real DAW workload and physical ADC/DAC qualification remained separate. Current users should select buffers manually using the [buffer guide](BUFFER-GUIDE.md).

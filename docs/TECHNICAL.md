@@ -1,34 +1,22 @@
-# Технические параметры
+**English** | [Русский](TECHNICAL.ru.md)
 
-| Параметр | Значение |
+# Transport limits and latency
+
+The audio path is PCM → PiAoIP → UDP → IPv4 → Ethernet. It uses ordinary OS sockets. The current release does not implement AES67/Dante, PTP, hardware timestamp synchronization, FEC or retransmission.
+
+| Parameter | Supported range |
 |---|---|
-| Аудио | Signed integer PCM16 / packed PCM24 / PCM32 |
-| Частоты, Гц | 44100, 48000, 88200, 96000, 176400, 192000 |
-| Каналы | До 64 в каждом направлении; входы/выходы независимы |
-| Транспорт | UDP/IPv4 unicast, собственный PiAoIP v2 |
-| Заголовок / payload | 40 байт / максимум UDP 1472 байта при MTU1500 |
-| Порядок байт PCM/протокола | Little-endian |
-| Целостность | IEEE CRC32, поле checksum исключено из расчёта |
-| Порядок потока | Packet sequence + source frame index + session epoch |
-| Аудиопорты по умолчанию | Pi 50020/UDP, Windows 50021/UDP |
-| Управление | Pi 50022/UDP |
-| Сеть | Выделенный Gigabit Ethernet full duplex |
+| Physical channels | Up to 64 per direction; actual counts come from the device |
+| Rates | 44.1, 48, 88.2, 96, 176.4, 192 kHz |
+| PCM | Signed integer 16, packed 24, 32 bit |
+| ASIO block | 16–2048 samples, powers of two |
+| UDP payload | At most 1472 bytes with MTU 1500 |
+| Session | One independent Pi/PC pair |
 
-Для 64 каналов при 192 кГц/PCM32: 49,152 МБ/с PCM в каждом направлении,
-5 кадров на пакет, 38400 пакетов/с, около 425,779 Мбит/с с сетевыми накладными
-расходами. 100-Мбит Ethernet не подходит. При нулевых ASIO-входах peer сохраняет
-служебный синтетический канал для временной основы; это не дополнительный вход хоста.
+PCM bandwidth is `channels × rate × bits` per active direction, plus packet/network overhead. At 8×192 kHz/PCM32 it is 49.152 Mbit/s per direction. Small packets increase packet rate and scheduling work. A supported profile is not a guarantee of sub-millisecond latency.
 
-ASIO-буферы 16–2048 поддерживаются со стороны Windows. При 192 кГц 64 кадра —
-0,333 мс, guard512 — 2,667 мс, а 2048 кадров уже 10,667 мс. Нельзя обещать задержку
-ниже 9 мс при любом буфере только потому, что он доступен в интерфейсе.
+Buffer duration is `samples × 1000 / rate`. ASIO buffering and the manual LAN buffer are separate parts of the path. Do not sum displayed numbers and describe the result as a measured ADC-to-DAC delay. Measure digital round trip with a known route, and measure physical converters separately when a hardware backend exists.
 
-Нет PTP, RTP/AES67, Dante, multicast audio, FEC и сетевой повторной доставки.
-UDP connect выбирает peer, но не превращает протокол в TCP. LAN предполагается
-доверенной: шифрование и криптографическая аутентификация не реализованы.
-Дополнительный TCP audio mode не предусмотрен: повторная доставка и head-of-line
-blocking могут увеличивать хвост задержки. Управление остаётся отдельным UDP-каналом.
+Record run duration, exact profile, p50/p95/p99/max, missing/late frames, deadline misses, RX gaps, queue overflows, expired TX, TX errors and CPU use. A zero-error short run or a low median alone does not establish long-term reliability.
 
-Производительность измеряется p50/p95/p99/max вместе с потерями, late/missing,
-deadline misses, overflow, TX expired и нагрузкой CPU. Одного `lost=0` недостаточно.
-Подробности: [проверки](https://github.com/danrey-bilo/AoIP-debug-tool/blob/main/docs/windows/TESTING.md).
+The supplied Raspberry Pi service generates synthetic PCM and checks the returned stream. Physical I2S/USB/ADC/DAC integration and effects processing are outside this release.

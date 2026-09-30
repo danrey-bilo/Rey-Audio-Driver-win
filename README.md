@@ -1,112 +1,55 @@
-![Win11-asio-AoIP](docs/assets/header.svg)
+![Win11-asio-AoIP 2.4.3](docs/assets/header.svg)
 
 # Win11-asio-AoIP
 
 **English** | [Русский](README.ru.md)
 
-An ASIO driver for **Windows 11 x64**, providing up to 64 inputs and 64 outputs
-over a wired network, a settings panel for profile configuration and an MSI
-installer. Runs inside a 64-bit ASIO host.
+An ASIO driver for Windows 11 x64 that connects your DAW to a compatible Raspberry Pi AoIP service over wired Ethernet.
 
-**[Build](#build)** · **[How it works](#how-it-works)** · **[Documentation](#documentation)** · **[License](LICENSE)**
+**[Download 2.4.3](https://github.com/danrey-bilo/Win11-asio-AoIP/releases/tag/v2.4.3)** · **[Release notes](docs/RELEASE-2.4.3.md)** · **[Validation](docs/VALIDATION.md)**
 
-## Features
+## Get started
 
-| Parameter | Support |
+1. Download [PiAoIP-2.4.3-Windows11-x64.msi](https://github.com/danrey-bilo/Win11-asio-AoIP/releases/download/v2.4.3/PiAoIP-2.4.3-Windows11-x64.msi).
+2. Close your ASIO hosts and exit PiAoIP from the tray, then run the MSI.
+3. Open **PiAoIP Settings → Device → Find and connect** and select the Pi.
+4. Choose **Sample rate**, **Bit depth**, **ASIO buffer** and **LAN buffer**, then **Apply**.
+5. Select **Pi AoIP** in your 64-bit DAW and open its audio engine.
+
+The panel, tray and installed help are in English. **Automatic buffer tuning has been removed.** Choose buffers manually and check your actual DAW workload. Device channel counts come from the Pi; use **Device → Channels** to select existing channels.
+
+![PiAoIP settings](docs/assets/settings.png)
+
+The MSI installs the ASIO DLL, settings/tray application, installation guide and license notices. It adds ASIO registration and a local-subnet UDP 50021 firewall rule. Both Start menu shortcuts and the application now have embedded icons.
+It does not install Windows microphone/speaker endpoints, a kernel audio driver or a Pi firmware image.
+
+## At a glance
+
+| Item | Support |
 |---|---|
-| Inputs / outputs | Physical counts discovered from the device; individual channel masks |
-| Sample rate / format | Up to 192 kHz, PCM16/24/32 |
-| ASIO buffer | 16 / 32 / 64 / 128 / 256 / 512 / 1024 / 2048 frames |
-| Threads | Separate network receive, ASIO callback and network transmit threads |
-| Reliability | SPSC queues, Timeline, TX deadlines and dropout counters |
-| Settings | Discovery, profile, guard, RTT, individual channel switches and per-user INI |
-| Energy saving | v3 opened channels, exact PCM-zero suppression and leased start/stop |
-| Quick access | Connected-device tray icon and startup registration |
-| Installation | MSI: ASIO/COM registration, settings panel, UDP firewall rule, repair and uninstall |
-
-## How it works
-
-```mermaid
-flowchart LR
-  PI[Pi4 / Pi5 AoIP] --> RX[Network RX]
-  RX --> T[Timeline + guard]
-  T --> A[ASIO callback / DAW]
-  A --> Q[Output SPSC]
-  Q --> TX[Network TX]
-  TX --> PI
-```
-
-This is an ASIO DLL. It **does not create Windows system microphone or speaker
-endpoints**. Discord, Telegram and WASAPI applications require a separate
-Windows Audio driver or routing layer. Windows ARM64 and 32-bit hosts are
-not supported.
-
-## Build
-
-Requires CMake, Ninja, LLVM-MinGW x64/UCRT and a separately obtained Steinberg
-ASIO SDK. The SDK is not included in this repository. See the
-[ASIO SDK and licensing guide (Russian)](docs/ASIO-SDK.md).
-
-```powershell
-git clone --recurse-submodules https://github.com/danrey-bilo/Win11-asio-AoIP.git
-cd Win11-asio-AoIP
-cmake -S . -B build/windows -G Ninja -DCMAKE_BUILD_TYPE=Release `
-  -DCMAKE_CXX_COMPILER=C:/Tools/llvm-mingw/bin/x86_64-w64-mingw32-clang++.exe `
-  -DCMAKE_RC_COMPILER=C:/Tools/llvm-mingw/bin/x86_64-w64-mingw32-windres.exe `
-  -DASIO_SDK_DIR=C:/SDK/asio
-cmake --build build/windows --parallel 2
-```
-
-The driver DLL and settings EXE are written to `build/windows/bin`. Building does not register or install the driver. See the
-[installation, network and settings guide (Russian)](docs/BUILD.md).
-
-## Repository layout
-
-```text
-src/driver/        IASIO/COM, lifecycle and streaming engine
-src/config/        profiles and per-user INI
-src/control/       discovery and UDP commands
-src/platform/      Windows MMCSS, affinity and timers
-src/ui/            settings panel and resources
-apps/              settings panel launcher
-external/AoIP-lib/  shared library pinned as a Git submodule
-docs/              API, architecture and guides
-```
+| System | Windows 11 x64; 64-bit ASIO host |
+| Main controls | Rate, PCM bit depth, ASIO buffer, LAN buffer |
+| ASIO buffer | 16–2048 samples, powers of two |
+| LAN buffer | 0–2048 samples; manual |
+| Sessions | One streaming ASIO client per Pi/PC pair |
+| Audio profiles | Up to 64 channels per direction; 44.1–192 kHz; PCM16/24/32 |
+| Transport | PiAoIP UDP/IPv4 over Ethernet; not AES67 or Dante |
 
 ## Documentation
 
-Detailed guides are currently available in Russian. Test reports link to the
-private developer repository and require project access.
+[Installation](docs/INSTALL.md) · [Build](docs/BUILD.md) · [Host API](docs/API.md) · [Architecture](docs/ARCHITECTURE.md) · [Buffer guide](docs/BUFFER-GUIDE.md)
 
-| Guide | Contents |
+English is the primary documentation language. Each maintained guide links to its Russian edition. Version 2.4.3 is a **development preview**: build and package checks do not establish physical ADC/DAC support or a guaranteed latency. The supplied Pi service generates and checks synthetic PCM; a hardware audio backend is still required for a physical sound card.
+
+## Project components
+
+| Repository | Purpose |
 |---|---|
-| [Build and installation](docs/BUILD.md) | Toolchain, MSI, network setup and settings |
-| [ASIO host integration](docs/API.md) | Using the driver from your own host |
-| [Architecture](docs/ARCHITECTURE.md) | Driver components, threads and audio data flow |
-| [Technical overview](docs/TECHNICAL.md) | Transport characteristics and operating limits |
-| [Testing](https://github.com/danrey-bilo/AoIP-debug-tool/blob/main/docs/windows/TESTING.md) | Test procedure and measurement scope |
-| [Build validation](https://github.com/danrey-bilo/AoIP-debug-tool/blob/main/docs/windows/INITIAL-BUILD-VALIDATION.md) | Checks performed on the separated repository |
-| [ASIO SDK](docs/ASIO-SDK.md) | External dependency and distribution conditions |
-
-## Development tooling
-
-Tests, executable examples, diagnostics and installer build scripts are maintained
-in the private [AoIP-debug-tool](https://github.com/danrey-bilo/AoIP-debug-tool) repository for authorized project developers.
-They are not part of this library or its build requirements.
-
-## Related projects
-
-| Repository | Responsibility |
-|---|---|
-| [AoIP-lib](https://github.com/danrey-bilo/AoIP-lib) | Protocol, PCM, queues, timeline buffering and UDP peer |
-| [Pi4-AoIP](https://github.com/danrey-bilo/Pi4-AoIP) | Raspberry Pi 4, PREEMPT_RT, Ethernet, CPU0/CPU1, systemd and DEB |
-| [Win11-asio-AoIP](https://github.com/danrey-bilo/Win11-asio-AoIP) | ASIO DLL, Windows network threads, settings panel and MSI |
+| [AoIP-lib](https://github.com/danrey-bilo/AoIP-lib) | Protocol and portable libraries |
+| [Win11-asio-AoIP](https://github.com/danrey-bilo/Win11-asio-AoIP) | Windows ASIO driver and settings |
+| [Pi4-AoIP](https://github.com/danrey-bilo/Pi4-AoIP) | Raspberry Pi 4 / PREEMPT_RT service |
+| [Pi5-AoIP](https://github.com/danrey-bilo/Pi5-AoIP) | Raspberry Pi 5 / PREEMPT_RT service |
 
 ## License
 
-Personal, noncommercial use is free. Commercial use requires a separate paid
-written license from the copyright holder. See the [license terms](LICENSE)
-or the [Russian explanation](docs/LICENSE-RU.md).
-
-The ASIO SDK remains subject to its own terms; a commercial license for this
-project does not replace them.
+Personal, noncommercial use is free. Commercial use requires a separate paid written license. See [LICENSE](LICENSE) and the [Russian explanation](docs/LICENSE-RU.md). The external Steinberg ASIO SDK has separate terms; see [ASIO SDK](docs/ASIO-SDK.md).

@@ -39,8 +39,12 @@ struct Config {
   unsigned safety = 256;
   uint64_t input_mask = UINT64_MAX, output_mask = UINT64_MAX;
   bool energy_saving = true;
+  // Optional logical CPUs in the thread's processor group; -1 keeps automatic placement.
+  std::array<int,3> realtime_cpus{{-1,-1,-1}}; // audio, receive, transmit
+  unsigned audio_spin_us=20; // upper bound; runtime also reserves time for sleeping
 };
 
+enum class PanelPage : unsigned { audio, connection, advanced, diagnostics, count };
 struct SettingsDialog {
   Config current;
   wchar_t path[MAX_PATH]{};
@@ -50,6 +54,13 @@ struct SettingsDialog {
   void* driver = nullptr;
   HFONT heading_font = nullptr;
   HBRUSH background = nullptr;
+  HBRUSH surface = nullptr;
+  HFONT value_font = nullptr;
+  PanelPage page=PanelPage::audio;
+  bool preview = false;
+  std::array<std::vector<HWND>,size_t(PanelPage::count)> page_controls;
+  int scroll_x=0,scroll_y=0;
+  bool arranging=false;
   char measure_peer[64]{};
   unsigned measure_channel = 0;
   struct Device {
@@ -70,6 +81,8 @@ struct SettingsDialog {
 
 
 void read_config(Config& c);
+void read_config_file(const wchar_t* path,Config& c);
+bool write_config_file(const wchar_t* path,const Config& c);
 bool profile_path(wchar_t (&path)[MAX_PATH]);
 HANDLE settings_changed_event(const wchar_t* profile);
 void notify_settings_changed(const wchar_t* profile);

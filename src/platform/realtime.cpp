@@ -1,6 +1,7 @@
 #include "realtime.hpp"
 #include <vector>
 #include <algorithm>
+#include <cstdio>
 namespace piaoip {
 namespace {
 void prefer_audio_cpu(unsigned role) {
@@ -44,11 +45,35 @@ void max_counter(std::atomic<uint64_t>& v,uint64_t x) {
   auto old=v.load(std::memory_order_relaxed);
   while(x>old && !v.compare_exchange_weak(old,x,std::memory_order_relaxed)) {}
 }
-RealtimeThread::RealtimeThread(std::atomic<uint64_t>& failures,unsigned role) {
+RealtimeThread::RealtimeThread(std::atomic<uint64_t>& failures,unsigned role,int requested_cpu) {
   prefer_audio_cpu(role);
   DWORD index=0; mmcss_=AvSetMmThreadCharacteristicsW(L"Pro Audio",&index);
   if(!mmcss_ || !AvSetMmThreadPriority(mmcss_,AVRT_PRIORITY_CRITICAL)) ++failures;
   if(!mmcss_) SetThreadPriority(GetCurrentThread(),THREAD_PRIORITY_HIGHEST);
+  // Diagnostic override is per process, reversible, and never changes the host's
+  // process affinity or machine policy. Order is audio, receive, transmit.
+  char cpus[64]{}; unsigned selected[3]{}; int end=0;
+  const DWORD length=GetEnvironmentVariableA("PIAOIP_RT_CPUS",cpus,sizeof(cpus));
+  if(length && length<sizeof(cpus) && std::sscanf(cpus,"%u,%u,%u%n",&selected[0],&selected[1],&selected[2],&end)==3 &&
+      cpus[end]=='\0' && role<3 && selected[role]<sizeof(ULONG_PTR)*8) {
+    requested_cpu=int(selected[role]);
+  }
+  if(requested_cpu>=0 && requested_cpu<int(sizeof(ULONG_PTR)*8)) {
+    GROUP_AFFINITY affinity{};
+    if(GetThreadGroupAffinity(GetCurrentThread(),&affinity) && (affinity.Mask&(ULONG_PTR(1)<<requested_cpu))) {
+      affinity.Mask=ULONG_PTR(1)<<requested_cpu;
+      if(!SetThreadGroupAffinity(GetCurrentThread(),&affinity,nullptr)) ++failures;
+    } else ++failures;
+  }
+  char trace[4]{};
+  if(GetEnvironmentVariableA("PIAOIP_TIMING_TRACE",trace,sizeof(trace))==1 && trace[0]=='1') {
+    ULONG ids[64]{},count=0; GROUP_AFFINITY affinity{};
+    GetThreadGroupAffinity(GetCurrentThread(),&affinity);
+    const BOOL okay=GetThreadSelectedCpuSets(GetCurrentThread(),ids,64,&count);
+    std::fprintf(stderr,"THREAD_PLACEMENT role=%u tid=%lu cpu=%lu group=%u mask=%llx selected_count=%lu selected_first=%lu selected_ok=%u\n",
+      role,GetCurrentThreadId(),GetCurrentProcessorNumber(),affinity.Group,
+      static_cast<unsigned long long>(affinity.Mask),count,count && okay ? ids[0] : 0,unsigned(okay));
+  }
 }
 RealtimeThread::~RealtimeThread() { if(mmcss_) AvRevertMmThreadCharacteristics(mmcss_); }
 DeadlineWaiter::DeadlineWaiter() {
