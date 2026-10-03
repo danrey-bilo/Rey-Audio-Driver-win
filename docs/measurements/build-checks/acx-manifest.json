@@ -1,0 +1,22 @@
+{
+  "architecture": "x64",
+  "kmdf": "1.31",
+  "acx": "1.1",
+  "compiler": "Clang 22 MSVC ABI",
+  "sha256": "a5bfc2fea15c9a2714a8d7e1d38961f8000b79a699ccc05fd9091be659a5d711",
+  "signed": false,
+  "installed": false,
+  "infverif_exit_code": 0,
+  "inf2cat_exit_code": 0,
+  "source_sha256": {
+    "drivers/Acx/circuit.c": "e2ad70860e33d0a7b46f6a256dc0a0f58a66751f80e691dc96af71e494a363b7",
+    "drivers/Acx/control.c": "92950e358ee345d175d7d48a923a8fcf5bfdf7b795d6005b02a40e3238ff9096",
+    "drivers/Acx/device.c": "e6a396f81aad3769d588dc0a22e5cb3a314f0348fc628757bc443137be851123",
+    "drivers/Acx/driver.c": "149165aa5dc773c03ae056ea944bb95868d609936760fc2a088f93e9a021140c",
+    "drivers/Acx/driver.h": "f3b7b8e380e02aa971d8172f13d139bef1265e7374f3a2291b41b5ad87edcd11",
+    "drivers/Acx/guids.c": "39144efa984ecfed19f98970f9d80ab94e06037dd212867bca53d281c34b22cf",
+    "drivers/Acx/PiAoipAcx.inf": "76a3033dd2c94b2391cfb74e2f81a979da5e03d2f5985060dac38c063f5d4419",
+    "drivers/Acx/stream.c": "9beee12599d70ad821618abc52b9ce1b4742317d697de041dced9e277b02d3d4"
+  },
+  "contract_sha256": "136caad8fc17153fdc0f79fd384c297fa457e753808b3bb865104c70d68352b1"
+}

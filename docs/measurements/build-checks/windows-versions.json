@@ -1,0 +1,22 @@
+[
+  {
+    "name": "PiAoipService.exe",
+    "version": "2.5.0.0",
+    "sha256": "9b80dc78adc192cba79acbdfd6bb4a6ef7ba341cfe5862197782829bd1b38f63"
+  },
+  {
+    "name": "PiAoipWasapiProbe.exe",
+    "version": "2.5.0.0",
+    "sha256": "a7010adac2cbe56512fc79895af7921df6f34cd0c9878f6443bb4016e37c1bb5"
+  },
+  {
+    "name": "PiAoipAsio.dll",
+    "version": "2.5.0.0",
+    "sha256": "9679e4596ba3b19b33a2551abcaec350b69f238edd97c0bc4143b6491d51a0f5"
+  },
+  {
+    "name": "PiAoipControl.exe",
+    "version": "2.5.0.0",
+    "sha256": "40216f3dc8ff1780c2646459022b08dbcc8624a0d438f3dbd283a8494f293556"
+  }
+]

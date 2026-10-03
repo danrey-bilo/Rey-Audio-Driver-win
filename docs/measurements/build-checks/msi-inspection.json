@@ -1,0 +1,144 @@
+{
+  "Properties": [
+    {
+      "Name": "ProductCode",
+      "Value": "{7B4DCA6A-63DD-4B7E-A571-33BEE211F250}"
+    },
+    {
+      "Name": "ProductLanguage",
+      "Value": "1033"
+    },
+    {
+      "Name": "ProductName",
+      "Value": "PiAoIP"
+    },
+    {
+      "Name": "ProductVersion",
+      "Value": "2.5.0"
+    },
+    {
+      "Name": "UpgradeCode",
+      "Value": "{B1550D7B-724C-4E29-B96E-E6963F4493BC}"
+    }
+  ],
+  "Files": [
+    {
+      "Id": "AsioDll",
+      "Name": "zoi3ydmk.dll|PiAoipAsio.dll",
+      "Bytes": "1384448",
+      "Version": "2.5.0.0"
+    },
+    {
+      "Id": "PanelExe",
+      "Name": "yi6htxuu.exe|PiAoipControl.exe",
+      "Bytes": "1316864",
+      "Version": "2.5.0.0"
+    },
+    {
+      "Id": "InstallGuide",
+      "Name": "a3r238sx.htm|INSTALL.html",
+      "Bytes": "4275",
+      "Version": ""
+    },
+    {
+      "Id": "fil9UDoWMnrn00joz0ynxbNef0OCYU",
+      "Name": "fnpwwbd8.txt|ASIO-SDK-LICENSE.txt",
+      "Bytes": "2685",
+      "Version": ""
+    },
+    {
+      "Id": "filJMRCV.uYZDUjCRTyYWRVJAOlQoE",
+      "Name": "lhgdyoof.txt|PROJECT-LICENSE.txt",
+      "Bytes": "3091",
+      "Version": ""
+    }
+  ],
+  "Components": [
+    {
+      "Name": "AsioDriver",
+      "Guid": "{2DD987C0-22EB-50E9-8C84-F2AD3499C8C2}"
+    },
+    {
+      "Name": "Panel",
+      "Guid": "{E4999769-7423-55F2-A3A2-31B5CEB3C414}"
+    },
+    {
+      "Name": "Instructions",
+      "Guid": "{712EC2AE-FE61-593B-B84B-A445EA613820}"
+    },
+    {
+      "Name": "SdkNotice",
+      "Guid": "{F0E4822A-50DC-55D5-B558-DD85678B6486}"
+    },
+    {
+      "Name": "ProjectLicense",
+      "Guid": "{2B2D71E1-9A4C-5475-A5AE-4E15A0786F11}"
+    },
+    {
+      "Name": "AudioFirewall",
+      "Guid": "{29A6CBDD-648E-5994-992E-51616A3BAD81}"
+    }
+  ],
+  "FeatureComponents": [
+    {
+      "Feature": "Complete",
+      "Component": "AsioDriver"
+    },
+    {
+      "Feature": "Complete",
+      "Component": "Panel"
+    },
+    {
+      "Feature": "Complete",
+      "Component": "Instructions"
+    },
+    {
+      "Feature": "Complete",
+      "Component": "SdkNotice"
+    },
+    {
+      "Feature": "Complete",
+      "Component": "ProjectLicense"
+    },
+    {
+      "Feature": "Complete",
+      "Component": "AudioFirewall"
+    }
+  ],
+  "Upgrade": [
+    {
+      "Code": "{B1550D7B-724C-4E29-B96E-E6963F4493BC}",
+      "Min": "",
+      "Max": "2.5.0",
+      "Language": "",
+      "Attributes": "1",
+      "Property": "WIX_UPGRADE_DETECTED"
+    },
+    {
+      "Code": "{B1550D7B-724C-4E29-B96E-E6963F4493BC}",
+      "Min": "2.5.0",
+      "Max": "",
+      "Language": "",
+      "Attributes": "2",
+      "Property": "WIX_DOWNGRADE_DETECTED"
+    }
+  ],
+  "UpgradeSequence": [
+    {
+      "Action": "InstallInitialize",
+      "Order": "1500"
+    },
+    {
+      "Action": "InstallFiles",
+      "Order": "4000"
+    },
+    {
+      "Action": "RemoveExistingProducts",
+      "Order": "1501"
+    }
+  ],
+  "SummaryTemplate": "x64;1033",
+  "RussianUiRows": 0,
+  "AutoSetupComponents": 0,
+  "Installed": false
+}

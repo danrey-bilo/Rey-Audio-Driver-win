@@ -1,0 +1,31 @@
+{
+  "pass": true,
+  "peer_sha256": "252a146bad247a75332b6710a52b04bd0a7360c3bae1fd47163d3e380a2aad1c",
+  "profile": "8 8 192000 24 32",
+  "files": [
+    ".",
+    "./etc",
+    "./etc/piaoip",
+    "./etc/piaoip/peer.conf",
+    "./usr",
+    "./usr/bin",
+    "./usr/bin/piaoip-configure",
+    "./usr/lib",
+    "./usr/lib/piaoip",
+    "./usr/lib/piaoip/aoip_peer_rpi5",
+    "./usr/lib/piaoip/tune-lan.sh",
+    "./usr/lib/systemd",
+    "./usr/lib/systemd/system",
+    "./usr/lib/systemd/system/pi-aoip-lan.service",
+    "./usr/lib/systemd/system/pi-aoip.service",
+    "./usr/share",
+    "./usr/share/doc",
+    "./usr/share/doc/piaoip-rpi5",
+    "./usr/share/doc/piaoip-rpi5/INSTALL-RU.md",
+    "./usr/share/doc/piaoip-rpi5/INSTALL.md",
+    "./usr/share/doc/piaoip-rpi5/PLATFORM-API.md",
+    "./usr/share/doc/piaoip-rpi5/copyright",
+    "./usr/share/piaoip",
+    "./usr/share/piaoip/default-profile.txt"
+  ]
+}
