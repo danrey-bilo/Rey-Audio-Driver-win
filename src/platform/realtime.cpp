@@ -2,7 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstdio>
-namespace piaoip {
+namespace rey {
 namespace {
 void prefer_audio_cpu(unsigned role) {
   ULONG bytes=0; GetSystemCpuSetInformation(nullptr,0,&bytes,GetCurrentProcess(),0);
@@ -51,9 +51,9 @@ RealtimeThread::RealtimeThread(std::atomic<uint64_t>& failures,unsigned role,int
   if(!mmcss_ || !AvSetMmThreadPriority(mmcss_,AVRT_PRIORITY_CRITICAL)) ++failures;
   if(!mmcss_) SetThreadPriority(GetCurrentThread(),THREAD_PRIORITY_HIGHEST);
   // Diagnostic override is per process, reversible, and never changes the host's
-  // process affinity or machine policy. Order is audio, receive, transmit.
+  // process affinity or machine policy. Role 0 is service; role 1 is ASIO host.
   char cpus[64]{}; unsigned selected[3]{}; int end=0;
-  const DWORD length=GetEnvironmentVariableA("PIAOIP_RT_CPUS",cpus,sizeof(cpus));
+  const DWORD length=GetEnvironmentVariableA("REY_RT_CPUS",cpus,sizeof(cpus));
   if(length && length<sizeof(cpus) && std::sscanf(cpus,"%u,%u,%u%n",&selected[0],&selected[1],&selected[2],&end)==3 &&
       cpus[end]=='\0' && role<3 && selected[role]<sizeof(ULONG_PTR)*8) {
     requested_cpu=int(selected[role]);
@@ -66,7 +66,7 @@ RealtimeThread::RealtimeThread(std::atomic<uint64_t>& failures,unsigned role,int
     } else ++failures;
   }
   char trace[4]{};
-  if(GetEnvironmentVariableA("PIAOIP_TIMING_TRACE",trace,sizeof(trace))==1 && trace[0]=='1') {
+  if(GetEnvironmentVariableA("REY_TIMING_TRACE",trace,sizeof(trace))==1 && trace[0]=='1') {
     ULONG ids[64]{},count=0; GROUP_AFFINITY affinity{};
     GetThreadGroupAffinity(GetCurrentThread(),&affinity);
     const BOOL okay=GetThreadSelectedCpuSets(GetCurrentThread(),ids,64,&count);
@@ -76,23 +76,4 @@ RealtimeThread::RealtimeThread(std::atomic<uint64_t>& failures,unsigned role,int
   }
 }
 RealtimeThread::~RealtimeThread() { if(mmcss_) AvRevertMmThreadCharacteristics(mmcss_); }
-DeadlineWaiter::DeadlineWaiter() {
-  timer_=CreateWaitableTimerExW(nullptr,nullptr,0x00000002,TIMER_ALL_ACCESS);
-  if(!timer_) timer_=CreateWaitableTimerW(nullptr,FALSE,nullptr);
-}
-DeadlineWaiter::~DeadlineWaiter() { if(timer_) CloseHandle(timer_); }
-void DeadlineWaiter::wait(uint64_t deadline,HANDLE stop,HANDLE wake,uint64_t spin_ns) {
-  // Even an 83 us block must sleep rather than consume a full CPU and exhaust
-  // its MMCSS quota. Reserve only a bounded tail for active audio deadlines.
-  auto now=now_ns();
-  if(timer_ && deadline>now+spin_ns+10000) {
-    LARGE_INTEGER due; due.QuadPart=-static_cast<LONGLONG>((deadline-now-spin_ns)/100);
-    if(SetWaitableTimer(timer_,&due,0,nullptr,nullptr,FALSE)) {
-      HANDLE handles[]={stop,timer_,wake};
-      auto result=WaitForMultipleObjects(wake ? 3 : 2,handles,FALSE,100);
-      if(result==WAIT_OBJECT_0 || result==WAIT_OBJECT_0+2) return;
-    }
-  }
-  while(now_ns()<deadline) { if(WaitForSingleObject(stop,0)==WAIT_OBJECT_0) return; YieldProcessor(); }
-}
 }

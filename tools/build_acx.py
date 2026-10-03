@@ -49,7 +49,7 @@ def main():
     (args.out/'manifest.json').write_text(json.dumps({'architecture':'x64','kmdf':'1.31','acx':'1.1','compiler':'Clang 22 MSVC ABI','sha256':digest,
         'signed':False,'installed':False,'infverif_exit_code':0,'inf2cat_exit_code':result.returncode,
         'source_sha256':{p.relative_to(project).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((project/'drivers/Acx').glob('*')) if p.suffix in ('.c','.h','.inf')},
-        'contract_sha256':{name:hashlib.sha256((project/'include/piaoip'/name).read_bytes()).hexdigest() for name in ('bridge.h','endpoints.h')}},indent=2))
+        'contract_sha256':{name:hashlib.sha256((project/'include/rey'/name).read_bytes()).hexdigest() for name in ('bridge.h','endpoints.h')}},indent=2))
     print('BUILT development ReyAudioAcx.sys sha256='+digest,flush=True)
     return result.returncode
 

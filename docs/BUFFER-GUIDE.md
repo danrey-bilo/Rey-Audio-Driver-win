@@ -1,15 +1,26 @@
-**English** | [Русский](BUFFER-GUIDE.ru.md)
+# Manual USB-ASIO buffers
 
-# Choose buffers manually
+ASIO block: 16, 32, 64, 128, 256 frames. Render lead: 1–4 blocks. USB depth:
+1–16 packets. Controls are independent and manual; there is no automatic
+minimum-buffer selection.
 
-The main page contains **ASIO buffer** and **LAN buffer** in samples. The duration under each field is calculated for the selected rate. At 192 kHz, 64 samples are 0.333 ms and 384 samples are 2.000 ms. These numbers describe buffers, not a measured round trip.
+At 192000 Hz, USB depth3:
 
-1. Set the required rate, bit depth and enabled channels.
-2. Start with conservative ASIO and LAN buffers and a representative DAW project.
-3. Keep ASIO fixed while reducing LAN in small steps. Watch missing/late frames, RX gaps, queue overflows and TX/deadline errors.
-4. Once LAN is reliable for the test workload, keep it fixed and reduce ASIO. Check callback/host overruns as well as network counters.
-5. Restore the last clean setting if errors grow. Recheck under your heaviest normal workload for a meaningful duration.
+| Block / lead | Reported total |
+|---|---|
+| 64 / 3 | 1.3802 ms |
+| 64 / 4 | 1.7135 ms |
+| 32 / 3 | 0.8802 ms |
+| 16 / 4 | 0.7135 ms |
 
-There is no automatic tuning mode. A clean five-minute run is evidence for that run, not a guarantee for every project or computer. Keep the profile, duration, p50/p95/p99/max digital RTT and error counters together. Driver defaults are generic; no NIC-specific power, IRQ or global Windows scheduler tweaks are applied.
+These are ASIO getLatencies values, not measured analog round trip. A smaller
+block leaves less host scheduling time. The same block takes longer at lower
+rates. Earlier short 16/32 successes did not prove sustained stability; longer
+runs had errors. [Exact 2.8 build results](USB-ONLY-2.8.md).
 
-Use **Diagnostics** from the DAW-hosted panel for that stream's counters. The separate tray panel cannot read counters from another ASIO process. Physical ADC/DAC latency remains unmeasured until an actual hardware audio backend and loopback are connected.
+USB → Save ASIO, then reopen the driver in Ableton. Apply USB rate/bits/depth
+separately after stopping ASIO. Test the intended project, drops/late/overflow,
+frame continuity and RTT; each run is at most 295 seconds. A good median with
+missing frames is not stable. Check generation and connection_id when comparing
+counters. Earlier depth2 slowed the digital bench despite zero PCM errors, so
+zero counters alone are insufficient.

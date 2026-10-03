@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-namespace piaoip::engine {
+namespace rey::engine {
 struct AudioBlock {
   const int32_t *capture = nullptr;
   int32_t *render = nullptr;
@@ -11,4 +11,4 @@ struct AudioBlock {
   bool discontinuity = false;
 };
 using ProcessBlock = bool (*)(void *, const AudioBlock &);
-} // namespace piaoip::engine
+} // namespace rey::engine

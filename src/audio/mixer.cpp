@@ -67,7 +67,7 @@ void Mixer::apply(unsigned d, const int32_t *source, int32_t *destination,
     if (clipped) clips_[d][ch].fetch_add(clipped, std::memory_order_relaxed);
   }
 }
-bool Mixer::capture(const piaoip::engine::AudioBlock &source, piaoip::engine::AudioBlock &adjusted) {
+bool Mixer::capture(const rey::engine::AudioBlock &source, rey::engine::AudioBlock &adjusted) {
   if (!source.capture || !source.render || !source.frames || source.frames > 256 ||
       !source.inputs || source.inputs > 8 || !source.outputs || source.outputs > 8 ||
       (source.bits != 16 && source.bits != 24 && source.bits != 32)) return false;
@@ -76,7 +76,7 @@ bool Mixer::capture(const piaoip::engine::AudioBlock &source, piaoip::engine::Au
   adjusted.capture = capture_.data();
   return true;
 }
-void Mixer::render(const piaoip::engine::AudioBlock &b) { apply(1, b.render, b.render, b.frames, b.outputs, b.bits); }
+void Mixer::render(const rey::engine::AudioBlock &b) { apply(1, b.render, b.render, b.frames, b.outputs, b.bits); }
 float Mixer::peak(unsigned d, unsigned ch) const { return value(peaks_.at(d).at(ch).load(std::memory_order_relaxed)); }
 uint64_t Mixer::clips(unsigned d, unsigned ch) const { return clips_.at(d).at(ch).load(std::memory_order_relaxed); }
 } // namespace rey::audio

@@ -1,0 +1,382 @@
+{
+  "version": "2.8.0",
+  "ok": true,
+  "error": "",
+  "state": "streaming",
+  "detail": "USB ASIO service is ready",
+  "route": "usb",
+  "driver_present": false,
+  "asio_only": true,
+  "digital_test": false,
+  "identity": "00000000000000002c26e7dcd051e632",
+  "backend": "digital-loopback",
+  "usb": {
+    "present": 1,
+    "identity": "00000000000000002c26e7dcd051e632",
+    "rate": 192000,
+    "bits": 32,
+    "depth": 3,
+    "block": 64,
+    "guard": 0,
+    "automatic": true
+  },
+  "active": {
+    "rate": 192000,
+    "bits": 32,
+    "inputs": 8,
+    "outputs": 8
+  },
+  "stats": {
+    "generation": 40,
+    "callbacks": 99914,
+    "frames": 2397936,
+    "missing_frames": 0,
+    "callback_gap_max_us": 1102.3,
+    "processing_max_us": 236.2,
+    "processing_average_us": 1.93646
+  },
+  "asio": {
+    "ready": true,
+    "connected": false
+  },
+  "mixer": {
+    "master_cdb": 0,
+    "master_mute": false,
+    "inputs": [
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      }
+    ],
+    "outputs": [
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      }
+    ]
+  },
+  "events": [
+    {
+      "utc_ms": 1791054719226,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054719226,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054713902,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054713902,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054708595,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054708595,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054703271,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054703269,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054697926,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054697926,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054692603,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054692602,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054687311,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054687310,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054681979,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054681978,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054676631,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054676631,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054671320,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054671319,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054666028,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054666027,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054660640,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054660639,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054655344,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054655344,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054649999,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054649999,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054644688,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054644688,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054639364,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054639364,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054634049,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054634048,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054628728,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054628728,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054441290,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054441290,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791054430879,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791054430878,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    }
+  ],
+  "device_limit": 1,
+  "device_warning": ""
+}

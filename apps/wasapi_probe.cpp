@@ -305,7 +305,7 @@ int wmain(int argc, wchar_t **argv) {
         return 1;
     } else {
       std::fprintf(stderr,
-                   "Usage: PiAoipWasapiProbe [--all | --id endpoint-id] [--flow capture|render] "
+                   "Usage: ReyAudioProbe [--all | --id endpoint-id] [--flow capture|render] "
                    "[--raw] [--seconds 1..30 --period frames]\nDefault: Rey Audio endpoints only. "
                    "--all is read-only. Streams render silence or discard capture.\n");
       return 1;

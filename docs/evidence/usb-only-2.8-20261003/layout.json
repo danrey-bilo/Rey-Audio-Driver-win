@@ -1,0 +1,13 @@
+{
+  "usb_apply_enabled": true,
+  "service_available": true,
+  "viewmodel_can_apply": true,
+  "device_label": "Rey Audio \u00b7 D051E632 \u00b7 USB",
+  "device_limit": 1,
+  "page_count": 3,
+  "lan_navigation_absent": true,
+  "card_selector_absent": true,
+  "all_channel_controls_visible": true,
+  "width": 1120,
+  "height": 800
+}

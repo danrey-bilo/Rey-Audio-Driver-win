@@ -1,0 +1,61 @@
+{
+  "version": "2.8.0-usb-preview",
+  "captured_utc": "2026-10-03T19:14:22.8989738Z",
+  "payload": [
+    {
+      "name": "ReyAsioProbe.exe",
+      "sha256": "7a3d99e4605c62cc39255ee24ac53a02dc425c2990a8dd4ad62aaa4c251d2840",
+      "expected": "7a3d99e4605c62cc39255ee24ac53a02dc425c2990a8dd4ad62aaa4c251d2840",
+      "matches": true,
+      "version": "2.8.0.0"
+    },
+    {
+      "name": "ReyAudioControl.exe",
+      "sha256": "cb5787c04d2ad18090dba519221d2ed2dd2b245fff90717523bd2306dddff3f0",
+      "expected": "cb5787c04d2ad18090dba519221d2ed2dd2b245fff90717523bd2306dddff3f0",
+      "matches": true,
+      "version": "2.8.0.0"
+    },
+    {
+      "name": "ReyAudioService.exe",
+      "sha256": "35185686844749a62e852c953597d57561843f3c7f3730efc87a5ed08b0aa096",
+      "expected": "35185686844749a62e852c953597d57561843f3c7f3730efc87a5ed08b0aa096",
+      "matches": true,
+      "version": "2.8.0.0"
+    },
+    {
+      "name": "ReyAudioAsio.dll",
+      "sha256": "4d5b835f3225b6dceaf59e2025db4bd7283519f287cb6375372e6d225095535d",
+      "expected": "4d5b835f3225b6dceaf59e2025db4bd7283519f287cb6375372e6d225095535d",
+      "matches": true,
+      "version": "2.8.0.0"
+    }
+  ],
+  "setup_sha256": "333592576971e0f8c37bb5ab87205a7f824c088960133de690f93702ef9fe50b",
+  "setup_hash_matches": true,
+  "service": {
+    "state": "Running",
+    "start_mode": "Auto",
+    "command": "\"C:\\Program Files\\ReyAudio\\USBASIO\\ReyAudioService.exe\" --service --asio-only",
+    "process_path": null,
+    "process_path_available": false,
+    "process_name": "ReyAudioService.exe",
+    "process_id": 53548
+  },
+  "registered_dll": "C:\\Program Files\\ReyAudio\\USBASIO\\ReyAudioAsio.dll",
+  "registered_clsid": "{91BA2C4A-56BC-4C49-A499-231979EC5F60}",
+  "saved_profile_bytes": 168,
+  "saved_profile_format": 3,
+  "saved_asio_preferences": {
+    "block": 64,
+    "lead_blocks": 3
+  },
+  "install_log_tail": [
+    "   \u0432 ReyAudio.UsbAsioSetup.Program.Main(String[] args)",
+    "2026-10-03T17:59:34.7622128Z INSTALL_BEGIN",
+    "2026-10-03T17:59:35.4713637Z INSTALL_OK: USB ASIO registered; auto-start service Running; no kernel/boot changes.",
+    "2026-10-03T18:50:07.2436443Z INSTALL_BEGIN",
+    "2026-10-03T18:50:07.6779830Z INSTALL_OK: USB ASIO registered; auto-start service Running; no kernel/boot changes."
+  ],
+  "okay": true
+}

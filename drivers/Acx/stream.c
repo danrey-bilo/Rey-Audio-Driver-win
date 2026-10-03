@@ -1,27 +1,27 @@
 #include "driver.h"
 
-static PBYTE PacketBuffer(PIAOIP_STREAM_CONTEXT *s, ULONG number) {
+static PBYTE PacketBuffer(REY_STREAM_CONTEXT *s, ULONG number) {
   PACX_RTPACKET p = &s->packets[number % s->packet_count];
   return (PBYTE)s->buffers[number % s->packet_count] + p->RtPacketOffset;
 }
 // Caller holds the child PCM lock. A callback from an old stream must not
 // overwrite the running flag of a newer stream already published in its slot.
 static VOID SetRunning(ACXSTREAM stream, BOOLEAN running) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   ULONG i;
   s->running = running;
   d->stats.capture_running = d->stats.render_running = 0;
-  for (i = 0; i < PIAOIP_ENDPOINT_SLOTS; ++i)
-    if (d->streams[i] && PiaoipStreamContext(d->streams[i])->running) {
-      if (piaoip_endpoint_capture(i)) d->stats.capture_running = 1;
+  for (i = 0; i < REY_ENDPOINT_SLOTS; ++i)
+    if (d->streams[i] && ReyStreamContext(d->streams[i])->running) {
+      if (rey_endpoint_capture(i)) d->stats.capture_running = 1;
       else d->stats.render_running = 1;
     }
 }
-NTSTATUS PiaoipCreateStream(WDFDEVICE device, ACXCIRCUIT circuit, ACXPIN pin, PACXSTREAM_INIT init,
+NTSTATUS ReyCreateStream(WDFDEVICE device, ACXCIRCUIT circuit, ACXPIN pin, PACXSTREAM_INIT init,
                             ACXDATAFORMAT format, const GUID *mode, ACXOBJECTBAG arguments) {
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(device);
-  PIAOIP_CIRCUIT_CONTEXT *c = PiaoipCircuitContext(circuit);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(device);
+  REY_CIRCUIT_CONTEXT *c = ReyCircuitContext(circuit);
   BOOLEAN capture = c->capture;
   WAVEFORMATEXTENSIBLE *wave = (WAVEFORMATEXTENSIBLE *)AcxDataFormatGetWaveFormatExtensible(format);
   WDF_OBJECT_ATTRIBUTES attributes;
@@ -55,32 +55,32 @@ NTSTATUS PiaoipCreateStream(WDFDEVICE device, ACXCIRCUIT circuit, ACXPIN pin, PA
   // Reserve the stream slot, then perform ACX allocation without holding the
   // PCM exchange lock used by the other direction's already running stream.
   ACX_STREAM_CALLBACKS_INIT(&callbacks);
-  callbacks.EvtAcxStreamPrepareHardware = PiaoipStreamPrepare;
-  callbacks.EvtAcxStreamReleaseHardware = PiaoipStreamRelease;
-  callbacks.EvtAcxStreamRun = PiaoipStreamRun;
-  callbacks.EvtAcxStreamPause = PiaoipStreamPause;
+  callbacks.EvtAcxStreamPrepareHardware = ReyStreamPrepare;
+  callbacks.EvtAcxStreamReleaseHardware = ReyStreamRelease;
+  callbacks.EvtAcxStreamRun = ReyStreamRun;
+  callbacks.EvtAcxStreamPause = ReyStreamPause;
   status = AcxStreamInitAssignAcxStreamCallbacks(init, &callbacks);
   if (!NT_SUCCESS(status))
     goto done;
   ACX_RT_STREAM_CALLBACKS_INIT(&realtime);
-  realtime.EvtAcxStreamAllocateRtPackets = PiaoipAllocatePackets;
-  realtime.EvtAcxStreamFreeRtPackets = PiaoipFreePackets;
-  realtime.EvtAcxStreamGetHwLatency = PiaoipStreamLatency;
-  realtime.EvtAcxStreamGetCurrentPacket = PiaoipGetCurrentPacket;
-  realtime.EvtAcxStreamGetPresentationPosition = PiaoipGetPosition;
+  realtime.EvtAcxStreamAllocateRtPackets = ReyAllocatePackets;
+  realtime.EvtAcxStreamFreeRtPackets = ReyFreePackets;
+  realtime.EvtAcxStreamGetHwLatency = ReyStreamLatency;
+  realtime.EvtAcxStreamGetCurrentPacket = ReyGetCurrentPacket;
+  realtime.EvtAcxStreamGetPresentationPosition = ReyGetPosition;
   if (capture)
-    realtime.EvtAcxStreamGetCapturePacket = PiaoipGetCapturePacket;
+    realtime.EvtAcxStreamGetCapturePacket = ReyGetCapturePacket;
   else
-    realtime.EvtAcxStreamSetRenderPacket = PiaoipSetRenderPacket;
+    realtime.EvtAcxStreamSetRenderPacket = ReySetRenderPacket;
   status = AcxStreamInitAssignAcxRtStreamCallbacks(init, &realtime);
   if (!NT_SUCCESS(status))
     goto done;
   AcxStreamInitSetAcxRtStreamSupportsNotifications(init);
-  WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, PIAOIP_STREAM_CONTEXT);
-  attributes.EvtDestroyCallback = PiaoipStreamDestroy;
+  WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, REY_STREAM_CONTEXT);
+  attributes.EvtDestroyCallback = ReyStreamDestroy;
   status = AcxRtStreamCreate(device, circuit, &attributes, &init, &stream);
   if (NT_SUCCESS(status)) {
-    PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
+    REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
     s->device = device;
     s->slot = c->slot;
     s->first_channel = c->first_channel;
@@ -101,17 +101,17 @@ done:
     WdfObjectDelete(stream);
   return status;
 }
-VOID PiaoipStreamDestroy(WDFOBJECT object) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext((ACXSTREAM)object);
+VOID ReyStreamDestroy(WDFOBJECT object) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext((ACXSTREAM)object);
   if (s->device) {
-    PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+    REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
     WdfWaitLockAcquire(d->lock, NULL);
     SetRunning((ACXSTREAM)object, FALSE);
     if (d->streams[s->slot] == (ACXSTREAM)object)
       d->streams[s->slot] = NULL;
     WdfWaitLockRelease(d->lock);
     if (s->packets)
-      PiaoipFreePackets((ACXSTREAM)object, s->packets, s->packet_count);
+      ReyFreePackets((ACXSTREAM)object, s->packets, s->packet_count);
   }
 }
 static VOID FreePacketStorage(PACX_RTPACKET packets, PVOID *buffers, ULONG count) {
@@ -125,11 +125,11 @@ static VOID FreePacketStorage(PACX_RTPACKET packets, PVOID *buffers, ULONG count
       MmFreePagesFromMdl(mdl);
       ExFreePool(mdl);
     }
-  ExFreePoolWithTag(packets, PIAOIP_POOL_TAG);
+  ExFreePoolWithTag(packets, REY_POOL_TAG);
 }
-NTSTATUS PiaoipAllocatePackets(ACXSTREAM stream, ULONG count, ULONG bytes, PACX_RTPACKET *result) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+NTSTATUS ReyAllocatePackets(ACXSTREAM stream, ULONG count, ULONG bytes, PACX_RTPACKET *result) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   PACX_RTPACKET packets = NULL;
   PVOID buffers[2] = {NULL, NULL};
   ULONG pages, i;
@@ -137,7 +137,7 @@ NTSTATUS PiaoipAllocatePackets(ACXSTREAM stream, ULONG count, ULONG bytes, PACX_
   NTSTATUS status = STATUS_SUCCESS;
   if (!count || count > 2 || !bytes || (count == 1 && bytes % PAGE_SIZE) ||
       bytes % (s->channels * 4) || bytes / (s->channels * 4) < d->profile.block ||
-      bytes / (s->channels * 4) > PIAOIP_BRIDGE_PACKET_FRAMES ||
+      bytes / (s->channels * 4) > REY_BRIDGE_PACKET_FRAMES ||
       (bytes / (s->channels * 4)) % d->profile.block)
     return STATUS_INVALID_PARAMETER;
   WdfWaitLockAcquire(d->lock, NULL);
@@ -151,7 +151,7 @@ NTSTATUS PiaoipAllocatePackets(ACXSTREAM stream, ULONG count, ULONG bytes, PACX_
   // These private pages are prepared before publication. PCM exchange sees
   // either no packets or a complete allocation and never waits for the MM.
   packets = (PACX_RTPACKET)ExAllocatePool2(POOL_FLAG_NON_PAGED, count * sizeof(*packets),
-                                           PIAOIP_POOL_TAG);
+                                           REY_POOL_TAG);
   if (!packets) {
     status = STATUS_INSUFFICIENT_RESOURCES;
     goto publish;
@@ -200,9 +200,9 @@ publish:
   WdfObjectDereference(stream);
   return status;
 }
-VOID PiaoipFreePackets(ACXSTREAM stream, PACX_RTPACKET packets, ULONG count) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+VOID ReyFreePackets(ACXSTREAM stream, PACX_RTPACKET packets, ULONG count) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   PVOID buffers[2] = {NULL, NULL};
   BOOLEAN owned = FALSE;
   WdfWaitLockAcquire(d->lock, NULL);
@@ -220,9 +220,9 @@ VOID PiaoipFreePackets(ACXSTREAM stream, PACX_RTPACKET packets, ULONG count) {
   if (owned)
     FreePacketStorage(packets, buffers, count);
 }
-NTSTATUS PiaoipStreamPrepare(ACXSTREAM stream) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+NTSTATUS ReyStreamPrepare(ACXSTREAM stream) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   WdfWaitLockAcquire(d->lock, NULL);
   s->current_packet = 0;
   s->reported_packet = 0;
@@ -234,18 +234,18 @@ NTSTATUS PiaoipStreamPrepare(ACXSTREAM stream) {
   WdfWaitLockRelease(d->lock);
   return STATUS_SUCCESS;
 }
-NTSTATUS PiaoipStreamRelease(ACXSTREAM stream) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+NTSTATUS ReyStreamRelease(ACXSTREAM stream) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   WdfWaitLockAcquire(d->lock, NULL);
   s->prepared = FALSE;
   SetRunning(stream, FALSE);
   WdfWaitLockRelease(d->lock);
   return STATUS_SUCCESS;
 }
-NTSTATUS PiaoipStreamRun(ACXSTREAM stream) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+NTSTATUS ReyStreamRun(ACXSTREAM stream) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   NTSTATUS status = STATUS_SUCCESS;
   WdfWaitLockAcquire(d->lock, NULL);
   if (!s->prepared || !s->packets || d->removing ||
@@ -257,23 +257,23 @@ NTSTATUS PiaoipStreamRun(ACXSTREAM stream) {
   WdfWaitLockRelease(d->lock);
   return status;
 }
-NTSTATUS PiaoipStreamPause(ACXSTREAM stream) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+NTSTATUS ReyStreamPause(ACXSTREAM stream) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   WdfWaitLockAcquire(d->lock, NULL);
   SetRunning(stream, FALSE);
   WdfWaitLockRelease(d->lock);
   return STATUS_SUCCESS;
 }
-NTSTATUS PiaoipStreamLatency(ACXSTREAM stream, ULONG *fifo, ULONG *delay) {
+NTSTATUS ReyStreamLatency(ACXSTREAM stream, ULONG *fifo, ULONG *delay) {
   UNREFERENCED_PARAMETER(stream);
   *fifo = 0;
   *delay = 0;
   return STATUS_SUCCESS;
 }
-NTSTATUS PiaoipSetRenderPacket(ACXSTREAM stream, ULONG packet, ULONG flags, ULONG eos_length) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+NTSTATUS ReySetRenderPacket(ACXSTREAM stream, ULONG packet, ULONG flags, ULONG eos_length) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   NTSTATUS status = STATUS_SUCCESS;
   ULONG index;
   WdfWaitLockAcquire(d->lock, NULL);
@@ -294,9 +294,9 @@ NTSTATUS PiaoipSetRenderPacket(ACXSTREAM stream, ULONG packet, ULONG flags, ULON
   WdfWaitLockRelease(d->lock);
   return status;
 }
-NTSTATUS PiaoipGetCurrentPacket(ACXSTREAM stream, ULONG *packet) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+NTSTATUS ReyGetCurrentPacket(ACXSTREAM stream, ULONG *packet) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   WdfWaitLockAcquire(d->lock, NULL);
   // current_packet owns the next/incomplete buffer. Before its first frame,
   // the last completed packet is ULONG_MAX, so the OS may prefill packet zero.
@@ -304,9 +304,9 @@ NTSTATUS PiaoipGetCurrentPacket(ACXSTREAM stream, ULONG *packet) {
   WdfWaitLockRelease(d->lock);
   return STATUS_SUCCESS;
 }
-NTSTATUS PiaoipGetCapturePacket(ACXSTREAM stream, ULONG *packet, ULONGLONG *qpc, BOOLEAN *more) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+NTSTATUS ReyGetCapturePacket(ACXSTREAM stream, ULONG *packet, ULONGLONG *qpc, BOOLEAN *more) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   NTSTATUS status = STATUS_SUCCESS;
   WdfWaitLockAcquire(d->lock, NULL);
   if (!s->packet_frames || s->position < s->packet_frames)
@@ -320,9 +320,9 @@ NTSTATUS PiaoipGetCapturePacket(ACXSTREAM stream, ULONG *packet, ULONGLONG *qpc,
   WdfWaitLockRelease(d->lock);
   return status;
 }
-NTSTATUS PiaoipGetPosition(ACXSTREAM stream, ULONGLONG *position, ULONGLONG *qpc) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+NTSTATUS ReyGetPosition(ACXSTREAM stream, ULONGLONG *position, ULONGLONG *qpc) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(s->device);
   WdfWaitLockAcquire(d->lock, NULL);
   *position = s->position;
   *qpc = s->qpc;
@@ -331,9 +331,9 @@ NTSTATUS PiaoipGetPosition(ACXSTREAM stream, ULONGLONG *position, ULONGLONG *qpc
 }
 
 static VOID AdvanceStream(ACXSTREAM stream, const int32_t *input, int32_t *output, ULONG frames,
-                          ULONGLONG qpc, PIAOIP_DEVICE_CONTEXT *d) {
-  PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
-  PIAOIP_BRIDGE_STATS *stats = &d->stats;
+                          ULONGLONG qpc, REY_DEVICE_CONTEXT *d) {
+  REY_STREAM_CONTEXT *s = ReyStreamContext(stream);
+  REY_BRIDGE_STATS *stats = &d->stats;
   ULONG offset = 0;
   while (offset < frames) {
     ULONG available = s->packet_frames - s->partial_frames, chunk = min(available, frames - offset);
@@ -342,7 +342,7 @@ static VOID AdvanceStream(ACXSTREAM stream, const int32_t *input, int32_t *outpu
     if (s->capture) {
       if (!s->partial_frames && s->current_packet - s->reported_packet >= s->packet_count)
         ++stats->capture_overruns;
-      piaoip_endpoint_capture_pcm((int32_t *)packet,
+      rey_endpoint_capture_pcm((int32_t *)packet,
           input ? input + (SIZE_T)offset * d->profile.inputs : NULL,
           chunk, s->channels, d->profile.inputs, s->first_channel);
       if (!s->partial_frames)
@@ -354,7 +354,7 @@ static VOID AdvanceStream(ACXSTREAM stream, const int32_t *input, int32_t *outpu
                          ? min(chunk, s->render_length[index] - s->partial_frames)
                          : 0;
       if (length && output)
-        (VOID)piaoip_endpoint_render_pcm(output + (SIZE_T)offset * d->profile.outputs,
+        (VOID)rey_endpoint_render_pcm(output + (SIZE_T)offset * d->profile.outputs,
             (const int32_t *)packet, length, s->channels, d->profile.outputs,
             s->first_channel, d->profile.valid_bits);
       if (!ready && output)
@@ -374,13 +374,13 @@ static VOID AdvanceStream(ACXSTREAM stream, const int32_t *input, int32_t *outpu
     }
   }
 }
-NTSTATUS PiaoipExchange(WDFDEVICE child, const PIAOIP_BRIDGE_EXCHANGE *input,
-                        PIAOIP_BRIDGE_EXCHANGE *output) {
-  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(child);
+NTSTATUS ReyExchange(WDFDEVICE child, const REY_BRIDGE_EXCHANGE *input,
+                        REY_BRIDGE_EXCHANGE *output) {
+  REY_DEVICE_CONTEXT *d = ReyDeviceContext(child);
   ULONG frames = input->frames, flags = 0, slot;
   uint32_t gap = 0;
   ULONGLONG qpc = (ULONGLONG)KeQueryPerformanceCounter(NULL).QuadPart;
-  if (!piaoip_bridge_valid_exchange(input, &d->profile))
+  if (!rey_bridge_valid_exchange(input, &d->profile))
     return STATUS_INVALID_PARAMETER;
   WdfWaitLockAcquire(d->lock, NULL);
   if (d->removing) {
@@ -389,7 +389,7 @@ NTSTATUS PiaoipExchange(WDFDEVICE child, const PIAOIP_BRIDGE_EXCHANGE *input,
   }
   if (d->bridge_seen &&
       (input->epoch != d->bridge_epoch ||
-       !piaoip_bridge_frame_gap(input, d->next_bridge_frame, d->profile.block * 4, &gap))) {
+       !rey_bridge_frame_gap(input, d->next_bridge_frame, d->profile.block * 4, &gap))) {
     WdfWaitLockRelease(d->lock);
     return STATUS_DATA_ERROR;
   }
@@ -398,19 +398,19 @@ NTSTATUS PiaoipExchange(WDFDEVICE child, const PIAOIP_BRIDGE_EXCHANGE *input,
   d->next_bridge_frame = input->frame_position + frames;
   if (input->flags)
     ++d->stats.discontinuities;
-  for (slot = 0; slot < PIAOIP_ENDPOINT_SLOTS; slot += 2)
-    if (d->streams[slot] && PiaoipStreamContext(d->streams[slot])->running) {
+  for (slot = 0; slot < REY_ENDPOINT_SLOTS; slot += 2)
+    if (d->streams[slot] && ReyStreamContext(d->streams[slot])->running) {
       if (gap) AdvanceStream(d->streams[slot], NULL, NULL, gap, qpc, d);
       AdvanceStream(d->streams[slot], input->samples, NULL, frames, qpc, d);
-      flags |= PIAOIP_BRIDGE_CAPTURE_ACTIVE;
+      flags |= REY_BRIDGE_CAPTURE_ACTIVE;
     }
   // Both METHOD_BUFFERED directions may alias. Capture has consumed the input.
   RtlZeroMemory(output->samples, sizeof(output->samples));
-  for (slot = 1; slot < PIAOIP_ENDPOINT_SLOTS; slot += 2)
-    if (d->streams[slot] && PiaoipStreamContext(d->streams[slot])->running) {
+  for (slot = 1; slot < REY_ENDPOINT_SLOTS; slot += 2)
+    if (d->streams[slot] && ReyStreamContext(d->streams[slot])->running) {
       if (gap) AdvanceStream(d->streams[slot], NULL, NULL, gap, qpc, d);
       AdvanceStream(d->streams[slot], NULL, output->samples, frames, qpc, d);
-      flags |= PIAOIP_BRIDGE_RENDER_ACTIVE;
+      flags |= REY_BRIDGE_RENDER_ACTIVE;
     }
   output->flags = flags;
   output->qpc = qpc;

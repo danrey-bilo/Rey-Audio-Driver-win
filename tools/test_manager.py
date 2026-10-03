@@ -44,110 +44,63 @@ def wait_for(predicate, seconds=8):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description='Finite checks of the installed single-device USB service')
     parser.add_argument('--bin', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
-    binary = args.bin.resolve() / 'ReyAudioService.exe'
-    report = {'started_utc': datetime.now(timezone.utc).isoformat(),
-              'binary_sha256': hashlib.sha256(binary.read_bytes()).hexdigest(),
-              'physical_audio_qualified': False, 'windows_endpoints_qualified': False, 'cases': []}
+    report = {'physical_audio': False, 'device_limit': 1, 'cases': [],
+              'binary_sha256': hashlib.sha256((args.bin / 'ReyAudioService.exe').read_bytes()).hexdigest()}
+    original = None
+    start = time.monotonic()
+    def usb(profile):
+        return request('USB ' + ' '.join(map(str, (profile['rate'], profile['bits'], profile['depth'],
+            profile['block'], profile['guard'], int(profile['automatic'])))))
     try:
-        for digital in (False, True):
-            config = args.out.resolve() / ('digital.dat' if digital else 'production.dat')
-            duration = 55 if digital else 20
-            command = [str(binary), '--console', '--seconds', str(duration), '--test-settings', str(config)]
-            if digital:
-                command += ['--digital-test']
-            with (args.out / ('digital.log' if digital else 'production.log')).open('w') as log:
-                process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT)
-                try:
-                    status = wait_for(lambda d: d['usb']['present'] == 1 and d['usb']['identity'])
-                    report['cases'].append({'name': 'USB auto discovery ' + str(digital), 'status': status})
-                    if not digital:
-                        status = wait_for(lambda d: d['state'] == 'driver_unavailable')
-                        assert not status['driver_present'] and status['stats']['callbacks'] == 0
-                        report['cases'].append({'name': 'missing driver is explicit', 'status': status})
-                        subprocess.run([str(args.bin.resolve() / 'ReyAudioControl.exe'), '--render-test',
-                            str(args.out.resolve() / 'ui')], check=True, timeout=20)
-                        layout = json.loads((args.out / 'ui/layout-check.json').read_text())
-                        assert layout['service_available'] and layout['usb_apply_enabled'] and layout['usb_select_enabled']
-                    else:
-                        status = wait_for(lambda d: d['state'] == 'digital_test' and d['stats']['callbacks'] > 1000)
-                        assert status['usb']['present'] == 1  # enumeration must survive exclusive streaming
-                        baseline = status['usb'].copy()
-                        identity = status['identity']
-                        assert status['selected_device'] == identity and len(status['devices']) == 1
-                        generation = status['stats']['generation']
-                        count = status['stats']['callbacks']
-                        for _ in range(4): assert request('SELECT ' + identity)['ok']
-                        time.sleep(.3)
-                        after = request('STATUS')
-                        assert after['stats']['generation'] == generation and after['stats']['callbacks'] > count
-                        assert not request('SELECT 000000000000000000000000000000ff')['ok']
-                        report['cases'].append({'name': 'mixer selection keeps real USB session running', 'status': after})
-                        assert request('DEVICE ' + identity + ' MIX 1:7 5800 0 0 0 apply')['ok']
-                        assert not request('DEVICE 000000000000000000000000000000ff MIX 1:7 5800 0 0 0 apply')['ok']
-                        after = request('STATUS')
-                        assert after['mixer']['outputs'][7]['gain_cdb'] == -200 and after['stats']['generation'] == generation
-                        assert request('MIX_RESET')['ok']
-                        report['cases'].append({'name': 'scoped mixer edits address the physical card identity', 'status': after})
-                        assert request('LAN 192.168.1.2 50021 128 2048 32 0')['ok']
-                        after = request('STATUS')
-                        assert after['usb'] == baseline and after['route'] == 'usb'
-                        count = after['stats']['callbacks']
-                        time.sleep(.5)
-                        after = request('STATUS')
-                        assert after['stats']['callbacks'] > count and after['stats']['generation'] == generation
-                        report['cases'].append({'name': 'separate LAN profile without USB restart', 'status': after})
-                        count = after['stats']['callbacks']
-                        assert request('MIX 0:2 5400 0 1 1 apply')['ok']
-                        assert request('MASTER 5700 0')['ok']
-                        time.sleep(.3)
-                        after = request('STATUS')
-                        assert after['stats']['callbacks'] > count and after['route'] == 'usb'
-                        assert after['mixer']['inputs'][2]['gain_cdb'] == -600 and after['mixer']['inputs'][2]['solo']
-                        assert after['mixer']['inputs'][2]['invert'] and after['mixer']['master_cdb'] == -300
-                        for malformed in ('MIX 0:8 6000 0 0 0 apply', 'MIX 2:0 6000 0 0 0 apply', 'MASTER 6601 0'):
-                            before = request('STATUS')
-                            reply = request(malformed)
-                            assert not reply['ok']
-                            for direction in ('inputs', 'outputs'):
-                                for previous, current in zip(before['mixer'][direction],reply['mixer'][direction]):
-                                    assert all(previous[key] == current[key] for key in ('gain_cdb','mute','solo','invert'))
-                        assert request('MIX_RESET')['ok']
-                        report['cases'].append({'name': 'live mixer settings without stream restart', 'status': after})
-                        for invalid in ('USB 192000 17 3 64 0 1', 'USB 192000 32 0 64 0 1',
-                                        'USB -1 32 3 64 0 1', 'USE shell', 'LAN 127.0.0.1 0 64 256 32 0',
-                                        'LAN_CONNECT extra', 'USB 192000 32 3 64 0 1 trailing'):
-                            before = request('STATUS')
-                            reply = request(invalid)
-                            assert not reply['ok'] and reply['usb'] == before['usb'] and reply['lan'] == before['lan']
-                        report['cases'].append({'name': 'malformed requests leave settings unchanged', 'passed': True})
-                        for rate, bits in ((44100, 16), (96000, 24), (192000, 32)):
-                            assert request(f'USB {rate} {bits} 3 64 0 1')['ok']
-                            after = wait_for(lambda d: d['state'] == 'digital_test' and
-                                d['active']['rate'] == rate and d['active']['bits'] == bits and
-                                d['stats']['callbacks'] > 1000)
-                            assert after['stats']['missing_frames'] == 0
-                            report['cases'].append({'name': f'USB profile restart {rate}/{bits}', 'status': after})
-                        assert request('USB 192000 32 3 64 0 0')['ok']
-                        wait_for(lambda d: d['route'] == 'none' and d['state'] == 'idle')
-                        assert request('USE usb')['ok']
-                        after = wait_for(lambda d: d['state'] == 'digital_test' and d['stats']['callbacks'] > 1000)
-                        report['cases'].append({'name': 'USB pause and reconnect', 'status': after})
-                finally:
-                    # CTRL_BREAK is unavailable without a separate console; a finite
-                    # session ends itself. Test stop via its bounded timer.
-                    process.wait(timeout=duration + 5)
-                    assert process.returncode == 0
-        report['passed'] = True
+        before = request('STATUS')
+        if before.get('device_limit') != 1 or not before.get('asio_only') or before['asio']['connected']:
+            raise RuntimeError('One idle USB-only ASIO service is required; close the DAW')
+        original = before['usb'].copy()
+        report['before'] = before
+        for command in ('SCAN', 'LAN_CONNECT', 'LAN_DISCONNECT', 'USE lan', 'USE usb',
+                        'SELECT ' + before['identity'], 'FORGET ' + before['identity'],
+                        'DEVICE ' + before['identity'] + ' MIX_RESET',
+                        'USB 192000 17 3 64 0 1', 'USB -1 32 3 64 0 1', 'MIX 0:8 6000 0 0 0 apply'):
+            reply = request(command)
+            if reply['ok'] or reply['usb'] != before['usb'] or reply['mixer'] != before['mixer']:
+                raise RuntimeError('Rejected command changed settings: ' + command)
+            report['cases'].append({'command': command, 'rejected': True})
+        if 'lan' in before or 'devices' in before or 'selected_device' in before:
+            raise RuntimeError('Retired transport/catalog remains in the control API')
+        if not usb({**original, 'automatic': False})['ok']:
+            raise RuntimeError('Pause rejected')
+        idle = wait_for(lambda s: s['state'] == 'idle' and not s['asio']['ready'] and s['active']['rate'] == 0)
+        if idle['usb']['present'] != 1:
+            raise RuntimeError('Paused device presence was lost')
+        report['paused'] = idle
+        if not usb(original)['ok']:
+            raise RuntimeError('Resume rejected')
+        resumed = wait_for(lambda s: s['state'] == 'streaming' and s['asio']['ready'] and s['stats']['callbacks'] > 500)
+        if resumed['identity'] != before['identity'] or resumed['stats']['generation'] <= before['stats']['generation']:
+            raise RuntimeError('Resume identity/generation mismatch')
+        report['resumed'] = resumed
+        report['okay'] = True
+    except (OSError, RuntimeError, AssertionError) as error:
+        report['okay'] = False
+        report['error'] = str(error)
     finally:
-        report['ended_utc'] = datetime.now(timezone.utc).isoformat()
-        (args.out / 'manager-proof.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
-    print('REY_MANAGER_PASS cases=' + str(len(report['cases'])), flush=True)
+        if original is not None:
+            try:
+                usb(original)
+                report['restored'] = wait_for(lambda s: s['usb'] == original and s['state'] == 'streaming' and s['asio']['ready'])
+            except (OSError, AssertionError) as error:
+                report['okay'] = False
+                report['restore_error'] = str(error)
+        report['duration_s'] = round(time.monotonic() - start, 3)
+        (args.out / 'results.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+    print('SINGLE_USB_SERVICE', report.get('okay'), report['duration_s'], flush=True)
+    return 0 if report.get('okay') else 1
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

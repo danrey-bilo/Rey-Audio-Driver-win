@@ -1,33 +1,57 @@
-**English** | [Русский](BUILD.ru.md)
+# Build the USB-only Windows software
 
-# Build the Windows driver
+Use a Windows x64 C++17 toolchain with Windows SDK libraries, CMake 3.20+ and
+.NET Framework 4.8 for the WPF panel/EXE installer. Obtain the external Steinberg
+ASIO SDK separately; its headers are not included in this repository or package.
+[ASIO SDK](ASIO-SDK.md).
 
-For the independent service build without ASIO and the initial ACX kernel project, see [ACX/service development](ACX-SERVICE.md). The instructions below build the existing ASIO adapter.
-
-Requirements: Windows x64, CMake 3.20+, Ninja, LLVM-MinGW x64/UCRT and a separately obtained [Steinberg ASIO SDK](ASIO-SDK.md). The SDK is not part of this repository or its source archive.
+Supply a [Pi5-AUSB](https://github.com/danrey-bilo/Pi5-AUSB) checkout or installed
+0.1.0-compatible SDK. AoIP-lib and its former submodule are not required.
+From a Windows x64 compiler environment:
 
 ```powershell
-git clone --recurse-submodules https://github.com/danrey-bilo/Rey-Audio-Driver-win.git
-cd Win11-asio-AoIP
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release `
-  -DCMAKE_CXX_COMPILER=C:/Tools/llvm-mingw/bin/x86_64-w64-mingw32-clang++.exe `
-  -DCMAKE_RC_COMPILER=C:/Tools/llvm-mingw/bin/x86_64-w64-mingw32-windres.exe `
-  -DASIO_SDK_DIR=C:/SDKs/asio
-cmake --build build --parallel 2
+cmake -S . -B build/usb -G Ninja `
+  -DPI5AUSB_SOURCE_DIR=C:/src/Pi5-AUSB `
+  -DASIO_SDK_DIR=C:/SDK/asio `
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build/usb
+ctest --test-dir build/usb --output-on-failure
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/build_usb_asio_setup.ps1 `
+  -Bin build/usb/bin -Output build/usb-setup
 ```
 
-The output is `build/bin/PiAoipAsio.dll` and `build/bin/PiAoipControl.exe`. The EXE loads the DLL beside itself. Both binaries include version 2.5.0 and embedded icons. `src/ui/assets` contains editable SVG sources and multi-resolution ICO resources. The DLL contains the dialog manifest; the EXE has its application manifest and version resource.
+The EXE is `build/usb-setup/Rey-Audio-USB-ASIO-Setup-x64.exe`. `SHA256.json`
+records the four embedded binaries and installer hash. No INI, SYS/CAT,
+SDK headers or network firewall configuration enters the USB installer.
+Verify an installed package from x64 PowerShell using
+`tools/verify_usb_install.ps1 -SetupDirectory build/usb-setup -Output build/install-check.json`.
 
-`external/AoIP-lib` is pinned to the compatible 2.5.0 source. Override with `-DAOIP_SOURCE_DIR=/path/to/AoIP-lib`, or use an installed `AoIP 2.5.0` SDK when no source dependency is present. AoIP-lib is a private dependency. Source builds require authorized access to its submodule or an installed compatible SDK. Public source archives do not include the private dependency.
+`REY_BUILD_USB_ASIO`, `REY_BUILD_CONTROL` and `REY_BUILD_TESTS` default to ON.
+Set ASIO OFF for a service-only development build. The TAG endpoint experiment
+is separately opt-in with `REY_ENABLE_TAG_BRIDGE=ON` and is not in the delivered
+ASIO package. ACX development tooling is separate from this supported EXE path.
 
-The product build contains no automatic buffer-tuning target. Core/configuration tests, invisible UI rendering and installer packaging are maintained in the separate development workspace. User installation uses the [released MSI](INSTALL.md); an ordinary CMake build does not register the driver.
+Minimal LLVM-MinGW environments can supply `REY_SETUPAPI_LIBRARY`,
+`PI5AUSB_SETUPAPI_LIBRARY`, `PI5AUSB_WINUSB_LIBRARY`, `REY_WASAPI_HEADERS`,
+`CMAKE_CXX_COMPILER` and `CMAKE_RC_COMPILER`. Standard SDK toolchains use their
+own import libraries. ARM64 is not supported.
 
-## Packaging
+Validation covers 32 contracts (IPC ownership/timeline, settings migration,
+PCM alignment, mixer, endpoint mapping and single-device selection). Use the
+installed COM matrix and profile tools only with an idle ASIO host, one Pi,
+and unity mixer. Maximum audio test duration is 295 seconds per run.
+[Current report](USB-ONLY-2.8.md). A build is not physical audio qualification.
 
-The 2.5.0 MSI contains the two binaries, English installation guide and project/ASIO license notices. Settings and guide shortcuts select icon resources 0 and 1 from the executable; Installed apps uses the application icon. The major-upgrade family is preserved so older packages are replaced while the per-user INI remains separate.
+## Release archives
 
-Do not add the Steinberg SDK headers or archive to a release. Project licensing and the external ASIO agreement are separate; see [ASIO SDK](ASIO-SDK.md).
+After committing the tested source, package the EXE, documentation and source:
 
-## Validation
+```powershell
+python tools/package_usb_release.py --setup build/usb-setup --out dist/usb-release `
+  --asio-notice C:/SDK/asio/LICENSE.txt --ref HEAD --version 2.8.0-preview.1
+```
 
-See [2.5.0 validation](VALIDATION.md). Building an ASIO DLL does not prove its behavior under a particular DAW workload. Validate format, buffers, stream errors and host restart behavior on the target PC. Physical converter latency requires a connected hardware backend.
+The tool checks the installer hash and one-device manifest, archives committed
+files only, excludes external SDK headers/binaries and emits download checksums.
+It neither installs nor publishes. The source archive preserves retired code
+under `archive/`; this code is outside the active build.

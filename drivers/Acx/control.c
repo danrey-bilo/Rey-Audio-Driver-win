@@ -1,6 +1,6 @@
 #include "driver.h"
 
-VOID PiaoipIoControl(WDFQUEUE queue, WDFREQUEST request, size_t output_length, size_t input_length,
+VOID ReyIoControl(WDFQUEUE queue, WDFREQUEST request, size_t output_length, size_t input_length,
                      ULONG code) {
   WDFDEVICE root = WdfIoQueueGetDevice(queue), child = NULL;
   WDFFILEOBJECT file = WdfRequestGetFileObject(request);
@@ -13,34 +13,34 @@ VOID PiaoipIoControl(WDFQUEUE queue, WDFREQUEST request, size_t output_length, s
     WdfRequestComplete(request, STATUS_INVALID_HANDLE);
     return;
   }
-  if (code == IOCTL_PIAOIP_ATTACH) {
-    status = WdfRequestRetrieveInputBuffer(request, sizeof(PIAOIP_BRIDGE_PROFILE), &input, NULL);
+  if (code == IOCTL_REY_ATTACH) {
+    status = WdfRequestRetrieveInputBuffer(request, sizeof(REY_BRIDGE_PROFILE), &input, NULL);
     if (NT_SUCCESS(status))
-      status = piaoip_bridge_valid_profile((const PIAOIP_BRIDGE_PROFILE *)input)
-                   ? PiaoipCreateChild(root, file, (const PIAOIP_BRIDGE_PROFILE *)input)
+      status = rey_bridge_valid_profile((const REY_BRIDGE_PROFILE *)input)
+                   ? ReyCreateChild(root, file, (const REY_BRIDGE_PROFILE *)input)
                    : STATUS_INVALID_PARAMETER;
-  } else if (code == IOCTL_PIAOIP_DETACH)
-    status = PiaoipDetachChild(file);
-  else if (code == IOCTL_PIAOIP_EXCHANGE || code == IOCTL_PIAOIP_STATS) {
+  } else if (code == IOCTL_REY_DETACH)
+    status = ReyDetachChild(file);
+  else if (code == IOCTL_REY_EXCHANGE || code == IOCTL_REY_STATS) {
     child = ReyReferenceChild(file);
     if (!child)
       status = STATUS_DEVICE_NOT_CONNECTED;
-    else if (code == IOCTL_PIAOIP_EXCHANGE) {
-      status = WdfRequestRetrieveInputBuffer(request, sizeof(PIAOIP_BRIDGE_EXCHANGE), &input, NULL);
+    else if (code == IOCTL_REY_EXCHANGE) {
+      status = WdfRequestRetrieveInputBuffer(request, sizeof(REY_BRIDGE_EXCHANGE), &input, NULL);
       if (NT_SUCCESS(status))
         status =
-            WdfRequestRetrieveOutputBuffer(request, sizeof(PIAOIP_BRIDGE_EXCHANGE), &output, NULL);
-      // METHOD_BUFFERED aliases both buffers. PiaoipExchange first consumes
+            WdfRequestRetrieveOutputBuffer(request, sizeof(REY_BRIDGE_EXCHANGE), &output, NULL);
+      // METHOD_BUFFERED aliases both buffers. ReyExchange first consumes
       // capture PCM, then writes the bounded render reply into the same storage.
       if (NT_SUCCESS(status))
-        status = PiaoipExchange(child, (const PIAOIP_BRIDGE_EXCHANGE *)input,
-                                (PIAOIP_BRIDGE_EXCHANGE *)output);
+        status = ReyExchange(child, (const REY_BRIDGE_EXCHANGE *)input,
+                                (REY_BRIDGE_EXCHANGE *)output);
       if (NT_SUCCESS(status))
-        bytes = sizeof(PIAOIP_BRIDGE_EXCHANGE);
+        bytes = sizeof(REY_BRIDGE_EXCHANGE);
     } else {
-      status = WdfRequestRetrieveOutputBuffer(request, sizeof(PIAOIP_BRIDGE_STATS), &output, NULL);
+      status = WdfRequestRetrieveOutputBuffer(request, sizeof(REY_BRIDGE_STATS), &output, NULL);
       if (NT_SUCCESS(status)) {
-        PIAOIP_DEVICE_CONTEXT *c = PiaoipDeviceContext(child);
+        REY_DEVICE_CONTEXT *c = ReyDeviceContext(child);
         WdfWaitLockAcquire(c->lock, NULL);
         RtlCopyMemory(output, &c->stats, sizeof(c->stats));
         WdfWaitLockRelease(c->lock);

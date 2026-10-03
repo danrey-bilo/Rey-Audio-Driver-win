@@ -1,8 +1,8 @@
 #include "usb_session.hpp"
 #include "pi5ausb/pcm.hpp"
 #include <array>
-namespace piaoip::engine {
-bool UsbSession::open(const Config &cfg, const std::string &expected_id,
+namespace rey::engine {
+bool UsbSession::open(const UsbProfile &cfg, const std::string &expected_id,
                       std::string &error) {
   profile_ = {cfg.rate, std::uint8_t(cfg.bits), 8, 8};
   if (!pi5ausb::valid_profile(profile_) || cfg.bits > 32 ||
@@ -29,7 +29,7 @@ bool UsbSession::open(const Config &cfg, const std::string &expected_id,
   }
   return open(cfg, expected_id, selected->path, error);
 }
-bool UsbSession::open(const Config &cfg, const std::string &expected_id,
+bool UsbSession::open(const UsbProfile &cfg, const std::string &expected_id,
                       const std::wstring &path, std::string &error) {
   profile_ = {cfg.rate, std::uint8_t(cfg.bits), 8, 8};
   if (!pi5ausb::valid_profile(profile_) || cfg.bits > 32 || path.empty() ||
@@ -175,4 +175,4 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
       static_cast<unsigned long long>(overruns), gap_max / 1000.0, ok ? 0 : 1);
   return ok && !underruns && !overruns;
 }
-} // namespace piaoip::engine
+} // namespace rey::engine

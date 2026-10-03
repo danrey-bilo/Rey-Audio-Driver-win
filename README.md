@@ -1,62 +1,108 @@
-![Rey Audio Driver](docs/assets/rey-header.svg)
+![Rey Audio Driver — USB ASIO](docs/assets/rey-header.svg)
 
 # Rey Audio Driver
 
-**English** | [Русский](README.ru.md)
+**English** · [Русский](README.ru.md)
 
-Windows 11 x64 audio driver, background service and mixer for Rey Audio on
-Raspberry Pi 5. USB and AoIP / LAN have separate manual settings. Each card has
-its own session and mixer; the selector at the top changes only the displayed
-card. The catalog supports up to ten saved cards.
+**USB audio, ASIO and a live mixer for one Raspberry Pi 5 on Windows x64.**
+Eight inputs and eight outputs, integer PCM16/24/32 and six sample rates from
+44.1 to 192 kHz. The service connects the board automatically and keeps running
+when the mixer window closes.
 
-**2.7.0 preview:** [EXE / MSI](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.7.0-preview.1) ·
-[Install](docs/INSTALL.md) · [Windows channel pairs](docs/ENDPOINTS.md) ·
-[Architecture and evidence](docs/REY-AUDIO-2.7.md).
+**[Download 2.8.0 USB preview](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.0-usb-preview.1)**
+· [Install & Ableton](docs/USB-ASIO.md)
+· [Documentation](docs/README.md)
+· [Pi5-AUSB transport](https://github.com/danrey-bilo/Pi5-AUSB)
 
-![Rey Audio Mixer](docs/assets/rey-mixer.png)
+> **Pre-release.** The USB-only conversion, local upgrade and PCM-format checks
+> passed. Nominal frame cadence, consistently sub-2-ms RTT and physical ADC/DAC
+> latency remain unqualified. See the [exact-build report](docs/USB-ONLY-2.8.md).
 
-| | USB | AoIP / LAN |
-|---|---|---|
-| Connection | Automatic discovery by permanent DeviceId | Add a Pi by its IPv4 address in the tray panel |
-| Format | 8×8, PCM16/24/32, six rates 44.1–192 kHz | Negotiated from the Pi, up to 8 inputs and 8 outputs |
-| Buffers | Manual transfer queue and audio period | Manual block, receive guard and packet frames |
-| Transport | High-Speed interrupt, asynchronous WinUSB | UDP/IPv4, IOCP receive and bounded audio deadlines |
-| Routing | Explicit USB choice for this card | Default once LAN is configured for this card |
+## Mixer
 
-The ACX code exposes stereo inputs/outputs **1/2, 3/4, 5/6, 7/8**, plus full
-**1–8 multichannel** devices, for each 8×8 board. They are intended for ordinary
-Windows audio applications and WASAPI/KS hosts. A matching USB/LAN DeviceId is
-one card with a selectable transport. Separate cards have independent clocks;
-they are not yet a synchronized aggregate interface.
+![Mixer for one USB audio card](docs/assets/rey-usb-only-mixer.png)
 
-Run **Rey-Audio-Setup-2.7.0-preview.1-x64.exe**, which contains the MSI.
-The installer creates a unique local test certificate, signs SYS/CAT and deletes
-the temporary private key. No paid certificate, signer or WDK is needed on the
-client. **Windows Test Mode is required**. The EXE provides explicit preparation;
-the user restarts Windows. MSI changes neither Secure Boot nor Core Isolation.
-[Installation guide](docs/INSTALL.md) ·
-[Options without Test Mode](docs/INSTALL-NORMAL-WINDOWS.md).
+Control eight input or eight output channels with gain, Mute, Solo and polarity.
+Output Master controls playback. Meters show real PCM levels. The panel has
+three pages: **Mixer**, **USB** and **Diagnostics**, with access from the tray.
 
-Mixer: gain, Mute, Solo, polarity, Master, real PCM meters and clipping counters.
-Edits add no PCM queue and do not restart transport. Profiles and mixers are
-stored per card in the registry; no INI or installation scripts are required.
+<details>
+<summary><strong>USB settings and diagnostics</strong></summary>
 
-Validation: **24 native contracts**, **12 finite real-Pi service checks**, a
-30-second test selecting an offline card while the real USB stream continues,
-and inspected MSI/EXE with verified local signing. **One physical Pi was used.**
-Loaded ACX, actual Windows device enumeration, Chrome/Telegram, simultaneous
-physical cards, elevated install/repair/uninstall and ADC/DAC remain unqualified.
-This is a **Pre-release**.
+![USB settings](docs/assets/rey-usb-only-usb.png)
 
-USB physical roundtrip **below 2 ms** is the goal. Earlier 299s digital transport
-RTT p50/p95/p99/max was **373/410/419/944.2 µs**; it excludes Windows audio engine
-and converters. [USB results](https://github.com/danrey-bilo/Pi5-AUSB/blob/v0.1.0/docs/RESULTS.md).
+![USB diagnostics](docs/assets/rey-usb-only-diagnostics.png)
 
-Dependencies: [Pi5-AUSB](https://github.com/danrey-bilo/Pi5-AUSB) and
-[AoIP-lib](https://github.com/danrey-bilo/AoIP-lib), with their existing visibility
-and licenses. The service and panel build without an ASIO SDK. The immutable
-[ASIO 2.5.0 release](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.5.0)
-remains available. Pi4 is unchanged.
+</details>
 
-[License](LICENSE) · [Mixer and latency](docs/MIXER.md) ·
-[Release notes](docs/RELEASE-2.7.0.md)
+## Start in Ableton
+
+1. Download **Rey-Audio-USB-ASIO-2.8.0-preview.1-x64.exe** from the release and
+   run it. Accept UAC; the installer adds the ASIO driver, automatic service
+   and mixer/tray panel.
+2. Connect one configured Pi5-AUSB board over USB. Open **Rey Audio Driver**.
+3. In Ableton **Settings → Audio**, set **Driver Type: ASIO** and
+   **Audio Device: Rey Audio USB ASIO**. Enable the required inputs/outputs.
+4. For the documented 192 kHz test, start with **64 Samples**. Set USB queue
+   and ASIO render reserve manually using the [buffer guide](docs/BUFFER-GUIDE.md).
+
+Microsoft WinUSB handles the USB interface. The package needs no installation
+INI, custom kernel driver, test certificate, Test Mode or boot/security change.
+Fully close the DAW before an update because it can keep the ASIO DLL loaded.
+The [installation guide](docs/USB-ASIO.md) describes format changes and reopening.
+
+## Capabilities
+
+| Feature | USB preview |
+|---|---|
+| Device | One Rey Audio USB board; automatic detection and stable identity |
+| Channels | 8 capture + 8 playback |
+| Formats | PCM16, packed PCM24, integer PCM32 |
+| Sample rates | 44.1 / 48 / 88.2 / 96 / 176.4 / 192 kHz |
+| Transport | Pi5-AUSB, USB High-Speed interrupt transfers, asynchronous WinUSB |
+| Processing | Bounded PCM rings, gain ramps, Mute/Solo/polarity, live meters |
+| Buffers | Manual ASIO block/render lead and USB queue; no automatic tuning |
+| Startup | Windows service at boot; panel/tray at login |
+| Settings | Atomic USB/mixer registry profile; migration of earlier USB settings |
+| Chrome / Telegram | System Windows audio endpoints remain a separate qualification stage |
+
+## Validation
+
+| Check | Result for this build |
+|---|---|
+| Native contracts | **32/32 passed** |
+| PCM formats, block64 / lead4 / USB depth3 | **18/18 passed**, five seconds per profile |
+| 192 kHz / PCM32, block64 / lead4 / depth3 | **295 s**, zero capture drops or render late/missing frames |
+| Digital RTT in that run, p50 / p95 / p99 / max | **1.6286 / 1.8837 / 2.0103 / 3.5171 ms** |
+| Observed frame cadence | **2.09% below nominal**; still requires investigation |
+
+The initial lead3 matrix had four failures; the 295 s lead3 run also dropped
+frames. All failed results are retained in the [report](docs/USB-ONLY-2.8.md)
+and [machine-readable evidence](docs/evidence/rey-usb-only-20261003.json).
+The host for these new-build tests was the installed native ASIO probe, not
+Ableton. The Pi used a digital loopback; ADC/DAC was not connected.
+
+ASIO's **1.3802 ms** with lead3 and **1.7135 ms** with lead4 at 192 kHz/64/depth3
+are the reported buffer model. They do not replace measured roundtrip.
+
+## Build and explore
+
+Use Windows x64, C++17, CMake, .NET Framework 4.8, a Pi5-AUSB checkout/SDK and
+separately obtained Steinberg ASIO interface headers. SDK headers are not
+included. [Build instructions](docs/BUILD.md).
+
+| Guide | Contents |
+|---|---|
+| [Architecture](docs/ARCHITECTURE.md) | Service ownership, USB, shared PCM rings and module boundaries |
+| [Control API](docs/API.md) | USB profile, mixer and status commands |
+| [Mixer](docs/MIXER.md) | Channel controls, routing direction and meters |
+| [Release notes](docs/RELEASE-2.8.0.md) | What changed and what is included |
+| [Validation report](docs/USB-ONLY-2.8.md) | Exact binary hashes, passed/failed tests and remaining work |
+| [Windows endpoints](docs/ENDPOINTS.md) | Separate system-audio backend status |
+
+From **2.8.0**, development is USB-only and supports one board. AoIP/LAN and
+multiple-card management are retired; their sources and reports are preserved
+in [the archive](archive/aoip/README.md), outside the active build. Separate
+AoIP repositories and old release assets are unchanged.
+
+[License](LICENSE) · [External ASIO SDK](docs/ASIO-SDK.md)

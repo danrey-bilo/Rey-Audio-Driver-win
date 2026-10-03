@@ -70,18 +70,17 @@
         <StackPanel Margin="28,30,12,0">
           <StackPanel Orientation="Horizontal"><TextBlock Text="REY" Foreground="#85E5C6" FontSize="29" FontWeight="Bold"/><Border Background="#29394D" CornerRadius="5" Padding="8,3" Margin="12,9,0,0" VerticalAlignment="Top"><TextBlock Text="AUDIO" Foreground="#C6D2E2" FontSize="10" FontWeight="SemiBold"/></Border></StackPanel>
           <TextBlock Text="Audio Driver" Foreground="White" FontSize="17" Margin="0,10,0,0"/>
-          <TextBlock Text="Микшер и подключения" Foreground="#8C9CB1" FontSize="11" Margin="0,5,0,0"/>
+          <TextBlock Text="USB-аудио и микшер" Foreground="#8C9CB1" FontSize="11" Margin="0,5,0,0"/>
         </StackPanel>
         <StackPanel Grid.Row="1">
           <RadioButton x:Name="NavMixer" GroupName="Pages" IsChecked="True" Style="{StaticResource Nav}" Content="Микшер" AutomationProperties.Name="Mixer"/>
           <RadioButton x:Name="NavUsb" GroupName="Pages" Style="{StaticResource Nav}" Content="USB" AutomationProperties.Name="USB"/>
-          <RadioButton x:Name="NavLan" GroupName="Pages" Style="{StaticResource Nav}" Content="AoIP / LAN" AutomationProperties.Name="AoIP LAN"/>
           <RadioButton x:Name="NavDiagnostics" GroupName="Pages" Style="{StaticResource Nav}" Content="Диагностика"/>
         </StackPanel>
         <StackPanel Grid.Row="2" Margin="28,18,24,22">
           <StackPanel Orientation="Horizontal"><Ellipse Width="7" Height="7" Fill="{Binding ServiceColor}" Margin="0,0,9,0"/><TextBlock Text="{Binding ServiceLabel}" Foreground="#D7E0ED" FontSize="12"/></StackPanel>
           <TextBlock Text="Работает в фоне. Закрытие окна оставляет управление в трее." Foreground="#8C9CB1" FontSize="11" Margin="0,12,0,0" LineHeight="17"/>
-          <TextBlock Text="2.7.0 · предварительная версия" Foreground="#63758E" FontSize="10" Margin="0,17,0,0"/>
+          <TextBlock Text="2.8.0 · предварительная версия" Foreground="#63758E" FontSize="10" Margin="0,17,0,0"/>
         </StackPanel>
       </Grid>
     </Border>
@@ -93,8 +92,8 @@
       </Grid>
       <Border Grid.Row="1" Style="{StaticResource Card}" Padding="20,16"><StackPanel>
         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="18"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-          <StackPanel><TextBlock Text="Аудиокарта" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="AudioCardSelector" ItemsSource="{Binding Cards}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding SelectedDevice, Mode=OneWay}" IsEnabled="{Binding CanSelectCard}" AutomationProperties.Name="Карта, отображаемая в микшере"/><TextBlock Text="{Binding CardsHint}" Style="{StaticResource Caption}" Margin="0,8,0,0"/></StackPanel>
-          <Button x:Name="WindowsSound" Grid.Column="2" Content="Звук Windows" VerticalAlignment="Center" Padding="14,9" ToolTip="Выбрать системный выход или микрофон для обычных приложений"/>
+          <StackPanel><TextBlock Text="USB-аудиокарта" Style="{StaticResource FieldLabel}"/><Border Background="#F3F7FA" CornerRadius="8" Padding="13,10"><TextBlock x:Name="AudioDeviceLabel" Text="{Binding DeviceLabel}" FontSize="16" FontWeight="SemiBold"/></Border><TextBlock Text="{Binding DeviceHint}" Style="{StaticResource Caption}" Margin="0,8,0,0"/></StackPanel>
+          <Button x:Name="WindowsSound" IsEnabled="{Binding CanUseWindowsSound}" Grid.Column="2" Content="Звук Windows" VerticalAlignment="Center" Padding="14,9" ToolTip="Выбрать системный выход или микрофон для обычных приложений"/>
         </Grid>
         <Grid Margin="0,15,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="6"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
         <Border Background="{Binding StatusColor}" CornerRadius="3"/>
@@ -110,7 +109,7 @@
             </Grid></Border>
             <Border Style="{StaticResource Card}" Padding="12,18"><StackPanel>
               <TextBlock Text="{Binding MixerSourceLabel}" FontSize="15" FontWeight="SemiBold" Margin="8,0,0,17"/>
-              <Grid IsEnabled="{Binding CanEditCard}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="126"/></Grid.ColumnDefinitions>
+              <Grid IsEnabled="{Binding CanEditMixer}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="126"/></Grid.ColumnDefinitions>
                 <ItemsControl x:Name="MixerStrips" ItemsSource="{Binding VisibleChannels}" ItemTemplate="{StaticResource ChannelStrip}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="8"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
                 <Border Grid.Column="2" Background="#26394A" CornerRadius="9" Padding="12,13"><StackPanel DataContext="{Binding Master}">
                   <TextBlock Text="MASTER" Foreground="#DBF5EB" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"/>
@@ -124,14 +123,13 @@
             </StackPanel></Border>
             <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
               <TextBlock Text="M · Mute   S · Solo   Ø · полярность. Уровни показывают реальный PCM. Входные настройки влияют на запись; выходные — на воспроизведение." Style="{StaticResource Caption}" Margin="0,0,22,0" LineHeight="18"/>
-              <Button x:Name="ResetMixer" Grid.Column="1" Content="Сбросить микшер" IsEnabled="{Binding CanEditCard}" VerticalAlignment="Top" Padding="14,9"/>
+              <Button x:Name="ResetMixer" Grid.Column="1" Content="Сбросить микшер" IsEnabled="{Binding CanEditMixer}" VerticalAlignment="Top" Padding="14,9"/>
             </Grid>
             <TextBlock Text="{Binding EndpointHint}" Style="{StaticResource Caption}" Margin="0,14,0,0"/>
           </StackPanel>
           <StackPanel Visibility="{Binding UsbVisibility}">
             <Border Style="{StaticResource Card}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
               <StackPanel><TextBlock Text="{Binding UsbDeviceLabel}" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="{Binding UsbConnectionLabel}" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,8,10,0"/><TextBlock Text="{Binding ShortIdentity, StringFormat=ID · {0}}" Foreground="#8A98AA" FontSize="11" Margin="0,6,0,0"/></StackPanel>
-              <Button x:Name="UseUsb" Grid.Column="1" Content="Использовать USB" Style="{StaticResource Primary}" IsEnabled="{Binding CanUseUsb}" VerticalAlignment="Center"/>
             </Grid></Border>
             <Border Style="{StaticResource Card}"><StackPanel>
               <TextBlock Text="Формат аудио" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
@@ -143,50 +141,32 @@
               <TextBlock Text="{Binding QueueHint}" Style="{StaticResource Caption}" Margin="0,13,0,9"/>
               <CheckBox Content="Подключать автоматически при появлении USB-устройства" IsChecked="{Binding UsbAutomatic}"/>
             </StackPanel></Border>
+            <Border Style="{StaticResource Card}"><StackPanel>
+              <TextBlock Text="USB-ASIO · Ableton / DAW" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,8"/>
+              <TextBlock Text="{Binding AsioStateLabel}" Foreground="#137F6C" FontSize="12" Margin="0,0,0,16"/>
+              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel><TextBlock Text="Предпочитаемый блок ASIO" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioBlock}" AutomationProperties.Name="ASIO buffer size"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="Запас отправки ASIO" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding AsioLeads}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioLead}" AutomationProperties.Name="ASIO render lead"/></StackPanel>
+              </Grid>
+              <TextBlock Text="Для начала: 64 кадра, запас 3 блока, USB-очередь 3. Меньший блок требует проверки проекта в DAW. Значения меняются только вручную." Style="{StaticResource Caption}" Margin="0,13,0,13"/>
+              <TextBlock Text="{Binding AsioCountersLabel}" Style="{StaticResource Caption}" Margin="0,0,0,13"/>
+              <Button x:Name="SaveAsio" Content="Сохранить ASIO" HorizontalAlignment="Right" IsEnabled="{Binding CanSaveAsio}"/>
+              <TextBlock Text="После сохранения заново выберите Rey Audio USB ASIO в Ableton. Драйвер использует одну подключённую USB-карту." Style="{StaticResource Caption}" Margin="0,13,0,0"/>
+            </StackPanel></Border>
             <Border Style="{StaticResource Card}" Padding="20,16"><Expander Header="Дополнительные настройки аудио в Windows"><StackPanel Margin="0,18,0,0">
               <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                 <StackPanel><TextBlock Text="Период аудиоустройства" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbBlock}"/></StackPanel>
                 <StackPanel Grid.Column="2"><TextBlock Text="Дополнительный запас, кадров" Style="{StaticResource FieldLabel}"/><TextBox Text="{Binding UsbGuard, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
-              </Grid><TextBlock Text="Ручные значения. Настройки USB не изменяют профиль LAN." Style="{StaticResource Caption}" Margin="0,13,0,0"/>
+              </Grid><TextBlock Text="Значения меняются вручную. Перед изменением формата остановите ASIO в Ableton." Style="{StaticResource Caption}" Margin="0,13,0,0"/>
             </StackPanel></Expander></Border>
             <Grid Margin="0,1,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Применение перезапускает только активную USB-сессию." Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,20,0"/><Button x:Name="SaveUsb" Grid.Column="1" Content="Применить USB" Style="{StaticResource Primary}" IsEnabled="{Binding CanApply}"/></Grid>
-            <TextBlock Text="LAN выбирается по умолчанию после его подключения. Выбрать USB можно кнопкой выше." Style="{StaticResource Caption}" Margin="0,0,0,14"/>
-          </StackPanel>
-          <StackPanel Visibility="{Binding LanVisibility}">
-            <Border Style="{StaticResource Card}"><StackPanel>
-              <TextBlock Text="Устройство в локальной сети" FontSize="18" FontWeight="SemiBold"/>
-              <TextBlock Text="Подключите Pi и компьютер к Ethernet. Укажите адрес или найдите устройство." Style="{StaticResource Caption}" Margin="0,8,0,18"/>
-              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <TextBox x:Name="LanPeer" Text="{Binding LanPeer, UpdateSourceTrigger=PropertyChanged}" ToolTip="IPv4-адрес Pi, например 192.168.1.2" AutomationProperties.Name="Pi IPv4 address"/>
-                <Button x:Name="ScanLan" Grid.Column="2" Content="Найти в сети" IsEnabled="{Binding CanApply}"/>
-                <Button x:Name="ConnectLan" Grid.Column="4" Content="Подключить" Style="{StaticResource Primary}" IsEnabled="{Binding CanApply}"/>
-              </Grid>
-              <TextBlock Text="{Binding LanFormatLabel}" Foreground="#137F6C" FontSize="12" Margin="0,15,0,0"/>
-              <TextBlock Text="Для добавления ещё одной карты введите её адрес. У карт LAN должны быть разные локальные UDP-порты." Style="{StaticResource Caption}" Margin="0,9,0,0"/>
-              <Button x:Name="DisconnectLan" Content="Отключить LAN этой карты" HorizontalAlignment="Left" IsEnabled="{Binding CanDisconnectLan}" Margin="0,12,0,0" Padding="12,8"/>
-            </StackPanel></Border>
-            <Border Style="{StaticResource Card}"><StackPanel>
-              <TextBlock Text="Задержка и стабильность" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
-              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Блок обработки" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding LanBlock}"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="Запас приёма, кадров" Style="{StaticResource FieldLabel}"/><TextBox Text="{Binding LanGuard, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="LAN guard frames"/></StackPanel>
-              </Grid>
-              <TextBlock Text="Меньший запас снижает задержку, но хуже переносит задержки Windows и сети. Значение выбирается вручную." Style="{StaticResource Caption}" Margin="0,14,0,0" LineHeight="18"/>
-              <CheckBox Content="Экономить трафик во время тишины" IsChecked="{Binding LanEnergy}" Margin="0,15,0,5"/>
-            </StackPanel></Border>
-            <Border Style="{StaticResource Card}" Padding="20,16"><Expander Header="Дополнительные настройки сети"><StackPanel Margin="0,18,0,0"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Пакет захвата, кадров · 0 = по профилю" Style="{StaticResource FieldLabel}"/><TextBox Text="{Binding LanFrames, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="Локальный UDP-порт" Style="{StaticResource FieldLabel}"/><TextBox Text="{Binding LanPort, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
-              </Grid><TextBlock Text="Частота и разрядность задаются на Pi. USB использует отдельный профиль." Style="{StaticResource Caption}" Margin="0,13,0,0"/>
-            </StackPanel></Expander></Border>
-            <Button x:Name="SaveLan" Content="Применить LAN" Style="{StaticResource Primary}" HorizontalAlignment="Right" IsEnabled="{Binding CanApply}" Margin="0,0,0,14"/>
           </StackPanel>
           <StackPanel Visibility="{Binding DiagnosticsVisibility}">
             <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Состояние системы" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,17"/>
               <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                 <StackPanel><TextBlock Text="Активный транспорт" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding RouteLabel}" FontSize="18" FontWeight="SemiBold"/></StackPanel>
                 <StackPanel Grid.Column="1"><TextBlock Text="Аудиодрайвер Windows" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding DriverLabel}" FontSize="18" FontWeight="SemiBold"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="Выбор подключения" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding PreferredLabel}" FontSize="18" FontWeight="SemiBold"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="USB-устройство" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding ShortIdentity}" FontSize="18" FontWeight="SemiBold"/></StackPanel>
               </Grid><TextBlock Text="{Binding BackendLabel, StringFormat=Источник · {0}}" Style="{StaticResource Caption}" Margin="0,16,0,0"/>
             </StackPanel></Border>
             <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Текущая сессия" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
@@ -200,8 +180,7 @@
             <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Последние события" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,14"/>
               <ItemsControl ItemsSource="{Binding Events}"><ItemsControl.ItemTemplate><DataTemplate><Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="72"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Time}" Foreground="#8695A8" FontSize="12"/><StackPanel Grid.Column="1"><TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold"/><TextBlock Text="{Binding Detail}" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,3,0,0"/></StackPanel></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
             </StackPanel></Border>
-            <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><Button x:Name="AutoRoute" Content="LAN по умолчанию" IsEnabled="{Binding CanApply}" HorizontalAlignment="Left"/><Button x:Name="CopyReport" Grid.Column="1" Content="Копировать диагностику"/></Grid>
-            <Button x:Name="ForgetCard" Content="Забыть отключённую карту" HorizontalAlignment="Left" IsEnabled="{Binding CanForgetCard}" ToolTip="Удаляет сохранённые настройки только отключённой карты" Padding="14,9"/>
+            <Button x:Name="CopyReport" Content="Копировать диагностику" HorizontalAlignment="Right" Margin="0,0,0,14"/>
           </StackPanel>
         </Grid>
       </ScrollViewer>

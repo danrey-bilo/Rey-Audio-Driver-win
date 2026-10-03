@@ -1,0 +1,1034 @@
+{
+  "date": "2026-10-03",
+  "scope": "one real Pi5; TAG demo 2.0.0.1903; USB digital-loopback backend",
+  "latency_target": "less than 2 ms audio roundtrip in ASIO/Ableton; separate Windows shared path",
+  "asio_latency_measured": false,
+  "physical_audio_qualified": false,
+  "installed_device": {
+    "Status": "OK",
+    "InstanceId": "ROOT\\THINAUDIOGATEWAY_4D699D4A\\0000",
+    "DriverState": "Running",
+    "Started": true
+  },
+  "signatures": [
+    {
+      "Status": "Valid",
+      "Signer": "CN=Microsoft Windows Hardware Compatibility Publisher, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "SHA256": "7CBCC510785D936710F34B210DFBCD995287FA20E31D36E20CFF6284FD9DC6B7"
+    },
+    {
+      "Status": "Valid",
+      "Signer": "CN=Microsoft Windows Hardware Compatibility Publisher, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+      "SHA256": "645A984353FE955F861C46C2F07CB3F567E46EA42D512454996BE81FFB87A1A8"
+    }
+  ],
+  "test_signing_enabled": false,
+  "vbs_status": 2,
+  "security_services_running": [
+    2,
+    7
+  ],
+  "native_contracts": {
+    "passed": 24,
+    "total": 24
+  },
+  "windows_format_acceptance": {
+    "APIRequests": 36,
+    "Accepted": 36,
+    "Channels": 8,
+    "Bits": [
+      16,
+      24,
+      32
+    ],
+    "Rates": [
+      44100,
+      48000,
+      88200,
+      96000,
+      176400,
+      192000
+    ]
+  },
+  "continuity_run": {
+    "duration_s": 300.11,
+    "binary_sha256": "8873305c92f0582cb0f8783cede9ebceb8076eaaba09ef9a5707362a700b85c3",
+    "service_exit_code": 0,
+    "stats_at_295s": {
+      "generation": 1,
+      "callbacks": 2353787,
+      "frames": 56490888,
+      "missing_frames": 0,
+      "callback_gap_max_us": 1957,
+      "processing_max_us": 273.6,
+      "processing_average_us": 2.36094
+    },
+    "cpu_seconds_at_295s": 12.53125,
+    "cpu_percent_of_one_core": 4.246528224904645,
+    "summary": "USB_SERVICE_STATS seconds=299.823 callbacks=2393112 frames=57434688 layout_underruns=0 layout_overruns=0 rx_gap_max_us=1956.800 usb_errors=0",
+    "full_scenario_passed": false,
+    "qualification": "continuity counters passed; original shared-mode marker comparison failed; see isolated exclusive checks",
+    "shared_capture": "WASAPI_STREAM flow=capture seconds=30.007 period=1920 capacity=4224 frames=5748480 events=2994 discontinuities=1 timestamp_errors=0 silent_packets=0 event_gap_p50_us=10001.2 event_gap_p95_us=10243.0 event_gap_p99_us=10353.2 event_gap_max_us=12150.0 timing_overflow=0 mmcss=1 okay=1",
+    "shared_render": "WASAPI_STREAM flow=render seconds=30.001 period=1920 capacity=4224 frames=5748480 events=2994 discontinuities=0 timestamp_errors=0 silent_packets=0 event_gap_p50_us=10001.2 event_gap_p95_us=10240.7 event_gap_p99_us=10349.5 event_gap_max_us=12127.6 timing_overflow=0 mmcss=1 okay=1",
+    "gap_percentiles_collected": false
+  },
+  "exclusive_192k_pcm32": {
+    "okay": true,
+    "output": "LOOPBACK_FORMAT rate=192000 channels=8 app_format=pcm32 exclusive=1\nLOOPBACK_FORMAT rate=192000 channels=8 app_format=pcm32 exclusive=1\nLOOPBACK_CHANNEL channel=1 matched=380615 wrong=0\nLOOPBACK_CHANNEL channel=2 matched=380615 wrong=0\nLOOPBACK_CHANNEL channel=3 matched=380615 wrong=0\nLOOPBACK_CHANNEL channel=4 matched=380615 wrong=0\nLOOPBACK_CHANNEL channel=5 matched=380615 wrong=0\nLOOPBACK_CHANNEL channel=6 matched=380615 wrong=0\nLOOPBACK_CHANNEL channel=7 matched=380615 wrong=0\nLOOPBACK_CHANNEL channel=8 matched=380615 wrong=0\nLOOPBACK_RESULT frames=380736 discontinuities=0 okay=1 physical_audio=0 asio_latency_measured=0\n",
+    "qualification": "digital marker transfer at a 3 ms exclusive Windows period; not ASIO RTT"
+  },
+  "format_matrix": {
+    "okay": true,
+    "duration_s": 120.078,
+    "binary_sha256": "6cd319d769269cdbe05766342174da54a1b1a6f28672a92232bfe03099ec8caf",
+    "cases": [
+      {
+        "rate": 44100,
+        "bits": 16,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 87731,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 87731,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 87731,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 87731,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 87731,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 87731,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 87731,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 87731,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 87759,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 44100,
+        "bits": 24,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 87736,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 87736,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 87736,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 87736,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 87736,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 87736,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 87736,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 87736,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 87759,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 44100,
+        "bits": 32,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 88172,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 88172,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 88172,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 88172,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 88172,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 88172,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 88172,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 88172,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 88200,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 48000,
+        "bits": 16,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 95975,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 95975,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 95975,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 95975,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 95975,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 95975,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 95975,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 95975,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 96000,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 48000,
+        "bits": 24,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 95969,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 96000,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 48000,
+        "bits": 32,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 95969,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 95969,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 96000,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 88200,
+        "bits": 16,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 176344,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 176344,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 176344,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 176344,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 176344,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 176344,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 176344,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 176344,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 176400,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 88200,
+        "bits": 24,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 175462,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 175518,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 88200,
+        "bits": 32,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 175462,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 175462,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 175518,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 96000,
+        "bits": 16,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 190979,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 190979,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 190979,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 190979,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 190979,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 190979,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 190979,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 190979,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 191040,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 96000,
+        "bits": 24,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 190991,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 191040,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 96000,
+        "bits": 32,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 190991,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 190991,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 191040,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 176400,
+        "bits": 16,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 352688,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 352688,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 352688,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 352688,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 352688,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 352688,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 352688,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 352688,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 352800,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 176400,
+        "bits": 24,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 350925,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 351036,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 176400,
+        "bits": 32,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 350925,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 350925,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 351036,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 192000,
+        "bits": 16,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 383903,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 384000,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 192000,
+        "bits": 24,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 383903,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 383903,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 384000,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      },
+      {
+        "rate": 192000,
+        "bits": 32,
+        "exit_code": 0,
+        "channels": [
+          {
+            "channel": 1,
+            "matched": 381983,
+            "wrong": 0
+          },
+          {
+            "channel": 2,
+            "matched": 381983,
+            "wrong": 0
+          },
+          {
+            "channel": 3,
+            "matched": 381983,
+            "wrong": 0
+          },
+          {
+            "channel": 4,
+            "matched": 381983,
+            "wrong": 0
+          },
+          {
+            "channel": 5,
+            "matched": 381983,
+            "wrong": 0
+          },
+          {
+            "channel": 6,
+            "matched": 381983,
+            "wrong": 0
+          },
+          {
+            "channel": 7,
+            "matched": 381983,
+            "wrong": 0
+          },
+          {
+            "channel": 8,
+            "matched": 381983,
+            "wrong": 0
+          }
+        ],
+        "capture_frames": 382080,
+        "discontinuities": 0,
+        "session_continues": true,
+        "missing_frames": 0,
+        "startup_attempts": 1
+      }
+    ],
+    "qualification": "approximately 2 s marker check per profile; not a five-minute soak per profile"
+  },
+  "boundaries": [
+    "No ASIO USB/service frontend implemented in this change",
+    "No Ableton or physical ADC/DAC roundtrip test",
+    "No Chrome or Telegram UI test",
+    "One existing TAG capture/render pair, not four stereo pairs per board",
+    "Additional dynamic capture/render pair creation failed with render HRESULT 0x80070044",
+    "TAG demo evaluated locally; permanent no-purchase production dependency not established",
+    "Published ACX MSI/EXE has not been changed to this backend",
+    "Original shared-marker differences in front two channels have not been attributed to a specific source"
+  ]
+}

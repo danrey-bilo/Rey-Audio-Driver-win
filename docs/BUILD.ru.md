@@ -1,33 +1,41 @@
-[English](BUILD.md) | **Русский**
+# Сборка Windows-версии только для USB
 
-# Сборка Windows-драйвера
+Нужны Windows x64, C++17, CMake 3.20+, Windows SDK и .NET Framework 4.8 для
+WPF/EXE. ASIO SDK предоставляется отдельно; заголовки не входят в репозиторий
+или пакет. Требуется исходный [Pi5-AUSB](https://github.com/danrey-bilo/Pi5-AUSB)
+или совместимый SDK 0.1.0. AoIP-lib больше не требуется.
 
-Сборка независимой службы без ASIO и первоначальный kernel-проект описаны в [ACX/service](ACX-SERVICE.ru.md). Ниже приведена сборка прежнего ASIO adapter.
+[Команды CMake и сборки EXE](BUILD.md). По умолчанию включены
+`REY_BUILD_USB_ASIO`, `REY_BUILD_CONTROL`, `REY_BUILD_TESTS`. Старые флаги
+`PIAOIP_BUILD_ASIO`, `PIAOIP_BUILD_SERVICE`, `PIAOIP_ENABLE_USB` больше не
+управляют сборкой. Используйте новый каталог сборки, чтобы не переносить
+старые зависимости из CMakeCache.
 
-Нужны Windows x64, CMake 3.20+, Ninja, LLVM-MinGW x64/UCRT и отдельно полученный [Steinberg ASIO SDK](ASIO-SDK.ru.md). SDK не входит в репозиторий и архив исходников.
+Установщик: `build/usb-setup/Rey-Audio-USB-ASIO-Setup-x64.exe`.
+`SHA256.json` содержит контрольные суммы четырёх встроенных бинарников и EXE.
+INI, SYS/CAT, SDK и правила брандмауэра в USB-пакет не включаются.
+Проверить установленный пакет из PowerShell x64:
+`tools/verify_usb_install.ps1 -SetupDirectory build/usb-setup -Output build/install-check.json`.
+
+Проверяются 32 контракта: IPC, timeline, перенос настроек, PCM, микшер,
+отображение каналов и правило одной карты. Реальные проверки выполняются
+через установленный COM/ASIO и службу; ASIO в DAW должен быть закрыт.
+Один аудиопрогон ограничен 295 секундами. [Отчёт](USB-ONLY-2.8.ru.md).
+
+TAG (`REY_ENABLE_TAG_BRIDGE=ON`) и ACX — отдельные эксперименты обычных
+аудиоустройств Windows. Они не являются зависимостями USB-ASIO установщика.
+Windows ARM64 не поддерживается. Успешная сборка не доказывает задержку ADC/DAC.
+
+## Архивы релиза
+
+После коммита проверенного кода:
 
 ```powershell
-git clone --recurse-submodules https://github.com/danrey-bilo/Rey-Audio-Driver-win.git
-cd Win11-asio-AoIP
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release `
-  -DCMAKE_CXX_COMPILER=C:/Tools/llvm-mingw/bin/x86_64-w64-mingw32-clang++.exe `
-  -DCMAKE_RC_COMPILER=C:/Tools/llvm-mingw/bin/x86_64-w64-mingw32-windres.exe `
-  -DASIO_SDK_DIR=C:/SDKs/asio
-cmake --build build --parallel 2
+python tools/package_usb_release.py --setup build/usb-setup --out dist/usb-release `
+  --asio-notice C:/SDK/asio/LICENSE.txt --ref HEAD --version 2.8.0-preview.1
 ```
 
-Результат: `build/bin/PiAoipAsio.dll` и `build/bin/PiAoipControl.exe`. EXE загружает DLL из своего каталога. Оба бинарника имеют версию 2.5.0 и встроенные значки. В `src/ui/assets` лежат SVG-исходники и ICO нескольких разрешений. DLL содержит манифест панели; EXE — манифест приложения и ресурс версии.
-
-`external/AoIP-lib` закреплён на совместимой версии 2.5.0. Альтернатива — `-DAOIP_SOURCE_DIR=/path/to/AoIP-lib` или установленный `AoIP 2.5.0` SDK при отсутствии исходников зависимости. AoIP-lib — закрытая зависимость. Для сборки нужен разрешённый доступ к submodule или совместимый SDK. Публичные архивы не содержат закрытую зависимость.
-
-Цели автоподбора буферов в сборке нет. Тесты core/configuration, скрытый рендер UI и сборка MSI находятся в отдельном рабочем репозитории разработчиков. Для установки пользователю нужен [MSI](INSTALL.ru.md): обычная CMake-сборка не регистрирует драйвер.
-
-## MSI
-
-Пакет содержит два бинарника, английскую инструкцию и лицензии. Ярлыки Settings и Installation Guide используют ресурсы 0 и 1 из EXE; список приложений — основной значок. Семейство major upgrade сохранено. Предыдущая версия заменяется, пользовательский INI хранится отдельно.
-
-Не включайте заголовки и архив Steinberg SDK в релиз. Условия проекта и внешнего SDK действуют отдельно: [ASIO SDK](ASIO-SDK.ru.md).
-
-## Проверки
-
-См. [проверки 2.5.0](VALIDATION.ru.md). Сборка DLL не доказывает стабильность конкретного проекта DAW. На целевом ПК проверяйте формат, буферы, ошибки потока и перезапуск хоста. Физическая задержка требует подключённого аппаратного бэкенда.
+Скрипт проверяет hash EXE и манифест одной USB-карты, архивирует только файлы
+коммита и создаёт контрольные суммы. Внешние SDK/бинарники не включаются.
+Установку и публикацию скрипт не выполняет. Прежний код остаётся в `archive/`,
+вне активной сборки.

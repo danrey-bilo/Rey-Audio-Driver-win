@@ -1,0 +1,233 @@
+{
+  "version": "2.7.0",
+  "ok": true,
+  "error": "",
+  "state": "streaming",
+  "detail": "USB ASIO service is ready",
+  "route": "usb",
+  "preferred": "auto",
+  "driver_present": false,
+  "asio_only": true,
+  "digital_test": false,
+  "identity": "00000000000000002c26e7dcd051e632",
+  "backend": "digital-loopback",
+  "usb": {
+    "present": 1,
+    "identity": "00000000000000002c26e7dcd051e632",
+    "rate": 192000,
+    "bits": 32,
+    "depth": 3,
+    "block": 64,
+    "guard": 0,
+    "automatic": true
+  },
+  "lan": {
+    "peer": "",
+    "enabled": false,
+    "port": 50021,
+    "block": 256,
+    "guard": 1536,
+    "frames": 32,
+    "energy": false
+  },
+  "active": {
+    "rate": 192000,
+    "bits": 32,
+    "inputs": 8,
+    "outputs": 8
+  },
+  "stats": {
+    "generation": 3,
+    "callbacks": 14795871,
+    "frames": 355100904,
+    "missing_frames": 0,
+    "callback_gap_max_us": 1689.8,
+    "processing_max_us": 391.9,
+    "processing_average_us": 1.29076
+  },
+  "asio": {
+    "ready": true,
+    "connected": false
+  },
+  "mixer": {
+    "master_cdb": 0,
+    "master_mute": false,
+    "inputs": [
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      }
+    ],
+    "outputs": [
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      },
+      {
+        "gain_cdb": 0,
+        "mute": false,
+        "solo": false,
+        "invert": false,
+        "peak": 0,
+        "clips": 0
+      }
+    ]
+  },
+  "events": [
+    {
+      "utc_ms": 1791051513357,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791051513357,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791051218092,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791051218092,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    },
+    {
+      "utc_ms": 1791050375426,
+      "code": "streaming",
+      "detail": "USB ASIO service is ready"
+    },
+    {
+      "utc_ms": 1791050375425,
+      "code": "connecting",
+      "detail": "Opening USB device"
+    }
+  ],
+  "selected_device": "00000000000000002c26e7dcd051e632",
+  "catalog_error": "Cannot update the installed LAN firewall rule: 2147614729",
+  "devices": [
+    {
+      "id": "00000000000000002c26e7dcd051e632",
+      "name": "Rey Audio d051e632",
+      "route": "usb",
+      "state": "streaming",
+      "usb": true,
+      "lan": false,
+      "callbacks": 14795871
+    }
+  ]
+}

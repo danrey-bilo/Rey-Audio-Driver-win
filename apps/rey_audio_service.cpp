@@ -1,15 +1,12 @@
 #include "../src/service/pipe_server.hpp"
 #include <cwchar>
-namespace piaoip {
-HMODULE g_module = nullptr;
-std::atomic<long> g_objects{0};
-} // namespace piaoip
 namespace {
 HANDLE stop_event = nullptr;
 SERVICE_STATUS_HANDLE status_handle = nullptr;
 SERVICE_STATUS status{};
 std::wstring configuration;
 bool digital_test = false;
+bool asio_only = false;
 unsigned seconds = 0;
 void report(DWORD state, DWORD error = NO_ERROR) {
   status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
@@ -42,7 +39,7 @@ BOOL WINAPI console_control(DWORD code) {
   return FALSE;
 }
 int run() {
-  rey::service::Manager manager(configuration, digital_test);
+  rey::service::Manager manager(configuration, digital_test, asio_only);
   std::string error;
   if (!manager.initialize(error)) {
     std::fprintf(stderr, "REY_SERVICE_INIT %s\n", error.c_str());
@@ -78,7 +75,6 @@ void WINAPI service_main(DWORD, LPWSTR *) {
 } // namespace
 int wmain(int argc, wchar_t **argv) {
   bool console = false, scm = false;
-  piaoip::g_module = GetModuleHandleW(nullptr);
   for (int i = 1; i < argc; ++i) {
     const std::wstring arg = argv[i];
     if (arg == L"--console")
@@ -87,6 +83,8 @@ int wmain(int argc, wchar_t **argv) {
       scm = true;
     else if (arg == L"--digital-test")
       digital_test = true;
+    else if (arg == L"--asio-only")
+      asio_only = true;
     else if (arg == L"--test-settings" && i + 1 < argc)
       configuration = argv[++i];
     else if (arg == L"--seconds" && i + 1 < argc) {
@@ -96,13 +94,13 @@ int wmain(int argc, wchar_t **argv) {
         return 1;
     } else {
       std::fprintf(stderr,
-                   "Usage: ReyAudioService --service\n"
+                   "Usage: ReyAudioService --service [--asio-only]\n"
                    "Test: ReyAudioService --console --seconds 1..300 "
-                   "[--digital-test] --test-settings absolute.dat\n");
+                   "[--digital-test | --asio-only] --test-settings absolute.dat\n");
       return 1;
     }
   }
-  if (console == scm || (console && !seconds) ||
+  if (console == scm || (digital_test && asio_only) || (console && !seconds) ||
       (scm && (seconds || digital_test || !configuration.empty())) ||
       (console && (configuration.size() < 4 || configuration[1] != L':' ||
        (configuration[2] != L'\\' && configuration[2] != L'/'))))

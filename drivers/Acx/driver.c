@@ -4,7 +4,7 @@ NTSTATUS DriverEntry(PDRIVER_OBJECT object, PUNICODE_STRING path) {
   ACX_DRIVER_CONFIG acx;
   WDFDRIVER driver;
   NTSTATUS status;
-  WDF_DRIVER_CONFIG_INIT(&config, PiaoipDeviceAdd);
+  WDF_DRIVER_CONFIG_INIT(&config, ReyDeviceAdd);
   status = WdfDriverCreate(object, path, WDF_NO_OBJECT_ATTRIBUTES, &config, &driver);
   if (!NT_SUCCESS(status))
     return status;

@@ -1,0 +1,288 @@
+{
+  "date": "2026-10-03",
+  "scope": "same installed USB-ASIO core, one Pi5 digital-loopback backend",
+  "physical_audio": false,
+  "actual_ableton_host": false,
+  "latency_model_is_not_measured_rtt": true,
+  "max_audio_seconds_per_trial": 295,
+  "cadence_check_note": "1 percent tolerance detects gross slowing in this synthetic bench; it does not qualify hardware clock accuracy.",
+  "saved_asio_preferences_changed": false,
+  "cases": [
+    {
+      "block": 64,
+      "lead_blocks": 2,
+      "usb_depth": 3,
+      "rate_hz": 192000,
+      "bits": 32,
+      "seconds_requested": 295,
+      "asio_reported_model_ms": 1.046875,
+      "metrics": {
+        "seconds": "295.014",
+        "callbacks": "883475",
+        "frames": "56542400",
+        "pulses": "14723",
+        "received": "14723",
+        "missing": "0",
+        "invalid": "0",
+        "duplicates": "0",
+        "rtt_p50_us": "1000.100",
+        "rtt_p95_us": "1039.700",
+        "rtt_p99_us": "1112.200",
+        "rtt_max_us": "1415.900",
+        "capture_dropped": "2",
+        "render_late_frames": "0",
+        "render_missing_frames": "128",
+        "render_overflow": "0",
+        "callback_gap_max_us": "1108.800",
+        "processing_max_us": "97.900",
+        "capture_age_max_us": "1130.400",
+        "service_gap_max_us": "821.900",
+        "positions_backwards": "0",
+        "mmcss_failures": "0",
+        "okay": "0",
+        "physical_audio": "0",
+        "ableton_host": "0"
+      },
+      "okay": false,
+      "low_latency_candidate_qualified": false,
+      "local_source": "usb-asio-installed-64-lead2-20261003.txt",
+      "source_sha256": "4d7a9274fa7be141ed5a1c58681eefacb7a7818e6db9ba1c77506bb526b54f8e",
+      "host_cpu_seconds": null,
+      "host_cpu_note": "Only an intermediate CPU snapshot exists; full-duration CPU not collected.",
+      "observed_frames_per_second": 191660.0568108632,
+      "nominal_rate_ratio": 0.9982294625565792
+    },
+    {
+      "started_utc": "2026-10-03T18:07:39.764388+00:00",
+      "completed_utc": "2026-10-03T18:12:34.798400+00:00",
+      "block": 32,
+      "lead_blocks": 4,
+      "seconds_requested": 295,
+      "duration_s": 295.032,
+      "okay": false,
+      "metrics": {
+        "seconds": "295.003",
+        "callbacks": "1763259",
+        "frames": "56424288",
+        "pulses": "14692",
+        "received": "14692",
+        "missing": "0",
+        "invalid": "0",
+        "duplicates": "0",
+        "rtt_p50_us": "1000.200",
+        "rtt_p95_us": "1042.300",
+        "rtt_p99_us": "1218.500",
+        "rtt_max_us": "3254.200",
+        "capture_dropped": "15",
+        "render_late_frames": "0",
+        "render_missing_frames": "480",
+        "render_overflow": "0",
+        "callback_gap_max_us": "18468.900",
+        "processing_max_us": "93.900",
+        "capture_age_max_us": "18477.400",
+        "service_gap_max_us": "18467.900",
+        "positions_backwards": "0",
+        "mmcss_failures": "0",
+        "okay": "0",
+        "physical_audio": "0",
+        "ableton_host": "0"
+      },
+      "exit_code": 15,
+      "service_sha256": "2fb115ae685df877da8c0bc1b5072174914aeb517a0d3713f0bdd6f885ba5eab",
+      "driver_sha256": "3fada47e0844e86de93bc5c938ade7601460697fcfeb3947b7c3fae2786a10b1",
+      "probe_sha256": "e17aaf4ca95d1e23485fb0343d5e1242e4570c976006571405f0617f047682a1",
+      "host_cpu_seconds": 1.421875,
+      "host_cpu_percent_of_one_core": 0.48198662386484203,
+      "profile_unchanged": true,
+      "session_continues": true,
+      "local_source": "usb-asio-installed-32-lead4-20261003/results.json",
+      "source_sha256": "6fcecbdb1058052faa6f6aef45b84b69d67e93a200e14494014b576c38f0f8b4",
+      "rate_hz": 192000,
+      "bits": 32,
+      "usb_depth": 3,
+      "asio_reported_model_ms": 1.046875,
+      "observed_frames_per_second": 191266.82779497158,
+      "nominal_rate_ratio": 0.996181394765477,
+      "cadence_within_one_percent": true,
+      "sampled_rtt_max_below_2ms": false,
+      "low_latency_candidate_qualified": false,
+      "service_stats_after": {
+        "generation": 1,
+        "callbacks": 6219846,
+        "frames": 149276304,
+        "missing_frames": 0,
+        "callback_gap_max_us": 18467.9,
+        "processing_max_us": 359.4,
+        "processing_average_us": 2.07106
+      },
+      "service_rate_windows": [
+        {
+          "elapsed_s": 60.032,
+          "frames_per_second": 191505.06396588488
+        },
+        {
+          "elapsed_s": 90.032,
+          "frames_per_second": 191816.8
+        },
+        {
+          "elapsed_s": 120.047,
+          "frames_per_second": 191511.44427786107
+        },
+        {
+          "elapsed_s": 150.047,
+          "frames_per_second": 191690.4
+        },
+        {
+          "elapsed_s": 180.047,
+          "frames_per_second": 191624.0
+        },
+        {
+          "elapsed_s": 210.063,
+          "frames_per_second": 191309.16844349686
+        },
+        {
+          "elapsed_s": 240.063,
+          "frames_per_second": 190741.6
+        },
+        {
+          "elapsed_s": 270.063,
+          "frames_per_second": 191791.2
+        }
+      ]
+    },
+    {
+      "started_utc": "2026-10-03T18:13:37.904593+00:00",
+      "completed_utc": "2026-10-03T18:18:33.458707+00:00",
+      "block": 64,
+      "lead_blocks": 3,
+      "seconds_requested": 295,
+      "duration_s": 295.547,
+      "okay": true,
+      "metrics": {
+        "seconds": "295.011",
+        "callbacks": "779277",
+        "frames": "49873728",
+        "pulses": "12986",
+        "received": "12986",
+        "missing": "0",
+        "invalid": "0",
+        "duplicates": "0",
+        "rtt_p50_us": "1040.500",
+        "rtt_p95_us": "1491.400",
+        "rtt_p99_us": "1624.100",
+        "rtt_max_us": "2154.800",
+        "capture_dropped": "0",
+        "render_late_frames": "0",
+        "render_missing_frames": "0",
+        "render_overflow": "0",
+        "callback_gap_max_us": "4051.200",
+        "processing_max_us": "939.300",
+        "capture_age_max_us": "2529.300",
+        "service_gap_max_us": "3620.700",
+        "positions_backwards": "0",
+        "mmcss_failures": "0",
+        "okay": "1",
+        "physical_audio": "0",
+        "ableton_host": "0"
+      },
+      "exit_code": 0,
+      "service_sha256": "2fb115ae685df877da8c0bc1b5072174914aeb517a0d3713f0bdd6f885ba5eab",
+      "driver_sha256": "3fada47e0844e86de93bc5c938ade7601460697fcfeb3947b7c3fae2786a10b1",
+      "probe_sha256": "e17aaf4ca95d1e23485fb0343d5e1242e4570c976006571405f0617f047682a1",
+      "host_cpu_seconds": 4.625,
+      "host_cpu_percent_of_one_core": 1.5677381521367,
+      "profile_unchanged": true,
+      "session_continues": true,
+      "usb_profile_restored": true,
+      "local_source": "usb-asio-installed-64-lead3-depth2-20261003/results.json",
+      "source_sha256": "08a5b496b588f9f348fe80b80e5544f51e7e4b53ec63555cb95f6dac0326bccd",
+      "rate_hz": 192000,
+      "bits": 32,
+      "usb_depth": 2,
+      "asio_reported_model_ms": 1.2552083333333333,
+      "observed_frames_per_second": 169057.1809186776,
+      "nominal_rate_ratio": 0.8805061506181124,
+      "cadence_within_one_percent": false,
+      "sampled_rtt_max_below_2ms": false,
+      "low_latency_candidate_qualified": false,
+      "service_stats_after": {
+        "generation": 2,
+        "callbacks": 2079153,
+        "frames": 49899672,
+        "missing_frames": 0,
+        "callback_gap_max_us": 3620.7,
+        "processing_max_us": 355.2,
+        "processing_average_us": 2.32537
+      },
+      "service_rate_windows": [
+        {
+          "elapsed_s": 60.344,
+          "frames_per_second": 175303.30490405115
+        },
+        {
+          "elapsed_s": 90.344,
+          "frames_per_second": 173808.00000000003
+        },
+        {
+          "elapsed_s": 120.344,
+          "frames_per_second": 172428.8
+        },
+        {
+          "elapsed_s": 150.359,
+          "frames_per_second": 163197.60119940023
+        },
+        {
+          "elapsed_s": 180.375,
+          "frames_per_second": 162677.2388059702
+        },
+        {
+          "elapsed_s": 210.375,
+          "frames_per_second": 164391.2
+        },
+        {
+          "elapsed_s": 240.391,
+          "frames_per_second": 162750.79957356083
+        },
+        {
+          "elapsed_s": 270.391,
+          "frames_per_second": 174431.99999999983
+        }
+      ]
+    }
+  ],
+  "earlier_ableton_qualified_profile": {
+    "rate_hz": 192000,
+    "bits": 32,
+    "block": 64,
+    "lead_blocks": 3,
+    "usb_depth": 3,
+    "reported_ms": 1.3802083333333333,
+    "observation_seconds": 295,
+    "evidence": "rey-usb-asio-20261003.json"
+  },
+  "core_hashes": {
+    "driver_sha256": "3fada47e0844e86de93bc5c938ade7601460697fcfeb3947b7c3fae2786a10b1",
+    "service_sha256": "2fb115ae685df877da8c0bc1b5072174914aeb517a0d3713f0bdd6f885ba5eab",
+    "probe_sha256": "e17aaf4ca95d1e23485fb0343d5e1242e4570c976006571405f0617f047682a1"
+  },
+  "restoration_check": {
+    "seconds": 10.0,
+    "restored_usb": {
+      "present": 1,
+      "identity": "00000000000000002c26e7dcd051e632",
+      "rate": 192000,
+      "bits": 32,
+      "depth": 3,
+      "block": 64,
+      "guard": 0,
+      "automatic": true
+    },
+    "generation_unchanged": true,
+    "observed_service_frames_per_second": 187956.0,
+    "asio": {
+      "ready": true,
+      "connected": false
+    },
+    "qualification": "10-second read-only service cadence snapshot, not a new native/Ableton baseline qualification"
+  }
+}

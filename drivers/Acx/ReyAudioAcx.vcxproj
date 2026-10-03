@@ -48,7 +48,7 @@
     <ClCompile Include="driver.c" /><ClCompile Include="guids.c" />
     <ClCompile Include="device.c" /><ClCompile Include="circuit.c" />
     <ClCompile Include="control.c" /><ClCompile Include="stream.c" />
-    <ClInclude Include="driver.h" /><ClInclude Include="..\..\include\piaoip\bridge.h" />
+    <ClInclude Include="driver.h" /><ClInclude Include="..\..\include\rey\bridge.h" />
     <Inf Include="ReyAudioAcx.inf" />
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>

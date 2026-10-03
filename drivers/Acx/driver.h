@@ -6,13 +6,13 @@
 #include <ks.h>
 #include <mmsystem.h>
 #include <ksmedia.h>
-#include "../../include/piaoip/bridge.h"
-#include "../../include/piaoip/endpoints.h"
+#include "../../include/rey/bridge.h"
+#include "../../include/rey/endpoints.h"
 
-#define PIAOIP_POOL_TAG 'piaP'
-extern const GUID GUID_PIAOIP_CONTROL;
-extern const GUID GUID_PIAOIP_CAPTURE;
-extern const GUID GUID_PIAOIP_RENDER;
+#define REY_POOL_TAG 'piaP'
+extern const GUID GUID_REY_CONTROL;
+extern const GUID GUID_REY_CAPTURE;
+extern const GUID GUID_REY_RENDER;
 extern const GUID GUID_REY_PAIR_CAPTURE;
 extern const GUID GUID_REY_PAIR_RENDER;
 
@@ -30,31 +30,31 @@ typedef struct REY_FILE_CONTEXT {
 } REY_FILE_CONTEXT;
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(REY_FILE_CONTEXT, ReyFileContext);
 
-typedef struct PIAOIP_DEVICE_CONTEXT {
+typedef struct REY_DEVICE_CONTEXT {
   WDFDEVICE root;
   WDFFILEOBJECT owner;
   ULONG device_slot;
-  REY_CHILD_SLOT children[PIAOIP_DEVICE_LIMIT];
+  REY_CHILD_SLOT children[REY_DEVICE_LIMIT];
   WDFWAITLOCK lock;
   BOOLEAN is_child, removing, circuits_added;
-  BOOLEAN stream_creating[PIAOIP_ENDPOINT_SLOTS];
-  PIAOIP_BRIDGE_PROFILE profile;
-  ACXCIRCUIT circuits[PIAOIP_ENDPOINT_SLOTS];
-  ACXSTREAM streams[PIAOIP_ENDPOINT_SLOTS];
-  PIAOIP_BRIDGE_STATS stats;
+  BOOLEAN stream_creating[REY_ENDPOINT_SLOTS];
+  REY_BRIDGE_PROFILE profile;
+  ACXCIRCUIT circuits[REY_ENDPOINT_SLOTS];
+  ACXSTREAM streams[REY_ENDPOINT_SLOTS];
+  REY_BRIDGE_STATS stats;
   ULONGLONG next_bridge_frame;
   USHORT bridge_epoch;
   BOOLEAN bridge_seen;
-} PIAOIP_DEVICE_CONTEXT;
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PIAOIP_DEVICE_CONTEXT, PiaoipDeviceContext);
+} REY_DEVICE_CONTEXT;
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(REY_DEVICE_CONTEXT, ReyDeviceContext);
 
-typedef struct PIAOIP_CIRCUIT_CONTEXT {
+typedef struct REY_CIRCUIT_CONTEXT {
   BOOLEAN capture;
   ULONG slot, channels, first_channel;
-} PIAOIP_CIRCUIT_CONTEXT;
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PIAOIP_CIRCUIT_CONTEXT, PiaoipCircuitContext);
+} REY_CIRCUIT_CONTEXT;
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(REY_CIRCUIT_CONTEXT, ReyCircuitContext);
 
-typedef struct PIAOIP_STREAM_CONTEXT {
+typedef struct REY_STREAM_CONTEXT {
   WDFDEVICE device;
   ULONG slot, first_channel;
   BOOLEAN capture, running, prepared, allocating;
@@ -65,35 +65,35 @@ typedef struct PIAOIP_STREAM_CONTEXT {
   ULONG render_ready[2], render_length[2];
   BOOLEAN render_valid[2];
   ULONGLONG position, qpc, last_capture_qpc;
-} PIAOIP_STREAM_CONTEXT;
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(PIAOIP_STREAM_CONTEXT, PiaoipStreamContext);
+} REY_STREAM_CONTEXT;
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(REY_STREAM_CONTEXT, ReyStreamContext);
 
 DRIVER_INITIALIZE DriverEntry;
-EVT_WDF_DRIVER_DEVICE_ADD PiaoipDeviceAdd;
-EVT_WDF_DEVICE_PREPARE_HARDWARE PiaoipPrepareHardware;
-EVT_WDF_DEVICE_RELEASE_HARDWARE PiaoipReleaseHardware;
-EVT_WDF_OBJECT_CONTEXT_CLEANUP PiaoipChildCleanup;
-EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL PiaoipIoControl;
-EVT_WDF_FILE_CLEANUP PiaoipFileCleanup;
+EVT_WDF_DRIVER_DEVICE_ADD ReyDeviceAdd;
+EVT_WDF_DEVICE_PREPARE_HARDWARE ReyPrepareHardware;
+EVT_WDF_DEVICE_RELEASE_HARDWARE ReyReleaseHardware;
+EVT_WDF_OBJECT_CONTEXT_CLEANUP ReyChildCleanup;
+EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL ReyIoControl;
+EVT_WDF_FILE_CLEANUP ReyFileCleanup;
 EVT_WDF_DEVICE_FILE_CREATE ReyFileCreate;
-EVT_ACX_CIRCUIT_CREATE_STREAM PiaoipCreateStream;
-EVT_ACX_CIRCUIT_COMPOSITE_CIRCUIT_INITIALIZE PiaoipCircuitInitialize;
-EVT_WDF_OBJECT_CONTEXT_DESTROY PiaoipStreamDestroy;
-EVT_ACX_STREAM_ALLOCATE_RTPACKETS PiaoipAllocatePackets;
-EVT_ACX_STREAM_FREE_RTPACKETS PiaoipFreePackets;
-EVT_ACX_STREAM_PREPARE_HARDWARE PiaoipStreamPrepare;
-EVT_ACX_STREAM_RELEASE_HARDWARE PiaoipStreamRelease;
-EVT_ACX_STREAM_RUN PiaoipStreamRun;
-EVT_ACX_STREAM_PAUSE PiaoipStreamPause;
-EVT_ACX_STREAM_GET_HW_LATENCY PiaoipStreamLatency;
-EVT_ACX_STREAM_SET_RENDER_PACKET PiaoipSetRenderPacket;
-EVT_ACX_STREAM_GET_CURRENT_PACKET PiaoipGetCurrentPacket;
-EVT_ACX_STREAM_GET_CAPTURE_PACKET PiaoipGetCapturePacket;
-EVT_ACX_STREAM_GET_PRESENTATION_POSITION PiaoipGetPosition;
+EVT_ACX_CIRCUIT_CREATE_STREAM ReyCreateStream;
+EVT_ACX_CIRCUIT_COMPOSITE_CIRCUIT_INITIALIZE ReyCircuitInitialize;
+EVT_WDF_OBJECT_CONTEXT_DESTROY ReyStreamDestroy;
+EVT_ACX_STREAM_ALLOCATE_RTPACKETS ReyAllocatePackets;
+EVT_ACX_STREAM_FREE_RTPACKETS ReyFreePackets;
+EVT_ACX_STREAM_PREPARE_HARDWARE ReyStreamPrepare;
+EVT_ACX_STREAM_RELEASE_HARDWARE ReyStreamRelease;
+EVT_ACX_STREAM_RUN ReyStreamRun;
+EVT_ACX_STREAM_PAUSE ReyStreamPause;
+EVT_ACX_STREAM_GET_HW_LATENCY ReyStreamLatency;
+EVT_ACX_STREAM_SET_RENDER_PACKET ReySetRenderPacket;
+EVT_ACX_STREAM_GET_CURRENT_PACKET ReyGetCurrentPacket;
+EVT_ACX_STREAM_GET_CAPTURE_PACKET ReyGetCapturePacket;
+EVT_ACX_STREAM_GET_PRESENTATION_POSITION ReyGetPosition;
 
-NTSTATUS PiaoipCreateChild(WDFDEVICE root, WDFFILEOBJECT file, const PIAOIP_BRIDGE_PROFILE *profile);
-NTSTATUS PiaoipDetachChild(WDFFILEOBJECT file);
+NTSTATUS ReyCreateChild(WDFDEVICE root, WDFFILEOBJECT file, const REY_BRIDGE_PROFILE *profile);
+NTSTATUS ReyDetachChild(WDFFILEOBJECT file);
 WDFDEVICE ReyReferenceChild(WDFFILEOBJECT file);
-NTSTATUS PiaoipCreateCircuit(WDFDEVICE device, ULONG slot, ACXCIRCUIT *result);
-NTSTATUS PiaoipExchange(WDFDEVICE child, const PIAOIP_BRIDGE_EXCHANGE *input,
-                        PIAOIP_BRIDGE_EXCHANGE *output);
+NTSTATUS ReyCreateCircuit(WDFDEVICE device, ULONG slot, ACXCIRCUIT *result);
+NTSTATUS ReyExchange(WDFDEVICE child, const REY_BRIDGE_EXCHANGE *input,
+                        REY_BRIDGE_EXCHANGE *output);

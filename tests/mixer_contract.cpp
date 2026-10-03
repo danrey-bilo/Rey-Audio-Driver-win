@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
   rey::audio::Mix mix;
   std::array<int32_t, 256 * 8> source{}, render{};
   source.fill(4096);
-  piaoip::engine::AudioBlock original{source.data(), render.data(), 128, 8, 8, 16}, block;
+  rey::engine::AudioBlock original{source.data(), render.data(), 128, 8, 8, 16}, block;
   bool ok = true;
   auto run = [&] {
     if (!mixer.capture(original, block)) return false;

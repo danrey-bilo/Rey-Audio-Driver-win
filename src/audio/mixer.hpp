@@ -19,8 +19,8 @@ public:
   Mixer();
   void publish(const Mix &); // Control thread only; pow/serialization stay here.
   void reset();             // Called only after the audio worker has joined.
-  bool capture(const piaoip::engine::AudioBlock &, piaoip::engine::AudioBlock &);
-  void render(const piaoip::engine::AudioBlock &);
+  bool capture(const rey::engine::AudioBlock &, rey::engine::AudioBlock &);
+  void render(const rey::engine::AudioBlock &);
   float peak(unsigned direction, unsigned channel) const;
   uint64_t clips(unsigned direction, unsigned channel) const;
 private:

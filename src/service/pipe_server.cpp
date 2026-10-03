@@ -84,9 +84,11 @@ bool serve(Manager &manager, HANDLE stop, std::string &error) {
         bool clean = true;
         for (const auto c : request)
           clean = clean && c >= 32 && c <= 126;
+        ULONG sender_pid = 0;
+        GetNamedPipeClientProcessId(pipe, &sender_pid);
         auto reply =
             clean
-                ? manager.request(request)
+                ? manager.request(request, sender_pid)
                 : std::string(
                       "{\"ok\":false,\"error\":\"Invalid command encoding\"}");
         if (reply.size() < 32768 &&

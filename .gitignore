@@ -10,6 +10,8 @@ __pycache__/
 *.user
 *.suo
 *.log
+!/docs/evidence/**/*.log
+!/archive/**/*.log
 *.ini
 *.dll
 *.exe
@@ -19,3 +21,6 @@ __pycache__/
 *.img
 *.img.xz
 /third_party/asio-sdk/
+
+# Retained local checkout of the retired dependency; never used by the USB build.
+/external/AoIP-lib/

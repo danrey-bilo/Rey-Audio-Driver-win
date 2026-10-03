@@ -12,20 +12,6 @@ namespace ReyAudio {
         public Choice(int value, string label) { Value = value; Label = label; }
         public override string ToString() { return Label; }
     }
-    internal sealed class AudioCard : INotifyPropertyChanged {
-        public string Id { get; private set; }
-        public string Label { get; private set; }
-        public event PropertyChangedEventHandler PropertyChanged;
-        public AudioCard(string id) { Id = id; }
-        public override string ToString() { return Label; }
-        public void Update(Dictionary<string, object> row) {
-            string route = ViewModel.String(row, "route"), state = ViewModel.String(row, "state");
-            string next = ViewModel.String(row, "name") + " · " + (route == "usb" ? "USB" : route == "lan" ? "LAN" : "ожидание") +
-                (state == "streaming" || state == "digital_test" ? " · работает" : "");
-            if (Label == next) return;
-            Label = next; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Label"));
-        }
-    }
     internal sealed class LogRow {
         public string Time { get; set; }
         public string Title { get; set; }
@@ -35,22 +21,25 @@ namespace ReyAudio {
         public event PropertyChangedEventHandler PropertyChanged;
         public void Notify() { if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("")); }
         public readonly ObservableCollection<LogRow> Log = new ObservableCollection<LogRow>();
-        public ObservableCollection<AudioCard> Cards { get; private set; }
-        public string SelectedDevice { get; private set; }
-        public int RunningCards;
         public bool MixerSending;
-        public bool CanSelectCard { get { return CanApply && !MixerSending && Cards.Count > 0; } }
-        public bool CanEditCard { get { return CanApply && SelectedDevice.Length == 32; } }
-        public bool CanDisconnectLan { get { return CanEditCard && LanEnabled; } }
-        public bool CanForgetCard { get { return CanEditCard && !UsbPresent && !LanEnabled; } }
-        public string CardsHint { get { return Cards.Count == 0 ? "Подключите USB или добавьте карту на странице AoIP / LAN" :
-            "Карт: " + Cards.Count + " · работают: " + RunningCards + ". Выбор меняет только показ микшера."; } }
-        public string EndpointHint { get { return "Windows · Rey Audio " + ShortIdentity + " · входы и выходы 1/2, 3/4, 5/6, 7/8 + 1–8. Для приложения выберите нужную пару в настройках звука."; } }
+        public bool CanEditMixer { get { return CanApply && Identity.Length == 32; } }
+        public bool CanUseWindowsSound { get { return !AsioOnly && DriverPresent; } }
+        public string DeviceLabel { get { return UsbPresent ? "Rey Audio · " + ShortIdentity + " · USB" : "Подключите Rey Audio по USB"; } }
+        public string DeviceHint { get { return "Одна USB-карта · 8 входов и 8 выходов · подключается автоматически"; } }
+        public string DeviceWarning = "";
+        public string EndpointHint { get { return AsioOnly ? "Ableton · ASIO → Rey Audio USB ASIO · входы 1–8 и выходы 1–8. Системные устройства Windows устанавливаются отдельным этапом." : "Windows · Rey Audio " + ShortIdentity + " · входы и выходы 1/2, 3/4, 5/6, 7/8 + 1–8. Для приложения выберите нужную пару в настройках звука."; } }
         public ObservableCollection<LogRow> Events { get { return Log; } }
         public Choice[] Rates { get; private set; }
         public Choice[] Bits { get; private set; }
         public Choice[] Depths { get; private set; }
         public Choice[] Blocks { get; private set; }
+        public Choice[] AsioLeads { get; private set; }
+        public int AsioBlock { get; set; }
+        public int AsioLead { get; set; }
+        public string AsioStateLabel { get; private set; }
+        public string AsioCountersLabel { get; private set; }
+        public bool AsioOnly;
+        public bool CanSaveAsio { get { return !Busy; } }
         public string Page = "mixer";
         public bool MixerOutputs;
         public MixerChannel[] Inputs { get; private set; }
@@ -59,10 +48,10 @@ namespace ReyAudio {
         public MixerChannel[] VisibleChannels { get { return MixerOutputs ? Outputs : Inputs; } }
         public IEnumerable<MixerChannel> AllChannels { get { foreach(var c in Inputs) yield return c; foreach(var c in Outputs) yield return c; yield return Master; } }
         public Visibility MixerVisibility { get { return Page == "mixer" ? Visibility.Visible : Visibility.Collapsed; } }
-        public string MixerSourceLabel { get { return MixerOutputs ? "Воспроизведение · Windows → Pi" : "Захват · Pi → Windows"; } }
+        public string MixerSourceLabel { get { return MixerOutputs ? "Воспроизведение · приложение → Pi" : "Захват · Pi → приложение"; } }
         public string MixerFormat { get { return ActiveRate > 0 ? (ActiveRate / 1000.0).ToString("0.#") + " кГц · PCM" + ActiveBits + " · " + RouteLabel : "8 входов / 8 выходов"; } }
-        public bool Available, Busy, UsbPresent, DriverPresent, DigitalTest, LanEnabled;
-        public string State = "offline", Route = "none", Preferred = "auto", Identity = "", Backend = "";
+        public bool Available, Busy, UsbPresent, DriverPresent, DigitalTest;
+        public string State = "offline", Route = "none", Identity = "", Backend = "";
         public string LastJson = "", Detail = "";
         public int UsbRate { get; set; }
         public int UsbBits { get; set; }
@@ -70,32 +59,27 @@ namespace ReyAudio {
         public int UsbBlock { get; set; }
         public string UsbGuard { get; set; }
         public bool UsbAutomatic { get; set; }
-        public string LanPeer { get; set; }
-        public string LanPort { get; set; }
-        public int LanBlock { get; set; }
-        public string LanGuard { get; set; }
-        public string LanFrames { get; set; }
-        public bool LanEnergy { get; set; }
         public string Message { get; set; }
         public long Callbacks, Frames, Missing;
         public double Gap;
         public int ActiveRate, ActiveBits;
         public ViewModel() {
-            Cards = new ObservableCollection<AudioCard>(); SelectedDevice = "";
             Inputs = new MixerChannel[8]; Outputs = new MixerChannel[8]; Master = new MixerChannel(2, 0);
             for(int i = 0; i < 8; ++i) { Inputs[i] = new MixerChannel(0, i); Outputs[i] = new MixerChannel(1, i); }
             Rates = new[] { new Choice(44100, "44,1 кГц"), new Choice(48000, "48 кГц"), new Choice(88200, "88,2 кГц"), new Choice(96000, "96 кГц"), new Choice(176400, "176,4 кГц"), new Choice(192000, "192 кГц") };
             Bits = new[] { new Choice(16, "16 бит"), new Choice(24, "24 бит"), new Choice(32, "32 бит") };
             Depths = new[] { new Choice(1, "1 пакет"), new Choice(2, "2 пакета"), new Choice(3, "3 пакета"), new Choice(4, "4 пакета"), new Choice(6, "6 пакетов"), new Choice(8, "8 пакетов"), new Choice(12, "12 пакетов"), new Choice(16, "16 пакетов") };
             Blocks = new[] { new Choice(16, "16 кадров"), new Choice(32, "32 кадра"), new Choice(64, "64 кадра"), new Choice(128, "128 кадров"), new Choice(256, "256 кадров") };
+            AsioLeads = new[] { new Choice(1, "1 блок"), new Choice(2, "2 блока"), new Choice(3, "3 блока"), new Choice(4, "4 блока") };
+            var asio = AsioPreferences.Load(); AsioBlock = asio.Block; AsioLead = asio.Lead;
+            AsioStateLabel = "Ожидание USB-сессии"; AsioCountersLabel = "Счётчики доступны при работающем ASIO-host";
             UsbRate = 192000; UsbBits = 32; UsbDepth = 3; UsbBlock = 64; UsbGuard = "0"; UsbAutomatic = true;
-            LanPeer = ""; LanPort = "50021"; LanBlock = 256; LanGuard = "1536"; LanFrames = "32"; Message = "";
+            Message = "";
         }
         public Visibility UsbVisibility { get { return Page == "usb" ? Visibility.Visible : Visibility.Collapsed; } }
-        public Visibility LanVisibility { get { return Page == "lan" ? Visibility.Visible : Visibility.Collapsed; } }
         public Visibility DiagnosticsVisibility { get { return Page == "diagnostics" ? Visibility.Visible : Visibility.Collapsed; } }
-        public string PageTitle { get { return Page == "mixer" ? "Микшер" : Page == "usb" ? "USB" : Page == "lan" ? "AoIP / LAN" : "Диагностика"; } }
-        public string PageSubtitle { get { return Page == "mixer" ? "Уровни и управление восемью каналами в каждом направлении" : Page == "usb" ? "Прямое подключение Raspberry Pi 5 к компьютеру" : Page == "lan" ? "Аудио через встроенный Ethernet-порт" : "Состояние службы, подключения и события"; } }
+        public string PageTitle { get { return Page == "mixer" ? "Микшер" : Page == "usb" ? "USB" : "Диагностика"; } }
+        public string PageSubtitle { get { return Page == "mixer" ? "Уровни и управление восемью каналами в каждом направлении" : Page == "usb" ? "Прямое подключение Raspberry Pi 5 к компьютеру" : "Состояние службы, подключения и события"; } }
         public string ServiceLabel { get { return Available ? "Служба работает" : "Служба недоступна"; } }
         public string ServiceColor { get { return Available ? "#72DEBD" : "#AAB4C4"; } }
         public bool CanApply { get { return Available && !Busy; } }
@@ -106,9 +90,10 @@ namespace ReyAudio {
         public string StatusTitle {
             get {
                 if (!Available) return "Ожидание службы";
-                if (!DriverPresent && !DigitalTest) return "Аудиодрайвер ещё не установлен";
-                if (State == "digital_test") return "Цифровой тест · " + (Route == "usb" ? "USB" : "LAN");
-                if (State == "streaming") return "Аудио подключено · " + (Route == "usb" ? "USB" : "LAN");
+                if (DeviceWarning.Length != 0) return "Проверьте USB-подключение";
+                if (!AsioOnly && !DriverPresent && !DigitalTest) return "Аудиодрайвер ещё не установлен";
+                if (State == "digital_test") return "Цифровой тест · " + "USB";
+                if (State == "streaming") return "Аудио подключено · " + "USB";
                 if (State == "connecting") return "Подключение устройства…";
                 if (State == "stopping") return "Применение настроек…";
                 if (State == "idle") return UsbPresent ? "USB обнаружен" : "Ожидание устройства";
@@ -117,59 +102,52 @@ namespace ReyAudio {
         }
         public string StatusBody {
             get {
+                if (DeviceWarning.Length != 0) return DeviceWarning;
                 if (!Available) return "Установите и запустите Rey Audio Service. После установки она запускается вместе с Windows.";
-                if (!DriverPresent && !DigitalTest) return "Установите Rey Audio Driver через MSI/EXE. Настройки и микшер доступны здесь; уровни появятся при работающем аудиопотоке.";
+                if (!AsioOnly && !DriverPresent && !DigitalTest) return "Установите Rey Audio Driver через MSI/EXE. Настройки и микшер доступны здесь; уровни появятся при работающем аудиопотоке.";
                 if (DigitalTest) return "Стенд проверяет цифровой транспорт. Системные аудиовходы и выходы в этом режиме не создаются.";
-                if (State == "streaming") return "Устройство доступно аудиоприложениям Windows. Смена транспорта перезапускает подключение.";
-                if (State == "idle") return "USB подключается автоматически. Для LAN укажите адрес устройства и нажмите «Подключить».";
+                if (State == "streaming") return AsioOnly ? "В Ableton выберите ASIO → Rey Audio USB ASIO. Закройте ASIO в приложении перед изменением формата USB." : "Устройство доступно аудиоприложениям Windows. Настройки USB применяются после перезапуска подключения.";
+                if (State == "idle") return "USB подключается автоматически. Подключите одну карту Rey Audio к USB-порту компьютера.";
                 return Detail;
             }
         }
-        public string StatusColor { get { return !Available ? "#8391A5" : !DriverPresent && !DigitalTest ? "#B87512" : State == "streaming" || State == "digital_test" ? "#128466" : "#53708F"; } }
-        public string RouteLabel { get { return Route == "none" ? "Не подключено" : Route == "usb" ? "USB" : "AoIP / LAN"; } }
-        public string PreferredLabel { get { return Preferred == "usb" ? "Выбран USB" : Preferred == "lan" ? "Выбран LAN" : "LAN по умолчанию"; } }
-        public string DriverLabel { get { return DriverPresent ? "Доступен" : "Не установлен"; } }
+        public string StatusColor { get { return !Available ? "#8391A5" : !AsioOnly && !DriverPresent && !DigitalTest ? "#B87512" : State == "streaming" || State == "digital_test" ? "#128466" : "#53708F"; } }
+        public string RouteLabel { get { return Route == "usb" ? "USB" : "Не подключено"; } }
+        public string DriverLabel { get { return AsioOnly ? "USB-ASIO" : DriverPresent ? "Доступен" : "Не установлен"; } }
         public string BackendLabel { get { return Backend.Length == 0 ? "—" : Backend; } }
         public string CallbackLabel { get { return Callbacks.ToString("N0"); } }
         public string FrameLabel { get { return Frames.ToString("N0"); } }
         public string MissingLabel { get { return Missing.ToString("N0"); } }
         public string GapLabel { get { return Gap.ToString("0.0", CultureInfo.CurrentCulture) + " мкс"; } }
-        public string LanFormatLabel { get { return Route == "lan" && ActiveRate > 0 ? (ActiveRate / 1000.0).ToString("0.#") + " кГц · PCM" + ActiveBits : "Формат определяется устройством Pi"; } }
-        public string LanActionLabel { get { return LanEnabled ? "Отключить LAN" : "Подключить LAN"; } }
         public string QueueHint { get { return "Запас очереди: " + (UsbDepth * 0.125).ToString("0.###") + " мс. Это не сквозная задержка."; } }
         public Visibility MessageVisibility { get { return string.IsNullOrEmpty(Message) ? Visibility.Collapsed : Visibility.Visible; } }
         public static string String(Dictionary<string, object> d, string key) { return d.ContainsKey(key) && d[key] != null ? Convert.ToString(d[key], CultureInfo.InvariantCulture) : ""; }
         public static int Int(Dictionary<string, object> d, string key) { int v; return int.TryParse(String(d, key), out v) ? v : 0; }
         public static bool Bool(Dictionary<string, object> d, string key) { return d.ContainsKey(key) && d[key] is bool && (bool)d[key]; }
         public void Update(Dictionary<string, object> data, bool loadFields) {
-            string selected = String(data, "selected_device");
-            if (selected != SelectedDevice) {
+            string identity = String(data, "identity");
+            if (identity != Identity) {
                 loadFields = true;
                 foreach (var channel in AllChannels) channel.Dirty = false;
             }
-            if (data.ContainsKey("devices")) {
-                var ids = new HashSet<string>(); RunningCards = 0;
-                foreach(Dictionary<string, object> row in (IEnumerable)data["devices"]) {
-                    string id = String(row, "id"); ids.Add(id); AudioCard card = null;
-                    foreach(var existing in Cards) if (existing.Id == id) card = existing;
-                    if (card == null) { card = new AudioCard(id); Cards.Add(card); }
-                    card.Update(row);
-                    string state = String(row, "state"); if (state == "streaming" || state == "digital_test") ++RunningCards;
-                }
-                for (int i = Cards.Count - 1; i >= 0; --i) if (!ids.Contains(Cards[i].Id)) Cards.RemoveAt(i);
-            }
-            SelectedDevice = selected;
+            DeviceWarning = String(data, "device_warning");
+            if (DeviceWarning == "Connect only one Rey Audio USB device") DeviceWarning = "Обнаружено несколько устройств. Оставьте подключённой одну USB-карту Rey Audio.";
+            else if (DeviceWarning == "Only one USB device is supported; the additional device is ignored") DeviceWarning = "Работает первая USB-карта. Дополнительное устройство не подключается к аудиопотоку.";
             Available = true; State = String(data, "state"); Detail = String(data, "detail"); Route = String(data, "route");
-            Preferred = String(data, "preferred"); DriverPresent = Bool(data, "driver_present"); DigitalTest = Bool(data, "digital_test");
+            DriverPresent = Bool(data, "driver_present"); DigitalTest = Bool(data, "digital_test");
+            AsioOnly = Bool(data, "asio_only");
+            if (data.ContainsKey("asio")) {
+                var asio = (Dictionary<string, object>)data["asio"];
+                AsioStateLabel = Bool(asio, "running") ? "ASIO работает · " + Int(asio, "block") + " кадров · запас " + Int(asio, "lead_blocks") + " блока" : Bool(asio, "ready") ? "USB-ASIO готов · откройте драйвер в Ableton" : "Ожидание активной USB-карты";
+                AsioCountersLabel = Bool(asio, "connected") ? "Пропуски входа: " + String(asio, "capture_dropped") + " · опоздания выхода: " + String(asio, "render_late_frames") + " · пропуски выхода: " + String(asio, "render_missing_frames") + " · переполнение: " + String(asio, "render_overflow") : "Счётчики появятся после запуска ASIO в приложении";
+            }
             Identity = String(data, "identity"); Backend = String(data, "backend");
-            var usb = (Dictionary<string, object>)data["usb"]; var lan = (Dictionary<string, object>)data["lan"];
-            UsbPresent = Int(usb, "present") == 1; LanEnabled = Bool(lan, "enabled");
+            var usb = (Dictionary<string, object>)data["usb"];
+            UsbPresent = Int(usb, "present") == 1;
             if (Identity.Length == 0) Identity = String(usb, "identity");
             if (loadFields) {
                 UsbRate = Int(usb, "rate"); UsbBits = Int(usb, "bits"); UsbDepth = Int(usb, "depth"); UsbBlock = Int(usb, "block");
                 UsbGuard = String(usb, "guard"); UsbAutomatic = Bool(usb, "automatic");
-                LanPeer = String(lan, "peer"); LanPort = String(lan, "port"); LanBlock = Int(lan, "block");
-                LanGuard = String(lan, "guard"); LanFrames = String(lan, "frames"); LanEnergy = Bool(lan, "energy");
             }
             var active = (Dictionary<string, object>)data["active"]; ActiveRate = Int(active, "rate"); ActiveBits = Int(active, "bits");
             var stats = (Dictionary<string, object>)data["stats"];

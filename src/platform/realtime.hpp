@@ -3,7 +3,7 @@
 #include <avrt.h>
 #include <atomic>
 #include <cstdint>
-namespace piaoip {
+namespace rey {
 uint64_t now_ns();
 uint64_t thread_cpu_ns();
 void max_counter(std::atomic<uint64_t>& value, uint64_t candidate);
@@ -12,12 +12,5 @@ class RealtimeThread {
 public:
   explicit RealtimeThread(std::atomic<uint64_t>& failures,unsigned role=0,int requested_cpu=-1);
   ~RealtimeThread();
-};
-class DeadlineWaiter {
-  HANDLE timer_=nullptr;
-public:
-  DeadlineWaiter();
-  ~DeadlineWaiter();
-  void wait(uint64_t deadline, HANDLE stop_event, HANDLE wake_event=nullptr,uint64_t spin_ns=20000);
 };
 }
