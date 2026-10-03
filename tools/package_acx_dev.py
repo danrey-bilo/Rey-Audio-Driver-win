@@ -38,6 +38,11 @@ def main():
         entries['bin/' + name] = (args.bin / name).read_bytes()
     for name in ('PiAoipAcx.sys', 'PiAoipAcx.inf', 'piaoipacx.cat', 'manifest.json', 'infverif.log', 'inf2cat.log'):
         entries['driver/' + name] = (args.driver / name).read_bytes()
+        if name.endswith('.log'):
+            text = entries['driver/' + name].decode('utf-8-sig')
+            for prefix in (str(project.parents[1]), project.parents[1].as_posix()):
+                text = text.replace(prefix, 'workspace')
+            entries['driver/' + name] = text.encode('utf-8')
     entries['service.example.ini'] = (project / 'config/service.example.ini').read_bytes()
     entries['LICENSE'] = (project / 'LICENSE').read_bytes()
     for path in (project / 'docs').glob('*.md'):
