@@ -1,14 +1,17 @@
 **English** | [Русский](INSTALL.ru.md)
 
-# Install Rey Audio Driver 2.6.1 preview
+# Install Rey Audio Driver 2.7.0 preview
 
-Run **Rey-Audio-Setup-2.6.1-preview.1-x64.exe**. It embeds the MSI: no ZIP
+Run **Rey-Audio-Setup-2.7.0-preview.1-x64.exe**. It embeds the MSI: no ZIP
 extraction, PowerShell commands or INI editing is required. A prepared PC can
 also use the MSI directly. Requires Windows 11 x64 22H2+ and .NET Framework 4.8.
 
 The own ACX kernel driver uses a **local test signature**. No purchased or
 pre-existing certificate, external signer, WDK or network access is needed on
 the installation PC. Self-signing MSI cannot override Windows kernel policy.
+The current installer requires Test Mode; it does not support F7 or Custom
+Kernel Signers installation. [Options without Test Mode](INSTALL-NORMAL-WINDOWS.md)
+describe alternative architectures, not features of this package.
 [Microsoft test-signing policy](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/the-testsigning-boot-configuration-option).
 
 1. Start the EXE; it reads the active code-integrity policy.
@@ -38,9 +41,18 @@ two years; uninstall/reinstall a fresh test package to renew it. Initial MSI/EXE
 are not commercially signed, so Windows can show Unknown Publisher.
 
 Configure everything through **Mixer**, **USB**, **AoIP / LAN**. USB discovery is
-automatic. Select a LAN device/address in its page. Independent profiles and
-mixer settings are committed as one registry value; no product INI is installed.
-Changing the local UDP port updates only the own LAN firewall rule.
+automatic. Add a LAN device/address in its page. All cards have independent
+sessions; the top selector changes the displayed card only. Per-card USB/LAN
+profiles and mixer settings are committed atomically under
+`HKLM\Software\ReyAudio\Devices\<DeviceId>\Profiles`. The selected view is stored
+separately. Existing single-card settings migrate to the first identified board.
+No product INI is installed. Each active LAN card needs a unique local UDP port;
+the service validates conflicts and updates its own firewall port list.
+
+After successful ACX loading, each 8×8 card is intended to expose four stereo
+capture/playback pairs and full multichannel devices. Select the desired pair
+in Windows Sound or your application. Setup does not change default speakers
+or microphone. [Endpoint names and usage](ENDPOINTS.md).
 
 Uninstall from Windows Installed apps. Only own service, root, autorun, firewall
 rule and own local certificate trust are removed. Settings and public diagnostic

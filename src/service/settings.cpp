@@ -48,13 +48,13 @@ std::string select_route(const Settings &s, bool present) {
     return "lan";
   return s.preferred != "lan" && s.usb_auto && present ? "usb" : "none";
 }
-bool load(const std::wstring &path, Settings &out, std::string &error) {
+bool load(const std::wstring &path, Settings &out, std::string &error, const std::wstring &key) {
   // One registry value commits both profiles atomically. The finite test
   // harness uses the same binary representation in an isolated .dat file.
   std::vector<BYTE> bytes(512);
   DWORD size = DWORD(bytes.size());
   if (path.empty()) {
-    const auto status = RegGetValueW(HKEY_LOCAL_MACHINE, L"Software\\ReyAudio",
+    const auto status = RegGetValueW(HKEY_LOCAL_MACHINE, key.c_str(),
         L"Profiles", RRF_RT_REG_BINARY, nullptr,
         bytes.data(), &size);
     if (status == ERROR_FILE_NOT_FOUND) return true;
@@ -133,7 +133,7 @@ bool load(const std::wstring &path, Settings &out, std::string &error) {
   out = s;
   return true;
 }
-bool save(const std::wstring &path, const Settings &s, std::string &error) {
+bool save(const std::wstring &path, const Settings &s, std::string &error, const std::wstring &registry_key) {
   if (!valid(s, error))
     return false;
   std::vector<BYTE> content;
@@ -153,7 +153,7 @@ bool save(const std::wstring &path, const Settings &s, std::string &error) {
   number(uint32_t(s.mix.master_cdb + 6000)); number(unsigned(s.mix.master_mute));
   if (path.empty()) {
     HKEY key = nullptr;
-    auto status = RegCreateKeyExW(HKEY_LOCAL_MACHINE, L"Software\\ReyAudio", 0,
+    auto status = RegCreateKeyExW(HKEY_LOCAL_MACHINE, registry_key.c_str(), 0,
         nullptr, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE | KEY_WOW64_64KEY,
         nullptr, &key, nullptr);
     if (status == ERROR_SUCCESS) {

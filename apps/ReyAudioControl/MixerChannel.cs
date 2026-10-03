@@ -23,7 +23,7 @@ namespace ReyAudio {
         public bool Invert { get { return invert; } set { if (invert != value) { invert = value; Edit(); } } }
         public string GainLabel { get { return gain.ToString("+0.0;-0.0;0.0", CultureInfo.CurrentCulture) + " dB"; } }
         public string PeakLabel { get { return peak <= 0 ? "−∞" : (20 * Math.Log10(peak)).ToString("0.0", CultureInfo.CurrentCulture); } }
-        public double MeterHeight { get { return peak <= 0 ? 0 : Math.Max(0, Math.Min(190, (20 * Math.Log10(peak) + 60) / 60 * 190)); } }
+        public double MeterHeight { get { return peak <= 0 ? 0 : Math.Max(0, Math.Min(110, (20 * Math.Log10(peak) + 60) / 60 * 110)); } }
         public string ClipColor { get { return clips > 0 ? "#EF5C62" : "#DCE6EE"; } }
         public string ClipHint { get { return "Обрезанных отсчётов: " + clips.ToString("N0"); } }
         public string Command {

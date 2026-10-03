@@ -26,13 +26,13 @@ $setupRoot = [IO.Path]::GetFullPath($Setup)
 $destination = [IO.Path]::GetFullPath($Output)
 Require (!(Test-Path -LiteralPath $destination)) 'Use a new inspection directory.'
 [IO.Directory]::CreateDirectory($destination) | Out-Null
-$msi = Join-Path $setupRoot 'Rey-Audio-Driver-2.6.1-preview.1-x64.msi'
-$exe = Join-Path $setupRoot 'Rey-Audio-Setup-2.6.1-preview.1-x64.exe'
+$msi = Join-Path $setupRoot 'Rey-Audio-Driver-2.7.0-preview.1-x64.msi'
+$exe = Join-Path $setupRoot 'Rey-Audio-Setup-2.7.0-preview.1-x64.exe'
 $installer = New-Object -ComObject WindowsInstaller.Installer
 $database = $installer.OpenDatabase($msi, 0)
 $properties = @{}
 foreach($row in (ReadMsiRows -Table 'Property' -Columns @('Property','Value'))) { $properties[$row.Property] = $row.Value }
-Require ($properties['ProductVersion'] -eq '2.6.1') 'Unexpected MSI version.'
+Require ($properties['ProductVersion'] -eq '2.7.0') 'Unexpected MSI version.'
 Require ($properties['ALLUSERS'] -eq '1') 'Installation must be per-machine.'
 $allLaunch = @(ReadMsiRows -Table 'LaunchCondition' -Columns @('Condition','Description'))
 $launch = @($allLaunch | Where-Object { $_.Condition -match 'NETFRAMEWORK48' })
@@ -105,7 +105,7 @@ $msiHash = Digest $msi
 Require ($embedded -eq $msiHash) 'EXE embeds another MSI.'
 $report = [ordered]@{
     passed = $true
-    version = '2.6.1-preview.1'
+    version = '2.7.0-preview.1'
     inspected_utc = [DateTime]::UtcNow.ToString('o')
     msi_sha256 = $msiHash
     exe_sha256 = Digest $exe

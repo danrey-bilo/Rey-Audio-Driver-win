@@ -2,55 +2,93 @@
 #include <initguid.h>
 #include <devpkey.h>
 
+static const GUID *const modes[] = {&AUDIO_SIGNALPROCESSINGMODE_RAW,
+    &AUDIO_SIGNALPROCESSINGMODE_DEFAULT, &AUDIO_SIGNALPROCESSINGMODE_COMMUNICATIONS,
+    &AUDIO_SIGNALPROCESSINGMODE_MEDIA, &AUDIO_SIGNALPROCESSINGMODE_MOVIE};
+
+static VOID Append(WCHAR *text, ULONG *length, const WCHAR *value) {
+  while (*value && *length < 95) text[(*length)++] = *value++;
+  text[*length] = 0;
+}
+static VOID FriendlyName(const PIAOIP_DEVICE_CONTEXT *d, const PIAOIP_CIRCUIT_CONTEXT *c,
+                          WCHAR *text) {
+  ULONG length = 0, i;
+  Append(text, &length, L"Rey Audio ");
+  for (i = 24; i < 32; ++i) text[length++] = (WCHAR)d->profile.device_id[i];
+  text[length] = 0;
+  Append(text, &length, c->capture ? L" Input " : L" Output ");
+  if (c->slot < 2) {
+    text[length++] = L'1';
+    if (c->channels > 1) {
+      text[length++] = L'-'; text[length++] = (WCHAR)(L'0' + c->channels);
+    }
+    text[length] = 0; Append(text, &length, L" (Multichannel)");
+  }
+  else {
+    text[length++] = (WCHAR)(L'1' + c->first_channel);
+    if (c->channels == 2) {
+      text[length++] = L'/';
+      text[length++] = (WCHAR)(L'2' + c->first_channel);
+    }
+    text[length] = 0;
+  }
+}
+
 NTSTATUS PiaoipCircuitInitialize(WDFDEVICE device, ACXCIRCUIT circuit, ACXOBJECTBAG properties) {
   const DEVPROPKEY packet_key = {
       {0x9404f781, 0x7191, 0x409b, {0x8b, 0x0b, 0x80, 0xbf, 0x6e, 0xc2, 0x29, 0xae}}, 2};
   struct {
     KSAUDIO_PACKETSIZE_CONSTRAINTS2 base;
-    KSAUDIO_PACKETSIZE_PROCESSINGMODE_CONSTRAINT extra;
+    KSAUDIO_PACKETSIZE_PROCESSINGMODE_CONSTRAINT extra[4];
   } constraints;
   const PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(device);
+  const PIAOIP_CIRCUIT_CONTEXT *c = PiaoipCircuitContext(circuit);
   UNICODE_STRING acx_link = {0}, audio_link = {0};
   WDFSTRING name = AcxCircuitGetSymbolicLinkName(circuit);
-  ULONG channels = PiaoipCircuitContext(circuit)->capture ? d->profile.inputs : d->profile.outputs;
+  WCHAR friendly[96];
+  ULONG i;
   NTSTATUS status;
   UNREFERENCED_PARAMETER(properties);
-  if (!name)
-    return STATUS_INVALID_DEVICE_STATE;
+  if (!name) return STATUS_INVALID_DEVICE_STATE;
   WdfStringGetUnicodeString(name, &acx_link);
-  if (!acx_link.Length)
-    return STATUS_INVALID_DEVICE_STATE;
+  if (!acx_link.Length) return STATUS_INVALID_DEVICE_STATE;
   RtlZeroMemory(&constraints, sizeof(constraints));
   constraints.base.MinPacketPeriodInHns =
       (ULONG)((ULONGLONG)d->profile.block * 10000000 / d->profile.rate);
   constraints.base.PacketSizeFileAlignment = FILE_LONG_ALIGNMENT;
-  constraints.base.MaxPacketSizeInBytes = PIAOIP_BRIDGE_PACKET_FRAMES * channels * 4;
-  constraints.base.NumProcessingModeConstraints = 2;
-  constraints.base.ProcessingModeConstraints[0].ProcessingMode = AUDIO_SIGNALPROCESSINGMODE_RAW;
-  constraints.base.ProcessingModeConstraints[0].SamplesPerProcessingPacket = d->profile.block;
-  constraints.extra.ProcessingMode = AUDIO_SIGNALPROCESSINGMODE_DEFAULT;
-  constraints.extra.SamplesPerProcessingPacket = d->profile.block;
-  // Publish the manually selected period on the interface ACX has just created.
-  // The WASAPI probe must verify what Windows actually offers to the client.
+  constraints.base.MaxPacketSizeInBytes = PIAOIP_BRIDGE_PACKET_FRAMES * c->channels * 4;
+  constraints.base.NumProcessingModeConstraints = RTL_NUMBER_OF(modes);
+  for (i = 0; i < RTL_NUMBER_OF(modes); ++i) {
+    KSAUDIO_PACKETSIZE_PROCESSINGMODE_CONSTRAINT *p = i ? &constraints.extra[i - 1] :
+        &constraints.base.ProcessingModeConstraints[0];
+    p->ProcessingMode = *modes[i];
+    p->SamplesPerProcessingPacket = d->profile.block;
+  }
   status = IoGetDeviceInterfaceAlias(&acx_link, &KSCATEGORY_AUDIO, &audio_link);
-  if (!NT_SUCCESS(status))
-    return status;
+  if (!NT_SUCCESS(status)) return status;
   status = IoSetDeviceInterfacePropertyData(&audio_link, &packet_key, 0, 0, DEVPROP_TYPE_BINARY,
                                             sizeof(constraints), &constraints);
   if (NT_SUCCESS(status)) {
-    const WCHAR *friendly = PiaoipCircuitContext(circuit)->capture ? L"Rey Audio Input" : L"Rey Audio Output";
+    FriendlyName(d, c, friendly);
     status = IoSetDeviceInterfacePropertyData(&audio_link, &DEVPKEY_DeviceInterface_FriendlyName,
-        0, 0, DEVPROP_TYPE_STRING, (ULONG)((wcslen(friendly) + 1) * sizeof(WCHAR)), (PVOID)friendly);
+        0, 0, DEVPROP_TYPE_STRING, (ULONG)((wcslen(friendly) + 1) * sizeof(WCHAR)), friendly);
   }
   RtlFreeUnicodeString(&audio_link);
   return status;
 }
 
-NTSTATUS PiaoipCreateCircuit(WDFDEVICE device, BOOLEAN capture, ACXCIRCUIT *result) {
-  const UNICODE_STRING capture_name = RTL_CONSTANT_STRING(L"ReyAudioInput");
-  const UNICODE_STRING render_name = RTL_CONSTANT_STRING(L"ReyAudioOutput");
-  PIAOIP_DEVICE_CONTEXT *context = PiaoipDeviceContext(device);
-  PACXCIRCUIT_INIT init;
+NTSTATUS PiaoipCreateCircuit(WDFDEVICE device, ULONG slot, ACXCIRCUIT *result) {
+  static const WCHAR *const names[PIAOIP_ENDPOINT_SLOTS] = {
+      L"ReyAudioInput", L"ReyAudioOutput", L"ReyAudioInput1_2", L"ReyAudioOutput1_2",
+      L"ReyAudioInput3_4", L"ReyAudioOutput3_4", L"ReyAudioInput5_6", L"ReyAudioOutput5_6",
+      L"ReyAudioInput7_8", L"ReyAudioOutput7_8"};
+  PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(device);
+  ULONG channels = piaoip_endpoint_channels(slot, d->profile.inputs, d->profile.outputs), i;
+  BOOLEAN capture = (BOOLEAN)piaoip_endpoint_capture(slot);
+  GUID component = slot < 2 ? (capture ? GUID_PIAOIP_CAPTURE : GUID_PIAOIP_RENDER) :
+      (capture ? GUID_REY_PAIR_CAPTURE : GUID_REY_PAIR_RENDER);
+  UNICODE_STRING name;
+  PACXCIRCUIT_INIT init = NULL;
   WDF_OBJECT_ATTRIBUTES attributes;
   ACXCIRCUIT circuit = NULL;
   ACX_PIN_CONFIG pin_config;
@@ -61,27 +99,27 @@ NTSTATUS PiaoipCreateCircuit(WDFDEVICE device, BOOLEAN capture, ACXCIRCUIT *resu
   ACX_CIRCUIT_COMPOSITE_CALLBACKS composite;
   KSDATAFORMAT_WAVEFORMATEXTENSIBLE wave;
   NTSTATUS status;
-  ULONG channels = capture ? context->profile.inputs : context->profile.outputs;
-
+  if (!channels) return STATUS_INVALID_PARAMETER;
+  if (slot >= 2) component.Data1 += ((slot - 2) / 2) * 2;
+  RtlInitUnicodeString(&name, names[slot]);
   init = AcxCircuitInitAllocate(device);
-  if (!init)
-    return STATUS_INSUFFICIENT_RESOURCES;
+  if (!init) return STATUS_INSUFFICIENT_RESOURCES;
   AcxCircuitInitSetCircuitType(init, capture ? AcxCircuitTypeCapture : AcxCircuitTypeRender);
-  AcxCircuitInitSetComponentId(init, capture ? &GUID_PIAOIP_CAPTURE : &GUID_PIAOIP_RENDER);
-  status = AcxCircuitInitAssignName(init, capture ? &capture_name : &render_name);
-  if (!NT_SUCCESS(status))
-    goto failed;
+  AcxCircuitInitSetComponentId(init, &component);
+  status = AcxCircuitInitAssignName(init, &name);
+  if (!NT_SUCCESS(status)) goto failed;
   status = AcxCircuitInitAssignAcxCreateStreamCallback(init, PiaoipCreateStream);
-  if (!NT_SUCCESS(status))
-    goto failed;
+  if (!NT_SUCCESS(status)) goto failed;
   ACX_CIRCUIT_COMPOSITE_CALLBACKS_INIT(&composite);
   composite.EvtAcxCircuitCompositeCircuitInitialize = PiaoipCircuitInitialize;
   AcxCircuitInitSetAcxCircuitCompositeCallbacks(init, &composite);
   WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&attributes, PIAOIP_CIRCUIT_CONTEXT);
   status = AcxCircuitCreate(device, &attributes, &init, &circuit);
-  if (!NT_SUCCESS(status))
-    goto failed;
+  if (!NT_SUCCESS(status)) goto failed;
   PiaoipCircuitContext(circuit)->capture = capture;
+  PiaoipCircuitContext(circuit)->slot = slot;
+  PiaoipCircuitContext(circuit)->channels = channels;
+  PiaoipCircuitContext(circuit)->first_channel = piaoip_endpoint_first_channel(slot);
 
   ACX_PIN_CONFIG_INIT(&pin_config);
   pin_config.Type = capture ? AcxPinTypeSource : AcxPinTypeSink;
@@ -91,15 +129,14 @@ NTSTATUS PiaoipCreateCircuit(WDFDEVICE device, BOOLEAN capture, ACXCIRCUIT *resu
   WDF_OBJECT_ATTRIBUTES_INIT(&attributes);
   attributes.ParentObject = circuit;
   status = AcxPinCreate(circuit, &attributes, &pin_config, &pins[0]);
-  if (!NT_SUCCESS(status))
-    goto failed;
+  if (!NT_SUCCESS(status)) goto failed;
   ACX_PIN_CONFIG_INIT(&pin_config);
   pin_config.Type = capture ? AcxPinTypeSink : AcxPinTypeSource;
   pin_config.Communication = AcxPinCommunicationNone;
-  pin_config.Category = capture ? &KSNODETYPE_LINE_CONNECTOR : &KSNODETYPE_SPEAKER;
+  pin_config.Category = capture ? (slot < 2 ? &KSNODETYPE_LINE_CONNECTOR : &KSNODETYPE_MICROPHONE) :
+      &KSNODETYPE_SPEAKER;
   status = AcxPinCreate(circuit, &attributes, &pin_config, &pins[1]);
-  if (!NT_SUCCESS(status))
-    goto failed;
+  if (!NT_SUCCESS(status)) goto failed;
 
   RtlZeroMemory(&wave, sizeof(wave));
   wave.DataFormat.FormatSize = sizeof(wave);
@@ -109,41 +146,34 @@ NTSTATUS PiaoipCreateCircuit(WDFDEVICE device, BOOLEAN capture, ACXCIRCUIT *resu
   wave.DataFormat.Specifier = KSDATAFORMAT_SPECIFIER_WAVEFORMATEX;
   wave.WaveFormatExt.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
   wave.WaveFormatExt.Format.nChannels = (WORD)channels;
-  wave.WaveFormatExt.Format.nSamplesPerSec = context->profile.rate;
+  wave.WaveFormatExt.Format.nSamplesPerSec = d->profile.rate;
   wave.WaveFormatExt.Format.nBlockAlign = (WORD)(channels * 4);
-  wave.WaveFormatExt.Format.nAvgBytesPerSec = context->profile.rate * channels * 4;
+  wave.WaveFormatExt.Format.nAvgBytesPerSec = d->profile.rate * channels * 4;
   wave.WaveFormatExt.Format.wBitsPerSample = 32;
   wave.WaveFormatExt.Format.cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
-  wave.WaveFormatExt.Samples.wValidBitsPerSample = (WORD)context->profile.valid_bits;
-  wave.WaveFormatExt.dwChannelMask = KSAUDIO_SPEAKER_DIRECTOUT;
+  wave.WaveFormatExt.Samples.wValidBitsPerSample = (WORD)d->profile.valid_bits;
+  wave.WaveFormatExt.dwChannelMask = slot < 2 ? KSAUDIO_SPEAKER_DIRECTOUT :
+      (channels == 2 ? KSAUDIO_SPEAKER_STEREO : KSAUDIO_SPEAKER_MONO);
   wave.WaveFormatExt.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
   ACX_DATAFORMAT_CONFIG_INIT_KS(&format_config, &wave);
   status = AcxDataFormatCreate(device, &attributes, &format_config, &format);
-  if (!NT_SUCCESS(status))
-    goto failed;
+  if (!NT_SUCCESS(status)) goto failed;
   formats = AcxPinGetRawDataFormatList(pins[0]);
-  if (!formats) {
-    status = STATUS_INSUFFICIENT_RESOURCES;
-    goto failed;
-  }
+  if (!formats) { status = STATUS_INSUFFICIENT_RESOURCES; goto failed; }
   status = AcxDataFormatListAddDataFormat(formats, format);
-  if (!NT_SUCCESS(status))
-    goto failed;
+  if (!NT_SUCCESS(status)) goto failed;
   status = AcxDataFormatListAssignDefaultDataFormat(formats, format);
-  if (!NT_SUCCESS(status))
-    goto failed;
-  status = AcxPinAssignModeDataFormatList(pins[0], &AUDIO_SIGNALPROCESSINGMODE_DEFAULT, formats);
-  if (!NT_SUCCESS(status))
-    goto failed;
+  if (!NT_SUCCESS(status)) goto failed;
+  for (i = 1; i < RTL_NUMBER_OF(modes); ++i) {
+    status = AcxPinAssignModeDataFormatList(pins[0], modes[i], formats);
+    if (!NT_SUCCESS(status)) goto failed;
+  }
   status = AcxCircuitAddPins(circuit, pins, 2);
-  if (!NT_SUCCESS(status))
-    goto failed;
+  if (!NT_SUCCESS(status)) goto failed;
   *result = circuit;
   return STATUS_SUCCESS;
 failed:
-  if (init)
-    AcxCircuitInitFree(init);
-  if (circuit)
-    WdfObjectDelete(circuit);
+  if (init) AcxCircuitInitFree(init);
+  if (circuit) WdfObjectDelete(circuit);
   return status;
 }

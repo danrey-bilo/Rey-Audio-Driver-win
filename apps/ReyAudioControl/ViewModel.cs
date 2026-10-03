@@ -12,6 +12,20 @@ namespace ReyAudio {
         public Choice(int value, string label) { Value = value; Label = label; }
         public override string ToString() { return Label; }
     }
+    internal sealed class AudioCard : INotifyPropertyChanged {
+        public string Id { get; private set; }
+        public string Label { get; private set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+        public AudioCard(string id) { Id = id; }
+        public override string ToString() { return Label; }
+        public void Update(Dictionary<string, object> row) {
+            string route = ViewModel.String(row, "route"), state = ViewModel.String(row, "state");
+            string next = ViewModel.String(row, "name") + " · " + (route == "usb" ? "USB" : route == "lan" ? "LAN" : "ожидание") +
+                (state == "streaming" || state == "digital_test" ? " · работает" : "");
+            if (Label == next) return;
+            Label = next; if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("Label"));
+        }
+    }
     internal sealed class LogRow {
         public string Time { get; set; }
         public string Title { get; set; }
@@ -21,6 +35,17 @@ namespace ReyAudio {
         public event PropertyChangedEventHandler PropertyChanged;
         public void Notify() { if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("")); }
         public readonly ObservableCollection<LogRow> Log = new ObservableCollection<LogRow>();
+        public ObservableCollection<AudioCard> Cards { get; private set; }
+        public string SelectedDevice { get; private set; }
+        public int RunningCards;
+        public bool MixerSending;
+        public bool CanSelectCard { get { return CanApply && !MixerSending && Cards.Count > 0; } }
+        public bool CanEditCard { get { return CanApply && SelectedDevice.Length == 32; } }
+        public bool CanDisconnectLan { get { return CanEditCard && LanEnabled; } }
+        public bool CanForgetCard { get { return CanEditCard && !UsbPresent && !LanEnabled; } }
+        public string CardsHint { get { return Cards.Count == 0 ? "Подключите USB или добавьте карту на странице AoIP / LAN" :
+            "Карт: " + Cards.Count + " · работают: " + RunningCards + ". Выбор меняет только показ микшера."; } }
+        public string EndpointHint { get { return "Windows · Rey Audio " + ShortIdentity + " · входы и выходы 1/2, 3/4, 5/6, 7/8 + 1–8. Для приложения выберите нужную пару в настройках звука."; } }
         public ObservableCollection<LogRow> Events { get { return Log; } }
         public Choice[] Rates { get; private set; }
         public Choice[] Bits { get; private set; }
@@ -56,6 +81,7 @@ namespace ReyAudio {
         public double Gap;
         public int ActiveRate, ActiveBits;
         public ViewModel() {
+            Cards = new ObservableCollection<AudioCard>(); SelectedDevice = "";
             Inputs = new MixerChannel[8]; Outputs = new MixerChannel[8]; Master = new MixerChannel(2, 0);
             for(int i = 0; i < 8; ++i) { Inputs[i] = new MixerChannel(0, i); Outputs[i] = new MixerChannel(1, i); }
             Rates = new[] { new Choice(44100, "44,1 кГц"), new Choice(48000, "48 кГц"), new Choice(88200, "88,2 кГц"), new Choice(96000, "96 кГц"), new Choice(176400, "176,4 кГц"), new Choice(192000, "192 кГц") };
@@ -116,6 +142,23 @@ namespace ReyAudio {
         public static int Int(Dictionary<string, object> d, string key) { int v; return int.TryParse(String(d, key), out v) ? v : 0; }
         public static bool Bool(Dictionary<string, object> d, string key) { return d.ContainsKey(key) && d[key] is bool && (bool)d[key]; }
         public void Update(Dictionary<string, object> data, bool loadFields) {
+            string selected = String(data, "selected_device");
+            if (selected != SelectedDevice) {
+                loadFields = true;
+                foreach (var channel in AllChannels) channel.Dirty = false;
+            }
+            if (data.ContainsKey("devices")) {
+                var ids = new HashSet<string>(); RunningCards = 0;
+                foreach(Dictionary<string, object> row in (IEnumerable)data["devices"]) {
+                    string id = String(row, "id"); ids.Add(id); AudioCard card = null;
+                    foreach(var existing in Cards) if (existing.Id == id) card = existing;
+                    if (card == null) { card = new AudioCard(id); Cards.Add(card); }
+                    card.Update(row);
+                    string state = String(row, "state"); if (state == "streaming" || state == "digital_test") ++RunningCards;
+                }
+                for (int i = Cards.Count - 1; i >= 0; --i) if (!ids.Contains(Cards[i].Id)) Cards.RemoveAt(i);
+            }
+            SelectedDevice = selected;
             Available = true; State = String(data, "state"); Detail = String(data, "detail"); Route = String(data, "route");
             Preferred = String(data, "preferred"); DriverPresent = Bool(data, "driver_present"); DigitalTest = Bool(data, "digital_test");
             Identity = String(data, "identity"); Backend = String(data, "backend");

@@ -14,6 +14,16 @@ HRESULT property(IDispatch *object, const wchar_t *name, WORD flags, VARIANT &re
 }
 }
 bool update_lan_firewall(uint16_t port, std::string &error) {
+  return update_lan_firewall(std::vector<uint16_t>{port}, error);
+}
+bool update_lan_firewall(const std::vector<uint16_t> &ports, std::string &error) {
+  if (ports.empty() || ports.size() > 10) { error = "Invalid LAN port list"; return false; }
+  std::wstring text;
+  for (const auto port : ports) {
+    if (!port) { error = "Invalid LAN port"; return false; }
+    if (!text.empty()) text += L',';
+    text += std::to_wstring(port);
+  }
   const auto initialized = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
   IDispatch *policy = nullptr;
   const CLSID clsid = {0xe2b3c97f, 0x6ae1, 0x41ac, {0x81, 0x7a, 0xf6, 0xf9, 0x21, 0x66, 0xd7, 0xdd}};
@@ -28,8 +38,7 @@ bool update_lan_firewall(uint16_t port, std::string &error) {
   wchar_t own[MAX_PATH]{}; GetModuleFileNameW(nullptr, own, MAX_PATH);
   if (SUCCEEDED(status) && (application.vt != VT_BSTR || !application.bstrVal || _wcsicmp(application.bstrVal, own))) status = E_ACCESSDENIED;
   if (SUCCEEDED(status)) {
-    wchar_t text[16]{}; std::swprintf(text, 16, L"%u", unsigned(port));
-    VariantClear(&argument); argument.vt = VT_BSTR; argument.bstrVal = SysAllocString(text);
+    VariantClear(&argument); argument.vt = VT_BSTR; argument.bstrVal = SysAllocString(text.c_str());
     status = property(rule.pdispVal, L"LocalPorts", DISPATCH_PROPERTYPUT, unused, &argument);
   }
   for (auto *v : {&unused, &argument, &application, &rule, &rules}) VariantClear(v);

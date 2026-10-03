@@ -77,13 +77,29 @@ def main():
                         status = wait_for(lambda d: d['state'] == 'digital_test' and d['stats']['callbacks'] > 1000)
                         assert status['usb']['present'] == 1  # enumeration must survive exclusive streaming
                         baseline = status['usb'].copy()
+                        identity = status['identity']
+                        assert status['selected_device'] == identity and len(status['devices']) == 1
+                        generation = status['stats']['generation']
+                        count = status['stats']['callbacks']
+                        for _ in range(4): assert request('SELECT ' + identity)['ok']
+                        time.sleep(.3)
+                        after = request('STATUS')
+                        assert after['stats']['generation'] == generation and after['stats']['callbacks'] > count
+                        assert not request('SELECT 000000000000000000000000000000ff')['ok']
+                        report['cases'].append({'name': 'mixer selection keeps real USB session running', 'status': after})
+                        assert request('DEVICE ' + identity + ' MIX 1:7 5800 0 0 0 apply')['ok']
+                        assert not request('DEVICE 000000000000000000000000000000ff MIX 1:7 5800 0 0 0 apply')['ok']
+                        after = request('STATUS')
+                        assert after['mixer']['outputs'][7]['gain_cdb'] == -200 and after['stats']['generation'] == generation
+                        assert request('MIX_RESET')['ok']
+                        report['cases'].append({'name': 'scoped mixer edits address the physical card identity', 'status': after})
                         assert request('LAN 192.168.1.2 50021 128 2048 32 0')['ok']
                         after = request('STATUS')
                         assert after['usb'] == baseline and after['route'] == 'usb'
                         count = after['stats']['callbacks']
                         time.sleep(.5)
                         after = request('STATUS')
-                        assert after['stats']['callbacks'] > count  # inactive LAN edit must not restart USB
+                        assert after['stats']['callbacks'] > count and after['stats']['generation'] == generation
                         report['cases'].append({'name': 'separate LAN profile without USB restart', 'status': after})
                         count = after['stats']['callbacks']
                         assert request('MIX 0:2 5400 0 1 1 apply')['ok']

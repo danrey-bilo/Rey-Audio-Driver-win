@@ -3,26 +3,26 @@
 VOID PiaoipIoControl(WDFQUEUE queue, WDFREQUEST request, size_t output_length, size_t input_length,
                      ULONG code) {
   WDFDEVICE root = WdfIoQueueGetDevice(queue), child = NULL;
-  PIAOIP_DEVICE_CONTEXT *context = PiaoipDeviceContext(root);
+  WDFFILEOBJECT file = WdfRequestGetFileObject(request);
   NTSTATUS status = STATUS_INVALID_DEVICE_REQUEST;
   ULONG_PTR bytes = 0;
   PVOID input = NULL, output = NULL;
   UNREFERENCED_PARAMETER(input_length);
   UNREFERENCED_PARAMETER(output_length);
+  if (!file) {
+    WdfRequestComplete(request, STATUS_INVALID_HANDLE);
+    return;
+  }
   if (code == IOCTL_PIAOIP_ATTACH) {
     status = WdfRequestRetrieveInputBuffer(request, sizeof(PIAOIP_BRIDGE_PROFILE), &input, NULL);
     if (NT_SUCCESS(status))
       status = piaoip_bridge_valid_profile((const PIAOIP_BRIDGE_PROFILE *)input)
-                   ? PiaoipCreateChild(root, (const PIAOIP_BRIDGE_PROFILE *)input)
+                   ? PiaoipCreateChild(root, file, (const PIAOIP_BRIDGE_PROFILE *)input)
                    : STATUS_INVALID_PARAMETER;
   } else if (code == IOCTL_PIAOIP_DETACH)
-    status = PiaoipDetachChild(root);
+    status = PiaoipDetachChild(file);
   else if (code == IOCTL_PIAOIP_EXCHANGE || code == IOCTL_PIAOIP_STATS) {
-    WdfWaitLockAcquire(context->lock, NULL);
-    child = context->child;
-    if (child)
-      WdfObjectReference(child);
-    WdfWaitLockRelease(context->lock);
+    child = ReyReferenceChild(file);
     if (!child)
       status = STATUS_DEVICE_NOT_CONNECTED;
     else if (code == IOCTL_PIAOIP_EXCHANGE) {

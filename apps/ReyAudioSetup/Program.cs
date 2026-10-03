@@ -13,7 +13,7 @@ using Microsoft.Win32;
 [assembly: AssemblyTitle("Rey Audio Driver Setup")]
 [assembly: AssemblyProduct("Rey Audio Driver")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.6.1.0")]
+[assembly: AssemblyVersion("2.7.0.0")]
 namespace ReyAudio.Setup {
     internal static class DriverInstall {
         static string StatePath = @"Software\ReyAudio\InstallerState";

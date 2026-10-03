@@ -53,7 +53,8 @@ bool DriverBridge::attach(const PIAOIP_BRIDGE_PROFILE &profile, std::string &err
     if (required >= sizeof(*detail)) {
       detail->cbSize = sizeof(*detail);
       if (SetupDiGetDeviceInterfaceDetailW(devices, &item, detail, required, nullptr, nullptr))
-        device_ = CreateFileW(detail->DevicePath, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
+        device_ = CreateFileW(detail->DevicePath, GENERIC_READ | GENERIC_WRITE,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
                               OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
     }
   }

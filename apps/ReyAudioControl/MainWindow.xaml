@@ -52,9 +52,9 @@
         <StackPanel>
           <TextBlock Text="{Binding Name}" Foreground="#EFF6FF" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"/>
           <TextBlock Text="{Binding GainLabel}" Foreground="#9AE8CF" FontSize="12" Margin="0,10,0,15" HorizontalAlignment="Center"/>
-          <Grid Height="220"><Grid.ColumnDefinitions><ColumnDefinition Width="13"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-            <StackPanel><Border Height="8" Background="{Binding ClipColor}" CornerRadius="2" Margin="0,0,0,10" ToolTip="{Binding ClipHint}"/><Grid Height="190" Background="#121D2D"><Border Height="{Binding MeterHeight}" VerticalAlignment="Bottom"><Border.Background><LinearGradientBrush StartPoint="0,1" EndPoint="0,0"><GradientStop Color="#20B99B" Offset="0"/><GradientStop Color="#9FCA4B" Offset="0.72"/><GradientStop Color="#F5BD57" Offset="1"/></LinearGradientBrush></Border.Background></Border></Grid></StackPanel>
-            <Slider Grid.Column="1" Style="{StaticResource MixFader}" Height="208" VerticalAlignment="Bottom" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="Уровень канала, dB" AutomationProperties.Name="{Binding Name}"/>
+          <Grid Height="140"><Grid.ColumnDefinitions><ColumnDefinition Width="13"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <StackPanel><Border Height="8" Background="{Binding ClipColor}" CornerRadius="2" Margin="0,0,0,10" ToolTip="{Binding ClipHint}"/><Grid Height="110" Background="#121D2D"><Border Height="{Binding MeterHeight}" VerticalAlignment="Bottom"><Border.Background><LinearGradientBrush StartPoint="0,1" EndPoint="0,0"><GradientStop Color="#20B99B" Offset="0"/><GradientStop Color="#9FCA4B" Offset="0.72"/><GradientStop Color="#F5BD57" Offset="1"/></LinearGradientBrush></Border.Background></Border></Grid></StackPanel>
+            <Slider Grid.Column="1" Style="{StaticResource MixFader}" Height="128" VerticalAlignment="Bottom" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="Уровень канала, dB" AutomationProperties.Name="{Binding Name}"/>
           </Grid>
           <TextBlock Text="{Binding PeakLabel}" Foreground="#8FABC5" FontSize="10" Margin="0,9,0,14" HorizontalAlignment="Center" ToolTip="Пиковый уровень после регулировки, dBFS"/>
           <UniformGrid Columns="2"><ToggleButton Content="M" IsChecked="{Binding Mute, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="0,0,3,0" ToolTip="Mute · выключить этот канал"/><ToggleButton Content="S" IsChecked="{Binding Solo, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="3,0,0,0" ToolTip="Solo · оставить выбранные каналы этого направления"/></UniformGrid>
@@ -81,7 +81,7 @@
         <StackPanel Grid.Row="2" Margin="28,18,24,22">
           <StackPanel Orientation="Horizontal"><Ellipse Width="7" Height="7" Fill="{Binding ServiceColor}" Margin="0,0,9,0"/><TextBlock Text="{Binding ServiceLabel}" Foreground="#D7E0ED" FontSize="12"/></StackPanel>
           <TextBlock Text="Работает в фоне. Закрытие окна оставляет управление в трее." Foreground="#8C9CB1" FontSize="11" Margin="0,12,0,0" LineHeight="17"/>
-          <TextBlock Text="2.6.1 · предварительная версия" Foreground="#63758E" FontSize="10" Margin="0,17,0,0"/>
+          <TextBlock Text="2.7.0 · предварительная версия" Foreground="#63758E" FontSize="10" Margin="0,17,0,0"/>
         </StackPanel>
       </Grid>
     </Border>
@@ -91,10 +91,15 @@
         <StackPanel><TextBlock Text="{Binding PageTitle}" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="{Binding PageSubtitle}" Foreground="{StaticResource Muted}" Margin="0,7,12,0"/></StackPanel>
         <Button x:Name="ToTray" Grid.Column="1" Content="В трей" VerticalAlignment="Top" Padding="14,9" ToolTip="Свернуть окно. Служба продолжит работу."/>
       </Grid>
-      <Border Grid.Row="1" Style="{StaticResource Card}" Padding="20,18"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="6"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <Border Grid.Row="1" Style="{StaticResource Card}" Padding="20,16"><StackPanel>
+        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="18"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+          <StackPanel><TextBlock Text="Аудиокарта" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="AudioCardSelector" ItemsSource="{Binding Cards}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding SelectedDevice, Mode=OneWay}" IsEnabled="{Binding CanSelectCard}" AutomationProperties.Name="Карта, отображаемая в микшере"/><TextBlock Text="{Binding CardsHint}" Style="{StaticResource Caption}" Margin="0,8,0,0"/></StackPanel>
+          <Button x:Name="WindowsSound" Grid.Column="2" Content="Звук Windows" VerticalAlignment="Center" Padding="14,9" ToolTip="Выбрать системный выход или микрофон для обычных приложений"/>
+        </Grid>
+        <Grid Margin="0,15,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="6"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
         <Border Background="{Binding StatusColor}" CornerRadius="3"/>
         <StackPanel Grid.Column="1" Margin="16,0,0,0"><TextBlock Text="{Binding StatusTitle}" FontSize="17" FontWeight="SemiBold"/><TextBlock Text="{Binding StatusBody}" Foreground="{StaticResource Muted}" FontSize="12" LineHeight="18" Margin="0,7,0,0"/></StackPanel>
-      </Grid></Border>
+      </Grid></StackPanel></Border>
       <Border Grid.Row="2" Background="#E4F2ED" Padding="16,11" CornerRadius="9" Margin="0,0,0,16" Visibility="{Binding MessageVisibility}"><TextBlock Text="{Binding Message}" Foreground="#246553" FontSize="12"/></Border>
       <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,9,0">
         <Grid>
@@ -105,13 +110,13 @@
             </Grid></Border>
             <Border Style="{StaticResource Card}" Padding="12,18"><StackPanel>
               <TextBlock Text="{Binding MixerSourceLabel}" FontSize="15" FontWeight="SemiBold" Margin="8,0,0,17"/>
-              <Grid IsEnabled="{Binding CanApply}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="126"/></Grid.ColumnDefinitions>
+              <Grid IsEnabled="{Binding CanEditCard}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="126"/></Grid.ColumnDefinitions>
                 <ItemsControl x:Name="MixerStrips" ItemsSource="{Binding VisibleChannels}" ItemTemplate="{StaticResource ChannelStrip}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="8"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
                 <Border Grid.Column="2" Background="#26394A" CornerRadius="9" Padding="12,13"><StackPanel DataContext="{Binding Master}">
                   <TextBlock Text="MASTER" Foreground="#DBF5EB" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"/>
                   <TextBlock Text="Все 8 выходов" Foreground="#97B6C7" FontSize="10" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                   <TextBlock Text="{Binding GainLabel}" Foreground="#9AE8CF" FontSize="14" Margin="0,12,0,17" HorizontalAlignment="Center"/>
-                  <Slider Style="{StaticResource MixFader}" Maximum="6" Height="200" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="Общий уровень выходов"/>
+                  <Slider Style="{StaticResource MixFader}" Maximum="6" Height="120" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="Общий уровень выходов"/>
                   <ToggleButton Content="MUTE" IsChecked="{Binding Mute, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="0,26,0,0" ToolTip="Выключить все выходы"/>
                   <TextBlock Text="Применяется к воспроизведению" Foreground="#97B6C7" FontSize="10" TextAlignment="Center" Margin="0,17,0,0"/>
                 </StackPanel></Border>
@@ -119,8 +124,9 @@
             </StackPanel></Border>
             <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
               <TextBlock Text="M · Mute   S · Solo   Ø · полярность. Уровни показывают реальный PCM. Входные настройки влияют на запись; выходные — на воспроизведение." Style="{StaticResource Caption}" Margin="0,0,22,0" LineHeight="18"/>
-              <Button x:Name="ResetMixer" Grid.Column="1" Content="Сбросить микшер" IsEnabled="{Binding CanApply}" VerticalAlignment="Top" Padding="14,9"/>
+              <Button x:Name="ResetMixer" Grid.Column="1" Content="Сбросить микшер" IsEnabled="{Binding CanEditCard}" VerticalAlignment="Top" Padding="14,9"/>
             </Grid>
+            <TextBlock Text="{Binding EndpointHint}" Style="{StaticResource Caption}" Margin="0,14,0,0"/>
           </StackPanel>
           <StackPanel Visibility="{Binding UsbVisibility}">
             <Border Style="{StaticResource Card}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
@@ -153,9 +159,11 @@
               <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                 <TextBox x:Name="LanPeer" Text="{Binding LanPeer, UpdateSourceTrigger=PropertyChanged}" ToolTip="IPv4-адрес Pi, например 192.168.1.2" AutomationProperties.Name="Pi IPv4 address"/>
                 <Button x:Name="ScanLan" Grid.Column="2" Content="Найти в сети" IsEnabled="{Binding CanApply}"/>
-                <Button x:Name="ConnectLan" Grid.Column="4" Content="{Binding LanActionLabel}" Style="{StaticResource Primary}" IsEnabled="{Binding CanApply}"/>
+                <Button x:Name="ConnectLan" Grid.Column="4" Content="Подключить" Style="{StaticResource Primary}" IsEnabled="{Binding CanApply}"/>
               </Grid>
               <TextBlock Text="{Binding LanFormatLabel}" Foreground="#137F6C" FontSize="12" Margin="0,15,0,0"/>
+              <TextBlock Text="Для добавления ещё одной карты введите её адрес. У карт LAN должны быть разные локальные UDP-порты." Style="{StaticResource Caption}" Margin="0,9,0,0"/>
+              <Button x:Name="DisconnectLan" Content="Отключить LAN этой карты" HorizontalAlignment="Left" IsEnabled="{Binding CanDisconnectLan}" Margin="0,12,0,0" Padding="12,8"/>
             </StackPanel></Border>
             <Border Style="{StaticResource Card}"><StackPanel>
               <TextBlock Text="Задержка и стабильность" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
@@ -193,6 +201,7 @@
               <ItemsControl ItemsSource="{Binding Events}"><ItemsControl.ItemTemplate><DataTemplate><Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="72"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Time}" Foreground="#8695A8" FontSize="12"/><StackPanel Grid.Column="1"><TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold"/><TextBlock Text="{Binding Detail}" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,3,0,0"/></StackPanel></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
             </StackPanel></Border>
             <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><Button x:Name="AutoRoute" Content="LAN по умолчанию" IsEnabled="{Binding CanApply}" HorizontalAlignment="Left"/><Button x:Name="CopyReport" Grid.Column="1" Content="Копировать диагностику"/></Grid>
+            <Button x:Name="ForgetCard" Content="Забыть отключённую карту" HorizontalAlignment="Left" IsEnabled="{Binding CanForgetCard}" ToolTip="Удаляет сохранённые настройки только отключённой карты" Padding="14,9"/>
           </StackPanel>
         </Grid>
       </ScrollViewer>

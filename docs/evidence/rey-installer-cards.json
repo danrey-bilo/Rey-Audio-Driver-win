@@ -1,0 +1,130 @@
+{
+  "version": "2.7.0-preview.1",
+  "inspection": {
+    "passed": true,
+    "version": "2.7.0-preview.1",
+    "inspected_utc": "2026-10-03T12:43:41.2203232Z",
+    "msi_sha256": "bb344c142731914678fc3f6d18dfd37c79199dd62519ae2f110c82bb2f53880e",
+    "exe_sha256": "7e2c962f24135c822add49e00d63e2623d54a1ce2efcf058b1f5d52ef1900388",
+    "embedded_msi_verified": true,
+    "cab_payload_sha256": {
+      "ServiceExe": "0bcdb13cbad17193d90a0089ad40e3b677c85568b08858176542e6a7801e2748",
+      "ControlExe": "c8c3d18ddbc6e64791fb06c7800d372e0176ee848075ed80ba0c898ffd3e4721",
+      "ProbeExe": "0600a40cfac99b1a0ce7162a88262e690c6ae76fc62fef3235efc1d897e8d4d6",
+      "SetupHelper": "51cec6a688ee0af2cc646235f4f28e338e545c8c87fa611e68c21537dbabc849",
+      "DriverSysFile": "1ac38754c1ec6c40b8188cd19dbf683da4a45f44311dcbd20783f2cbed707742",
+      "DriverInfFile": "90a82d3e9dbedf9878e768de551c4f9748c9be97b3d31e0e29c10535c8fd0b05",
+      "DriverCatFile": "a2a4b80549576167694dfebdfd360c16e1c05fb25cbca9d06a61a700fe7816cf"
+    },
+    "payload_count": 7,
+    "ini_or_install_scripts": false,
+    "service": [
+      {
+        "Name": "ReyAudioService",
+        "StartType": "2",
+        "StartName": "LocalSystem",
+        "Arguments": "--service"
+      }
+    ],
+    "firewall": [
+      {
+        "Name": "Rey Audio LAN transport",
+        "RemoteAddresses": "LocalSubnet",
+        "Port": "50021",
+        "Protocol": "17",
+        "Program": "[#ServiceExe]",
+        "Profile": "2"
+      }
+    ],
+    "driver_actions": [
+      {
+        "Action": "ReyCheck",
+        "Type": "2",
+        "Source": "SetupCheck",
+        "Target": "--msi-check"
+      },
+      {
+        "Action": "ReyRollback",
+        "Type": "3410",
+        "Source": "SetupHelper",
+        "Target": "--rollback-driver"
+      },
+      {
+        "Action": "ReyDriverInstall",
+        "Type": "3090",
+        "Source": "SetupHelper",
+        "Target": "--install-driver \"[INSTALLFOLDER].\""
+      },
+      {
+        "Action": "ReyCommit",
+        "Type": "3602",
+        "Source": "SetupHelper",
+        "Target": "--commit-driver"
+      },
+      {
+        "Action": "ReyDriverRemove",
+        "Type": "3090",
+        "Source": "SetupHelper",
+        "Target": "--remove-driver"
+      }
+    ],
+    "readiness_precedes_install": true,
+    "upgrade_in_transaction": true,
+    "rollback_commit_present": true,
+    "tray_autorun_verified": true,
+    "launch_conditions_verified": true,
+    "read_only_msi_environment": {
+      "NetFramework48": "#533509",
+      "VersionNT64": "1000"
+    },
+    "machine_state_changed": false,
+    "kernel_loaded": false,
+    "elevated_install_qualified": false
+  },
+  "local_signing": {
+    "local_test_signing": true,
+    "thumbprint": "5EEC1AA63FA177AE3A034AF328FE0CDCD1B192AF",
+    "source_sys_sha256": "1ac38754c1ec6c40b8188cd19dbf683da4a45f44311dcbd20783f2cbed707742",
+    "signed_sys_sha256": "d9d2f2c56827f05f34bffe8cf36c01d2098fc4bbbf61f74412adeae8577be7f2",
+    "signed_cat_sha256": "e1b35942ec3ae1ff4ecbb385208c1c02b432690038f87ffaecd057cda04faa22",
+    "catalog_members_verified": true,
+    "private_key_exported": false,
+    "private_key_deleted": true,
+    "paid_certificate_required": false,
+    "driver_loaded": false,
+    "created_utc": "2026-10-03T12:43:41.8261622Z"
+  },
+  "tamper_rejection": {
+    "passed": true,
+    "embedded_signature_tamper_rejected": true,
+    "catalog_member_tamper_rejected": true,
+    "signature_status": "80096010",
+    "catalog_status": "800B0100",
+    "machine_trust_changed": false
+  },
+  "kernel_build": {
+    "architecture": "x64",
+    "kmdf": "1.31",
+    "acx": "1.1",
+    "compiler": "Clang 22 MSVC ABI",
+    "sha256": "1ac38754c1ec6c40b8188cd19dbf683da4a45f44311dcbd20783f2cbed707742",
+    "signed": false,
+    "installed": false,
+    "infverif_exit_code": 0,
+    "inf2cat_exit_code": 0,
+    "source_sha256": {
+      "drivers/Acx/circuit.c": "bd987f175b04f8d20b1255402636949525680d5dd7a7aac5aba94a72f2521824",
+      "drivers/Acx/control.c": "1ac54f6ca6b986880d69c47588e8a932f8f2b652ad5960792e4e8a2b1c4e8c46",
+      "drivers/Acx/device.c": "5a3deea5d45381b7060e29b0bc2954873e512607c56ee2d188e883c2014bdbe7",
+      "drivers/Acx/driver.c": "149165aa5dc773c03ae056ea944bb95868d609936760fc2a088f93e9a021140c",
+      "drivers/Acx/driver.h": "619d705bb4cb91ca35feb4594bcf8783836c81f6ec735373ff35520990ab5580",
+      "drivers/Acx/guids.c": "5cb38da88e537105335a05c15f609c7eda9e8fb0d24664af547e3ccc80166f22",
+      "drivers/Acx/ReyAudioAcx.inf": "90a82d3e9dbedf9878e768de551c4f9748c9be97b3d31e0e29c10535c8fd0b05",
+      "drivers/Acx/stream.c": "3a19bf201b53402df33b11d63950d6a4a78e1aa888149136a556705fd7871547"
+    },
+    "contract_sha256": {
+      "bridge.h": "136caad8fc17153fdc0f79fd384c297fa457e753808b3bb865104c70d68352b1",
+      "endpoints.h": "f326ec357b723252a0e1ade5e83ca3a66206cd5e7b0609429cef7d9b18d5da3c"
+    }
+  }
+}

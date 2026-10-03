@@ -1,9 +1,10 @@
 #pragma once
-#include "../engine/audio_block.hpp"
-#include "settings.hpp"
-#include <deque>
-#include <mutex>
+#include "device_session.hpp"
+#include "device_store.hpp"
+#include <map>
+#include <memory>
 namespace rey::service {
+// Control-thread catalog. PCM callbacks only touch their own DeviceSession.
 class Manager {
 public:
   Manager(std::wstring configuration, bool digital_test);
@@ -11,42 +12,20 @@ public:
   bool initialize(std::string &error);
   void run(HANDLE stop);
   std::string request(const std::string &command);
-
 private:
-  void start_worker(const std::string &route, Settings settings,
-                    std::string expected_usb);
-  void stop_worker();
-  void worker(const std::string &route, Settings settings,
-              const std::string &expected_usb);
-  void state(const std::string &code, const std::string &detail);
+  DeviceSession *add(const std::string &id, std::string &error);
   std::string status_locked(const std::string &error = "") const;
+  std::string connect_lan(const Settings &profile);
+  bool persist(DeviceSession &, const std::string &id, const Settings &, std::string &error);
+  std::vector<uint16_t> ports(const std::string &override_id = "", const Settings *replacement = nullptr) const;
+  void scan_usb();
   std::wstring path_;
-  bool digital_test_;
+  DeviceStore store_;
+  bool digital_test_, winsock_ = false, bridge_present_ = false;
   mutable std::mutex mutex_;
-  Settings settings_;
-  uint64_t revision_ = 0;
-  std::string state_ = "idle", detail_, route_ = "none", identity_, backend_,
-              usb_id_;
-  unsigned usb_present_ = 0;
-  bool bridge_present_ = false;
-  piaoip::Config active_;
-  rey::audio::Mixer mixer_;
-  struct Event {
-    uint64_t utc_ms;
-    std::string code, detail;
-  };
-  std::deque<Event> events_;
-  std::thread worker_;
-  HANDLE worker_stop_ = nullptr;
-  std::atomic<bool> worker_done_{true};
-  std::atomic<uint64_t> callbacks_{0}, frames_{0}, missing_{0}, gap_max_{0};
-  std::atomic<uint64_t> processing_sum_{0}, processing_max_{0};
-  struct CallbackContext {
-    Manager *manager;
-    void *bridge;
-    bool echo;
-    uint64_t previous = 0;
-  };
-  static bool process(void *, const piaoip::engine::AudioBlock &);
+  std::map<std::string, std::unique_ptr<DeviceSession>> sessions_;
+  std::map<std::wstring, std::string> usb_paths_;
+  std::unique_ptr<DeviceSession> draft_;
+  std::string selected_, catalog_error_;
 };
-} // namespace rey::service
+}

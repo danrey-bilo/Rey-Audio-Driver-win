@@ -1,0 +1,60 @@
+{
+  "version": "2.7.0-preview.1",
+  "actual_wpf_render": true,
+  "layout_checks": {
+    "usb_apply_enabled": true,
+    "lan_apply_enabled": true,
+    "usb_select_enabled": true,
+    "service_available": true,
+    "viewmodel_can_apply": true,
+    "selected_card_label": "Rey Audio d051e632 · USB",
+    "selector_matches_device": true,
+    "all_channel_controls_visible": true,
+    "width": 1120,
+    "height": 800
+  },
+  "screenshot_sha256": {
+    "rey-mixer.png": "6bc452018cad9c0148de5d979d5b1b9bc4fafd7beeef29cc67aa42bd3787e902",
+    "rey-usb.png": "c1e39d6d5d1a2a0401938a8f25058790c8477652d635941856874ea7f94bda7f",
+    "rey-lan.png": "d6ae9890beed005d8051705a1ac8896494d4e176d1e1bd407636c3ee3e917b5c",
+    "rey-diagnostics.png": "c717cedccfb813c9222434bc8627bda91d32c502604ecad34e306863f4db0f43"
+  },
+  "native_contracts_passed": [
+    "rey_service_defaults",
+    "rey_service_numbers",
+    "rey_service_profile",
+    "rey_service_routing",
+    "rey_service_isolation",
+    "rey_service_json",
+    "rey_service_peer",
+    "rey_service_persistence",
+    "rey_service_corruption",
+    "rey_mixer_unity",
+    "rey_mixer_solo_mute",
+    "rey_mixer_gain_clip",
+    "rey_mixer_ramp",
+    "rey_mixer_bounds",
+    "rey_endpoints_pairs",
+    "rey_endpoints_capture",
+    "rey_endpoints_render",
+    "rey_endpoints_clipping",
+    "rey_devices_catalog",
+    "rey_devices_selection",
+    "rey_devices_isolation",
+    "rey_devices_restart",
+    "rey_devices_ports",
+    "rey_devices_forget"
+  ],
+  "native_contract_binary_sha256": {
+    "ReyServiceContractTests.exe": "86393d2b473732ccd4ae829c362d44ad5a8db3213000fe4b817f094e8ff7cccc",
+    "ReyMixerContractTests.exe": "6d43e6aa8eff22676ca4660032fee482784550a0c4ce0bf05ad3e9572dbaaeb3",
+    "ReyEndpointContractTests.exe": "6ddf0b3d09ad8adc499de6caf380ba2561efd1a76aee7fcee820209b02c64586",
+    "ReyDeviceContractTests.exe": "98a65deee37d64a9674287bde7f0d2db868679d5c7c93fd0e3a2b5adacc1d8eb"
+  },
+  "service_sha256": "0bcdb13cbad17193d90a0089ad40e3b677c85568b08858176542e6a7801e2748",
+  "control_sha256": "c8c3d18ddbc6e64791fb06c7800d372e0176ee848075ed80ba0c898ffd3e4721",
+  "physical_devices_tested": 1,
+  "kernel_loaded": false,
+  "wasapi_qualified": false,
+  "physical_audio_qualified": false
+}

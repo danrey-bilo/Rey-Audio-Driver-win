@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension">
-  <Product Id="*" Name="Rey Audio Driver 2.6.1 preview" Language="1049" Version="2.6.1" Manufacturer="Rey Audio" UpgradeCode="CB56CFDA-4D07-42D8-A1E1-D53DA481D1A8">
+  <Product Id="*" Name="Rey Audio Driver 2.7.0 preview" Language="1049" Version="2.7.0" Manufacturer="Rey Audio" UpgradeCode="CB56CFDA-4D07-42D8-A1E1-D53DA481D1A8">
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" Platform="x64"/>
     <MajorUpgrade DowngradeErrorMessage="Установлена более новая версия Rey Audio Driver." Schedule="afterInstallInitialize"/>
     <MediaTemplate EmbedCab="yes"/>

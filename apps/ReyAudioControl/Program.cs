@@ -19,8 +19,8 @@ using Forms = System.Windows.Forms;
 [assembly: AssemblyTitle("Rey Audio Driver")]
 [assembly: AssemblyProduct("Rey Audio Driver")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.6.1.0")]
-[assembly: AssemblyFileVersion("2.6.1.0")]
+[assembly: AssemblyVersion("2.7.0.0")]
+[assembly: AssemblyFileVersion("2.7.0.0")]
 namespace ReyAudio {
     internal sealed class Panel : IDisposable {
         private readonly Application app;
@@ -30,7 +30,7 @@ namespace ReyAudio {
         private readonly DispatcherTimer timer;
         private readonly EventWaitHandle showEvent;
         private Forms.NotifyIcon tray;
-        private bool initialized, polling, exiting;
+        private bool initialized, polling, exiting, updating;
         private string lastState = "";
         private Exception connectionError;
         private readonly HashSet<MixerChannel> pendingMix = new HashSet<MixerChannel>();
@@ -40,6 +40,28 @@ namespace ReyAudio {
             app = application; showEvent = activate;
             using (var source = Assembly.GetExecutingAssembly().GetManifestResourceStream("ReyAudio.MainWindow.xaml")) window = (Window)XamlReader.Load(source);
             window.DataContext = view;
+            ((ComboBox)window.FindName("AudioCardSelector")).SelectionChanged += async (s, e) => {
+                if (updating || !view.CanSelectCard || mixing) return;
+                string id = Convert.ToString(((ComboBox)s).SelectedValue, CultureInfo.InvariantCulture);
+                if (id == view.SelectedDevice || string.IsNullOrEmpty(id)) return;
+                view.Busy = true; view.Notify();
+                try {
+                    while (pendingMix.Count != 0) {
+                        var c = pendingMix.First(); pendingMix.Remove(c);
+                        var reply = await service.Send(Scoped(c.Command));
+                        if (!ViewModel.Bool(reply, "ok")) throw new ArgumentException(ViewModel.String(reply, "error"));
+                        c.Dirty = false;
+                    }
+                    var response = await service.Send("SELECT " + id);
+                    if (!ViewModel.Bool(response, "ok")) throw new ArgumentException(ViewModel.String(response, "error"));
+                    Update(response, true); view.Message = "";
+                } catch (Exception error) { view.Message = FriendlyError(error); }
+                finally { view.Busy = false; view.Notify(); }
+            };
+            Click("WindowsSound", () => {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ms-settings:sound") { UseShellExecute = true });
+                return Task.FromResult(0);
+            });
             ((RadioButton)window.FindName("NavMixer")).Checked += (s, e) => Navigate("mixer");
             ((RadioButton)window.FindName("MixerInputs")).Checked += (s, e) => { view.MixerOutputs = false; view.Notify(); };
             ((RadioButton)window.FindName("MixerOutputs")).Checked += (s, e) => { view.MixerOutputs = true; view.Notify(); };
@@ -53,11 +75,14 @@ namespace ReyAudio {
             Click("SaveUsb", SaveUsb);
             Click("SaveLan", SaveLan);
             Click("ConnectLan", async () => {
-                if (view.LanEnabled) await Command("LAN_DISCONNECT", "LAN отключён. Автоматическое подключение USB доступно.");
-                else { await SaveLan(); await Command("LAN_CONNECT", "LAN подключается. По умолчанию используется Ethernet."); }
+                var response = await service.Send("ADD_LAN " + LanFields());
+                if (!ViewModel.Bool(response, "ok")) throw new ArgumentException(ViewModel.String(response, "error"));
+                Update(response, true); view.Message = "Карта добавлена. LAN подключается; остальные карты продолжают работу.";
             });
+            Click("DisconnectLan", () => Command("LAN_DISCONNECT", "LAN этой карты отключён. USB доступен при автоматическом подключении."));
             Click("ScanLan", Scan);
             Click("AutoRoute", () => Command("USE auto", "Выбор подключения: LAN по умолчанию."));
+            Click("ForgetCard", () => Command("FORGET " + view.SelectedDevice, "Сохранённые настройки отключённой карты удалены."));
             Click("CopyReport", () => {
                 if (!string.IsNullOrEmpty(view.LastJson)) Clipboard.SetText(view.LastJson);
                 view.Message = string.IsNullOrEmpty(view.LastJson) ? "Диагностика станет доступна после запуска службы." : "Диагностика скопирована.";
@@ -70,14 +95,14 @@ namespace ReyAudio {
                 if (showEvent != null && showEvent.WaitOne(0)) Show();
                 if (mixing) return;
                 if (pendingMix.Count != 0 && view.Available && !view.Busy && !polling) {
-                    mixing = true; var channel = pendingMix.First(); pendingMix.Remove(channel); long revision = channel.Revision;
+                    mixing = true; view.MixerSending = true; view.Notify(); var channel = pendingMix.First(); pendingMix.Remove(channel); long revision = channel.Revision;
                     try {
-                        var response = await service.Send(channel.Command);
+                        var response = await service.Send(Scoped(channel.Command));
                         if (!ViewModel.Bool(response, "ok")) throw new ArgumentException(ViewModel.String(response, "error"));
                         if(channel.Revision == revision) channel.Dirty = false;
                         Update(response, false);
-                    } catch(Exception error) { view.Message = FriendlyError(error); view.Notify(); }
-                    finally { mixing = false; }
+                    } catch(Exception error) { pendingMix.Add(channel); view.Message = FriendlyError(error); view.Notify(); }
+                    finally { mixing = false; view.MixerSending = false; view.Notify(); }
                 } else if ((view.Page == "mixer" && window.IsVisible) || ++ticks % 20 == 0) await Refresh();
             };
         }
@@ -105,15 +130,17 @@ namespace ReyAudio {
             int guard = Number(view.UsbGuard, 0, 8192, "Запас USB");
             await Command(string.Format(CultureInfo.InvariantCulture, "USB {0} {1} {2} {3} {4} {5}", view.UsbRate, view.UsbBits, view.UsbDepth, view.UsbBlock, guard, view.UsbAutomatic ? 1 : 0), "Настройки USB сохранены.");
         }
-        private async Task SaveLan() {
+        private string LanFields() {
             IPAddress address;
             if (!IPAddress.TryParse(view.LanPeer, out address) || address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
                 throw new ArgumentException("Укажите IPv4-адрес Pi, например 192.168.1.2.");
             int port = Number(view.LanPort, 1, 65535, "UDP-порт"), guard = Number(view.LanGuard, 0, 8192, "Запас LAN"), frames = Number(view.LanFrames, 0, 256, "Размер пакета");
-            await Command(string.Format(CultureInfo.InvariantCulture, "LAN {0} {1} {2} {3} {4} {5}", address, port, view.LanBlock, guard, frames, view.LanEnergy ? 1 : 0), "Настройки LAN сохранены.");
+            return string.Format(CultureInfo.InvariantCulture, "{0} {1} {2} {3} {4} {5}", address, port, view.LanBlock, guard, frames, view.LanEnergy ? 1 : 0);
         }
+        private Task SaveLan() { return Command("LAN " + LanFields(), "Настройки LAN этой карты сохранены."); }
+        private string Scoped(string command) { return view.SelectedDevice.Length == 32 ? "DEVICE " + view.SelectedDevice + " " + command : command; }
         private async Task Command(string command, string message) {
-            var response = await service.Send(command);
+            var response = await service.Send(Scoped(command));
             if (!ViewModel.Bool(response, "ok")) throw new ArgumentException("Настройки отклонены службой: " + ViewModel.String(response, "error"));
             Update(response, false); view.Message = message; view.Notify();
         }
@@ -129,7 +156,9 @@ namespace ReyAudio {
         }
         private void Update(Dictionary<string, object> response, bool fields) {
             view.LastJson = new JavaScriptSerializer().Serialize(response);
-            view.Update(response, fields);
+            updating = true;
+            try { view.Update(response, fields); }
+            finally { updating = false; }
             if (tray != null) tray.Text = "Rey Audio Driver · " + view.RouteLabel;
             if (lastState != view.State) lastState = view.State;
         }
@@ -162,11 +191,16 @@ namespace ReyAudio {
             Directory.CreateDirectory(directory);
             await Refresh();
             var root = (FrameworkElement)window.Content;
+            double mixerBottom = 0;
             foreach (var page in new[] { "mixer", "usb", "lan", "diagnostics" }) {
                 Navigate(page);
                 ((RadioButton)window.FindName(page == "mixer" ? "NavMixer" : page == "usb" ? "NavUsb" : page == "lan" ? "NavLan" : "NavDiagnostics")).IsChecked = true;
                 root.Measure(new Size(1120, 800)); root.Arrange(new Rect(0, 0, 1120, 800)); root.UpdateLayout();
                 await app.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
+                if (page == "mixer") {
+                    var strips = (FrameworkElement)window.FindName("MixerStrips");
+                    mixerBottom = strips.TransformToAncestor(root).TransformBounds(new Rect(0, 0, strips.ActualWidth, strips.ActualHeight)).Bottom;
+                }
                 var bitmap = new RenderTargetBitmap(1120, 800, 96, 96, PixelFormats.Pbgra32); bitmap.Render(root);
                 var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap));
                 using (var output = File.Create(Path.Combine(directory, "rey-" + page + ".png"))) png.Save(output);
@@ -178,6 +212,9 @@ namespace ReyAudio {
                 lan_apply_enabled = ((Button)window.FindName("SaveLan")).IsEnabled,
                 usb_select_enabled = ((Button)window.FindName("UseUsb")).IsEnabled,
                 service_available = view.Available, viewmodel_can_apply = view.CanApply,
+                selected_card_label = ((ComboBox)window.FindName("AudioCardSelector")).Text,
+                selector_matches_device = Convert.ToString(((ComboBox)window.FindName("AudioCardSelector")).SelectedValue) == view.SelectedDevice,
+                all_channel_controls_visible = mixerBottom <= root.ActualHeight - 22,
                 width = root.ActualWidth, height = root.ActualHeight
             }));
         }

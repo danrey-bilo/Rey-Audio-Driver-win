@@ -27,8 +27,21 @@ bool UsbSession::open(const Config &cfg, const std::string &expected_id,
     error = "Requested AUSB device is unavailable";
     return false;
   }
-  id_ = std::string(selected->hello.id.data(), 32);
-  return usb_.open(selected->path, error);
+  return open(cfg, expected_id, selected->path, error);
+}
+bool UsbSession::open(const Config &cfg, const std::string &expected_id,
+                      const std::wstring &path, std::string &error) {
+  profile_ = {cfg.rate, std::uint8_t(cfg.bits), 8, 8};
+  if (!pi5ausb::valid_profile(profile_) || cfg.bits > 32 || path.empty() ||
+      (cfg.inputs != 65535 && cfg.inputs != 8) || (cfg.outputs != 65535 && cfg.outputs != 8)) {
+    error = "Invalid USB path/profile"; return false;
+  }
+  if (!usb_.open(path, error)) return false;
+  id_.assign(usb_.device().hello.id.data(), 32);
+  if (!expected_id.empty() && id_ != expected_id) {
+    error = "USB DeviceId changed at the selected path"; return false;
+  }
+  return true;
 }
 bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
                      unsigned seconds, unsigned depth, std::string &error) {

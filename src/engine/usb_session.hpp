@@ -10,6 +10,7 @@ namespace piaoip::engine {
 class UsbSession {
 public:
   bool open(const Config &, const std::string &expected_id, std::string &error);
+  bool open(const Config &, const std::string &expected_id, const std::wstring &path, std::string &error);
   bool run(ProcessBlock, void *, HANDLE stop, unsigned seconds, unsigned depth,
            std::string &error);
   const std::string &identity() const { return id_; }

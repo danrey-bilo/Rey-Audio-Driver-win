@@ -11,11 +11,13 @@ struct Settings {
   Settings();
 };
 bool valid(const Settings &, std::string &error);
-bool load(const std::wstring &path, Settings &, std::string &error);
-bool save(const std::wstring &path, const Settings &, std::string &error);
+bool load(const std::wstring &path, Settings &, std::string &error,
+          const std::wstring &key = L"Software\\ReyAudio");
+bool save(const std::wstring &path, const Settings &, std::string &error,
+          const std::wstring &key = L"Software\\ReyAudio");
 bool parse_unsigned(const std::string &, unsigned &value, unsigned maximum);
 std::string json_string(const std::string &);
-// One physical device/session for this release. "auto" chooses a configured
-// LAN connection first; USB is automatic only when LAN is not requested.
+// Applied independently to each physical board. The mixer selection does not
+// participate in transport selection or a session's restart key.
 std::string select_route(const Settings &, bool usb_present);
 } // namespace rey::service

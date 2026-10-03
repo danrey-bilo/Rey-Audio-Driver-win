@@ -32,7 +32,7 @@ $helper = Join-Path $target 'ReyAudioSetup.Helper.exe'
 if ($LASTEXITCODE) { throw 'Setup helper build failed.' }
 if ($HelperOnly) { Write-Output ('Built '+$helper); return }
 $wixRoot = [IO.Path]::GetFullPath($Wix)
-$msi = Join-Path $target 'Rey-Audio-Driver-2.6.1-preview.1-x64.msi'
+$msi = Join-Path $target 'Rey-Audio-Driver-2.7.0-preview.1-x64.msi'
 $object = Join-Path $target 'ReyAudio.wixobj'
 $licenseText = Get-Content -LiteralPath (Join-Path $project 'LICENSE') -Raw
 $rtf = '{\rtf1\ansi\deff0{\fonttbl{\f0 Segoe UI;}}\f0\fs20 ' + ($licenseText.Replace('\','\\').Replace('{','\{').Replace('}','\}').Replace("`r`n",'\par ').Replace("`n",'\par ')) +
@@ -48,7 +48,7 @@ if ($LASTEXITCODE) { throw 'MSI compilation failed.' }
 $lightArguments = @('-nologo','-ext','WixUIExtension','-ext','WixUtilExtension','-ext','WixFirewallExtension','-cultures:ru-ru','-loc',(Join-Path $project 'installer/Firewall.ru.wxl'),'-out',$msi,$object)
 & (Join-Path $wixRoot 'light.exe') @lightArguments
 if ($LASTEXITCODE) { throw 'MSI linking/validation failed.' }
-$bootstrap = Join-Path $target 'Rey-Audio-Setup-2.6.1-preview.1-x64.exe'
+$bootstrap = Join-Path $target 'Rey-Audio-Setup-2.7.0-preview.1-x64.exe'
 & $compiler @arguments ('/out:'+$bootstrap) ('/resource:'+$msi+',ReyAudio.Installer.msi') @sources
 if ($LASTEXITCODE) { throw 'Setup EXE build failed.' }
 foreach($file in @($msi,$bootstrap)) { Get-FileHash -LiteralPath $file -Algorithm SHA256 | Select-Object Path,Hash }

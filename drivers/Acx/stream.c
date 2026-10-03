@@ -9,29 +9,36 @@ static PBYTE PacketBuffer(PIAOIP_STREAM_CONTEXT *s, ULONG number) {
 static VOID SetRunning(ACXSTREAM stream, BOOLEAN running) {
   PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
   PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
+  ULONG i;
   s->running = running;
-  if (s->capture && d->capture_stream == stream)
-    d->stats.capture_running = running;
-  else if (!s->capture && d->render_stream == stream)
-    d->stats.render_running = running;
+  d->stats.capture_running = d->stats.render_running = 0;
+  for (i = 0; i < PIAOIP_ENDPOINT_SLOTS; ++i)
+    if (d->streams[i] && PiaoipStreamContext(d->streams[i])->running) {
+      if (piaoip_endpoint_capture(i)) d->stats.capture_running = 1;
+      else d->stats.render_running = 1;
+    }
 }
 NTSTATUS PiaoipCreateStream(WDFDEVICE device, ACXCIRCUIT circuit, ACXPIN pin, PACXSTREAM_INIT init,
                             ACXDATAFORMAT format, const GUID *mode, ACXOBJECTBAG arguments) {
   PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(device);
-  BOOLEAN capture = PiaoipCircuitContext(circuit)->capture;
+  PIAOIP_CIRCUIT_CONTEXT *c = PiaoipCircuitContext(circuit);
+  BOOLEAN capture = c->capture;
   WAVEFORMATEXTENSIBLE *wave = (WAVEFORMATEXTENSIBLE *)AcxDataFormatGetWaveFormatExtensible(format);
   WDF_OBJECT_ATTRIBUTES attributes;
   ACX_STREAM_CALLBACKS callbacks;
   ACX_RT_STREAM_CALLBACKS realtime;
   ACXSTREAM stream = NULL;
   NTSTATUS status;
-  ULONG channels = capture ? d->profile.inputs : d->profile.outputs;
-  BOOLEAN *creating = capture ? &d->capture_creating : &d->render_creating;
+  ULONG channels = c->channels;
+  BOOLEAN *creating = &d->stream_creating[c->slot];
   UNREFERENCED_PARAMETER(pin);
   UNREFERENCED_PARAMETER(arguments);
   if (!mode ||
       (!IsEqualGUID(mode, &AUDIO_SIGNALPROCESSINGMODE_RAW) &&
-       !IsEqualGUID(mode, &AUDIO_SIGNALPROCESSINGMODE_DEFAULT)) ||
+       !IsEqualGUID(mode, &AUDIO_SIGNALPROCESSINGMODE_DEFAULT) &&
+       !IsEqualGUID(mode, &AUDIO_SIGNALPROCESSINGMODE_COMMUNICATIONS) &&
+       !IsEqualGUID(mode, &AUDIO_SIGNALPROCESSINGMODE_MEDIA) &&
+       !IsEqualGUID(mode, &AUDIO_SIGNALPROCESSINGMODE_MOVIE)) ||
       !wave || wave->Format.wFormatTag != WAVE_FORMAT_EXTENSIBLE || wave->Format.cbSize < 22 ||
       wave->Format.nChannels != channels || wave->Format.nSamplesPerSec != d->profile.rate ||
       wave->Format.wBitsPerSample != 32 || wave->Format.nBlockAlign != channels * 4 ||
@@ -39,7 +46,7 @@ NTSTATUS PiaoipCreateStream(WDFDEVICE device, ACXCIRCUIT circuit, ACXPIN pin, PA
       !IsEqualGUID(&wave->SubFormat, &KSDATAFORMAT_SUBTYPE_PCM))
     return STATUS_NO_MATCH;
   WdfWaitLockAcquire(d->lock, NULL);
-  if (d->removing || *creating || (capture ? d->capture_stream : d->render_stream)) {
+  if (d->removing || *creating || d->streams[c->slot]) {
     WdfWaitLockRelease(d->lock);
     return STATUS_DEVICE_BUSY;
   }
@@ -75,6 +82,8 @@ NTSTATUS PiaoipCreateStream(WDFDEVICE device, ACXCIRCUIT circuit, ACXPIN pin, PA
   if (NT_SUCCESS(status)) {
     PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
     s->device = device;
+    s->slot = c->slot;
+    s->first_channel = c->first_channel;
     s->capture = capture;
     s->channels = channels;
   }
@@ -84,10 +93,8 @@ done:
   if (NT_SUCCESS(status)) {
     if (d->removing)
       status = STATUS_DEVICE_NOT_CONNECTED;
-    else if (capture)
-      d->capture_stream = stream;
     else
-      d->render_stream = stream;
+      d->streams[c->slot] = stream;
   }
   WdfWaitLockRelease(d->lock);
   if (!NT_SUCCESS(status) && stream)
@@ -100,10 +107,8 @@ VOID PiaoipStreamDestroy(WDFOBJECT object) {
     PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(s->device);
     WdfWaitLockAcquire(d->lock, NULL);
     SetRunning((ACXSTREAM)object, FALSE);
-    if (d->capture_stream == (ACXSTREAM)object)
-      d->capture_stream = NULL;
-    if (d->render_stream == (ACXSTREAM)object)
-      d->render_stream = NULL;
+    if (d->streams[s->slot] == (ACXSTREAM)object)
+      d->streams[s->slot] = NULL;
     WdfWaitLockRelease(d->lock);
     if (s->packets)
       PiaoipFreePackets((ACXSTREAM)object, s->packets, s->packet_count);
@@ -244,7 +249,7 @@ NTSTATUS PiaoipStreamRun(ACXSTREAM stream) {
   NTSTATUS status = STATUS_SUCCESS;
   WdfWaitLockAcquire(d->lock, NULL);
   if (!s->prepared || !s->packets || d->removing ||
-      (s->capture ? d->capture_stream != stream : d->render_stream != stream))
+      d->streams[s->slot] != stream)
     status = STATUS_DEVICE_NOT_READY;
   else {
     SetRunning(stream, TRUE);
@@ -326,8 +331,9 @@ NTSTATUS PiaoipGetPosition(ACXSTREAM stream, ULONGLONG *position, ULONGLONG *qpc
 }
 
 static VOID AdvanceStream(ACXSTREAM stream, const int32_t *input, int32_t *output, ULONG frames,
-                          ULONGLONG qpc, PIAOIP_BRIDGE_STATS *stats) {
+                          ULONGLONG qpc, PIAOIP_DEVICE_CONTEXT *d) {
   PIAOIP_STREAM_CONTEXT *s = PiaoipStreamContext(stream);
+  PIAOIP_BRIDGE_STATS *stats = &d->stats;
   ULONG offset = 0;
   while (offset < frames) {
     ULONG available = s->packet_frames - s->partial_frames, chunk = min(available, frames - offset);
@@ -336,11 +342,9 @@ static VOID AdvanceStream(ACXSTREAM stream, const int32_t *input, int32_t *outpu
     if (s->capture) {
       if (!s->partial_frames && s->current_packet - s->reported_packet >= s->packet_count)
         ++stats->capture_overruns;
-      if (input)
-        RtlCopyMemory(packet, input + (SIZE_T)offset * s->channels,
-                      (SIZE_T)chunk * s->channels * 4);
-      else
-        RtlZeroMemory(packet, (SIZE_T)chunk * s->channels * 4);
+      piaoip_endpoint_capture_pcm((int32_t *)packet,
+          input ? input + (SIZE_T)offset * d->profile.inputs : NULL,
+          chunk, s->channels, d->profile.inputs, s->first_channel);
       if (!s->partial_frames)
         s->last_capture_qpc = qpc;
       stats->capture_frames += chunk;
@@ -350,8 +354,9 @@ static VOID AdvanceStream(ACXSTREAM stream, const int32_t *input, int32_t *outpu
                          ? min(chunk, s->render_length[index] - s->partial_frames)
                          : 0;
       if (length && output)
-        RtlCopyMemory(output + (SIZE_T)offset * s->channels, packet,
-                      (SIZE_T)length * s->channels * 4);
+        (VOID)piaoip_endpoint_render_pcm(output + (SIZE_T)offset * d->profile.outputs,
+            (const int32_t *)packet, length, s->channels, d->profile.outputs,
+            s->first_channel, d->profile.valid_bits);
       if (!ready && output)
         stats->render_underruns += chunk;
       stats->render_frames += chunk;
@@ -372,7 +377,7 @@ static VOID AdvanceStream(ACXSTREAM stream, const int32_t *input, int32_t *outpu
 NTSTATUS PiaoipExchange(WDFDEVICE child, const PIAOIP_BRIDGE_EXCHANGE *input,
                         PIAOIP_BRIDGE_EXCHANGE *output) {
   PIAOIP_DEVICE_CONTEXT *d = PiaoipDeviceContext(child);
-  ULONG frames = input->frames, flags = 0;
+  ULONG frames = input->frames, flags = 0, slot;
   uint32_t gap = 0;
   ULONGLONG qpc = (ULONGLONG)KeQueryPerformanceCounter(NULL).QuadPart;
   if (!piaoip_bridge_valid_exchange(input, &d->profile))
@@ -393,20 +398,20 @@ NTSTATUS PiaoipExchange(WDFDEVICE child, const PIAOIP_BRIDGE_EXCHANGE *input,
   d->next_bridge_frame = input->frame_position + frames;
   if (input->flags)
     ++d->stats.discontinuities;
-  if (d->capture_stream && PiaoipStreamContext(d->capture_stream)->running) {
-    if (gap)
-      AdvanceStream(d->capture_stream, NULL, NULL, gap, qpc, &d->stats);
-    AdvanceStream(d->capture_stream, input->samples, NULL, frames, qpc, &d->stats);
-    flags |= PIAOIP_BRIDGE_CAPTURE_ACTIVE;
-  }
+  for (slot = 0; slot < PIAOIP_ENDPOINT_SLOTS; slot += 2)
+    if (d->streams[slot] && PiaoipStreamContext(d->streams[slot])->running) {
+      if (gap) AdvanceStream(d->streams[slot], NULL, NULL, gap, qpc, d);
+      AdvanceStream(d->streams[slot], input->samples, NULL, frames, qpc, d);
+      flags |= PIAOIP_BRIDGE_CAPTURE_ACTIVE;
+    }
   // Both METHOD_BUFFERED directions may alias. Capture has consumed the input.
   RtlZeroMemory(output->samples, sizeof(output->samples));
-  if (d->render_stream && PiaoipStreamContext(d->render_stream)->running) {
-    if (gap)
-      AdvanceStream(d->render_stream, NULL, NULL, gap, qpc, &d->stats);
-    AdvanceStream(d->render_stream, NULL, output->samples, frames, qpc, &d->stats);
-    flags |= PIAOIP_BRIDGE_RENDER_ACTIVE;
-  }
+  for (slot = 1; slot < PIAOIP_ENDPOINT_SLOTS; slot += 2)
+    if (d->streams[slot] && PiaoipStreamContext(d->streams[slot])->running) {
+      if (gap) AdvanceStream(d->streams[slot], NULL, NULL, gap, qpc, d);
+      AdvanceStream(d->streams[slot], NULL, output->samples, frames, qpc, d);
+      flags |= PIAOIP_BRIDGE_RENDER_ACTIVE;
+    }
   output->flags = flags;
   output->qpc = qpc;
   ++d->stats.exchanges;

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import shutil
 
-VERSION = '2.6.1-preview.1'
+VERSION = '2.7.0-preview.1'
 
 
 def sha(path):
@@ -34,6 +34,8 @@ def main():
     require(sha(args.driver / 'ReyAudioAcx.sys') == driver['sha256'], 'SYS hash differs.')
     for relative, digest in driver['source_sha256'].items():
         require(sha(project / relative) == digest, 'Driver source differs: ' + relative)
+    for name, digest in driver['contract_sha256'].items():
+        require(sha(project / 'include/piaoip' / name) == digest, 'Driver contract differs: ' + name)
     evidence = read(args.evidence)
     require(evidence['passed'] and evidence['binary_sha256'] == sha(args.bin / 'ReyAudioService.exe'), 'Service evidence does not match.')
     inspection = read(args.inspection)
@@ -72,7 +74,10 @@ def main():
         'free_local_signing_verified': True, 'test_mode_required': True,
         'kernel_loaded': False, 'elevated_install_qualified': False,
         'wasapi_qualified': False, 'physical_audio_qualified': False,
-        'single_pi': True, 'service_checks': len(evidence['cases']),
+        'physical_devices_tested': 1, 'configured_device_limit': 10,
+        'simultaneous_physical_devices_qualified': False,
+        'stereo_pairs_per_direction': 4, 'endpoints_per_8x8_device': 10,
+        'service_checks': len(evidence['cases']),
     }
     (args.out / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
     print('PACKAGED ' + str(args.out.resolve()), flush=True)
