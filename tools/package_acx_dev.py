@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
+import re
+import urllib.parse
 import zipfile
 
 def sha256(path):
@@ -39,8 +41,27 @@ def main():
     entries['service.example.ini'] = (project / 'config/service.example.ini').read_bytes()
     entries['LICENSE'] = (project / 'LICENSE').read_bytes()
     for path in (project / 'docs').glob('*.md'):
-        if path.name.startswith(('ACX-SERVICE', 'TRANSPORT-2.5', 'VALIDATION', 'RELEASE-2.5.0')):
+        if path.name.startswith(('ACX-SERVICE', 'TRANSPORT-2.5', 'VALIDATION', 'RELEASE-2.5.0', 'BUILD', 'INSTALL', 'ARCHITECTURE', 'API', 'BUFFER-GUIDE')):
             entries['docs/' + path.name] = path.read_bytes()
+    for name, data in list(entries.items()):
+        if not name.endswith('.md') or not name.startswith('docs/'):
+            continue
+        def portable_link(match):
+            target = match.group(2)
+            if re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*:|^#', target):
+                return match.group(0)
+            relative, _, anchor = target.partition('#')
+            source = (project / name).parent / relative
+            source = source.resolve()
+            if source.is_relative_to(project) and source.is_file():
+                payload = source.relative_to(project).as_posix()
+                if payload not in entries:
+                    url = 'https://github.com/danrey-bilo/Win11-asio-AoIP/blob/v2.5.0/' + payload
+                    if anchor:
+                        url += '#' + anchor
+                    return '[' + match.group(1) + '](' + urllib.parse.quote(url, safe=':/#') + ')'
+            return match.group(0)
+        entries[name] = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', portable_link, data.decode('utf-8-sig')).encode('utf-8')
     entries['README.md'] = (
         '# PiAoIP 2.5.0 Windows service / ACX development package\n\n'
         'Read docs/ACX-SERVICE.md or docs/ACX-SERVICE.ru.md. Use an absolute --config path. '
