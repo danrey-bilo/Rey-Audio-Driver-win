@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="230" viewBox="0 0 1200 230">
+  <title>Rey Audio Driver — USB and AoIP</title>
+  <rect width="1200" height="230" rx="24" fill="#152132"/>
+  <path d="M840 115h42l24-42 30 85 26-58 25 15h56" fill="none" stroke="#85e5c6" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="48" y="87" fill="#85e5c6" font-family="Segoe UI,Arial,sans-serif" font-size="44" font-weight="700">REY AUDIO DRIVER</text>
+  <text x="50" y="137" fill="#fff" font-family="Segoe UI,Arial,sans-serif" font-size="23">USB + AoIP · Raspberry Pi 5 · Windows 11 x64</text>
+  <text x="50" y="181" fill="#8c9cb1" font-family="Segoe UI,Arial,sans-serif" font-size="17">8 inputs / 8 outputs · PCM 16 / 24 / 32 · 44.1–192 kHz</text>
+</svg>

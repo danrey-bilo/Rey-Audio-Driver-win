@@ -64,7 +64,7 @@ Use the matching 2.5.0 components. Existing installed device/Windows profiles ar
 See [build instructions](BUILD.md), [validation](VALIDATION.md) and [release notes](RELEASE-2.5.0.md). The original Pi executable/configuration, LAN/Wi-Fi and CPU isolation were restored and independently checked after the profile search. Earlier FAIL results, including guard512 PCM recovery after a link cycle, remain part of the evidence.
 
 
-[Measurement records, failed cases and binary hashes](https://github.com/danrey-bilo/Win11-asio-AoIP/blob/v2.5.0/docs/measurements/README.md)
+[Measurement records, failed cases and binary hashes](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/v2.5.0/docs/measurements/README.md)
 
 
 ## Release rebuild result

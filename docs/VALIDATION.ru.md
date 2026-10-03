@@ -23,4 +23,4 @@ Callback/wake/RX gap/TX age max: 161.6/692.9/7270.0/884.0 мкс. Pi process CPU
 
 Измерен synthetic digital Pi → Windows service echo → Pi. ADC/DAC, реальная DAW, установленный ACX/WASAPI, поддерживаемая MSVC-сборка драйвера и fault recovery guard1024 ещё не квалифицированы. Buffers ручные. Несколько Pi отложены. Для USB будет отдельный репозиторий/библиотека; реализация сейчас отложена. Pi4 не пересобран/не проверен и не изменён. **Pre-release.**
 
-[Полные измерения и неудачные прогоны](https://github.com/danrey-bilo/Win11-asio-AoIP/blob/v2.5.0/docs/measurements/README.ru.md) · [Описание релиза](RELEASE-2.5.0.ru.md)
+[Полные измерения и неудачные прогоны](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/v2.5.0/docs/measurements/README.ru.md) · [Описание релиза](RELEASE-2.5.0.ru.md)

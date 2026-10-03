@@ -74,7 +74,9 @@ NTSTATUS PiaoipDeviceAdd(WDFDRIVER driver, PWDFDEVICE_INIT init) {
 }
 
 NTSTATUS PiaoipCreateChild(WDFDEVICE root, const PIAOIP_BRIDGE_PROFILE *profile) {
-  const UNICODE_STRING id = RTL_CONSTANT_STRING(L"PIAOIP\\NetworkAudio");
+  const UNICODE_STRING id = RTL_CONSTANT_STRING(L"REY\\Audio");
+  const UNICODE_STRING description = RTL_CONSTANT_STRING(L"Rey Audio 8x8");
+  const UNICODE_STRING location = RTL_CONSTANT_STRING(L"USB / AoIP");
   PWDFDEVICE_INIT init;
   WDFDEVICE child = NULL;
   UNICODE_STRING instance;
@@ -101,6 +103,10 @@ NTSTATUS PiaoipCreateChild(WDFDEVICE root, const PIAOIP_BRIDGE_PROFILE *profile)
   status = WdfPdoInitAssignDeviceID(init, &id);
   if (!NT_SUCCESS(status))
     goto failed;
+  status = WdfPdoInitAddDeviceText(init, &description, &location, 0x0409);
+  if (!NT_SUCCESS(status))
+    goto failed;
+  WdfPdoInitSetDefaultLocale(init, 0x0409);
   for (i = 0; i < 32; ++i)
     instance_text[i] = (WCHAR)profile->device_id[i];
   instance_text[32] = 0;

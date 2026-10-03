@@ -29,14 +29,14 @@ def main():
             (args.out/'build.json').write_text(json.dumps(logs,indent=2)); print(result.stdout[-15000:]); return result.returncode
         objects.append(obj)
     command=[str(args.llvm/'ld.lld.exe'),'-flavor','link','/nologo','/driver','/subsystem:native,10.00','/machine:x64','/entry:FxDriverEntry','/nodefaultlib',
-        '/dynamicbase','/nxcompat','/opt:ref','/opt:icf','/integritycheck','/release','/Brepro','/out:'+str(args.out/'PiAoipAcx.sys')]
+        '/dynamicbase','/nxcompat','/opt:ref','/opt:icf','/integritycheck','/release','/Brepro','/out:'+str(args.out/'ReyAudioAcx.sys')]
     command += [str(obj) for obj in objects]+['/libpath:'+str(path) for path in libraries]+['ntoskrnl.lib','hal.lib','wmilib.lib','ksguid.lib','wdmguid.lib','wdfdriverentry.lib','wdfldr.lib','acxstub.lib','BufferOverflowFastFailK.lib']
     result=subprocess.run(command,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     logs.append({'stage':'link','command':command,'returncode':result.returncode,'output':result.stdout})
     (args.out/'build.json').write_text(json.dumps(logs,indent=2))
     if result.returncode: print(result.stdout[-15000:]); return result.returncode
-    shutil.copyfile(project/'drivers/Acx/PiAoipAcx.inf',args.out/'PiAoipAcx.inf')
-    command=[str(args.wdk/'tools/10.0.26100.0/x64/infverif.exe'),'/u',str(args.out/'PiAoipAcx.inf')]
+    shutil.copyfile(project/'drivers/Acx/ReyAudioAcx.inf',args.out/'ReyAudioAcx.inf')
+    command=[str(args.wdk/'tools/10.0.26100.0/x64/infverif.exe'),'/u',str(args.out/'ReyAudioAcx.inf')]
     result=subprocess.run(command,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     (args.out/'infverif.log').write_text(result.stdout)
     print(result.stdout[-12000:],flush=True)
@@ -45,12 +45,12 @@ def main():
     result=subprocess.run(command,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     (args.out/'inf2cat.log').write_text(result.stdout)
     print(result.stdout[-12000:],flush=True)
-    digest=hashlib.sha256((args.out/'PiAoipAcx.sys').read_bytes()).hexdigest()
+    digest=hashlib.sha256((args.out/'ReyAudioAcx.sys').read_bytes()).hexdigest()
     (args.out/'manifest.json').write_text(json.dumps({'architecture':'x64','kmdf':'1.31','acx':'1.1','compiler':'Clang 22 MSVC ABI','sha256':digest,
         'signed':False,'installed':False,'infverif_exit_code':0,'inf2cat_exit_code':result.returncode,
         'source_sha256':{p.relative_to(project).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((project/'drivers/Acx').glob('*')) if p.suffix in ('.c','.h','.inf')},
         'contract_sha256':hashlib.sha256((project/'include/piaoip/bridge.h').read_bytes()).hexdigest()},indent=2))
-    print('BUILT development PiAoipAcx.sys sha256='+digest,flush=True)
+    print('BUILT development ReyAudioAcx.sys sha256='+digest,flush=True)
     return result.returncode
 
 if __name__=='__main__': raise SystemExit(main())

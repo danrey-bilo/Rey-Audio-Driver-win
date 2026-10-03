@@ -1,0 +1,254 @@
+{
+  "started_utc": "2026-10-03T04:35:27.869917+00:00",
+  "service_sha256": "91aea930660c966dd4017728113f9c8a8b0eb6123170bac56995cb308f46f0ed",
+  "method": "Stop/start only the own Pi5 USB gadget service; software USB disconnect/re-enumeration",
+  "physical_cable_test": false,
+  "physical_audio_qualified": false,
+  "maximum_session_seconds": 45,
+  "before": {
+    "version": "2.6.0",
+    "ok": true,
+    "error": "",
+    "state": "digital_test",
+    "detail": "USB digital test is running",
+    "route": "usb",
+    "preferred": "auto",
+    "driver_present": false,
+    "digital_test": true,
+    "identity": "00000000000000002c26e7dcd051e632",
+    "backend": "digital-loopback",
+    "usb": {
+      "present": 1,
+      "identity": "00000000000000002c26e7dcd051e632",
+      "rate": 192000,
+      "bits": 32,
+      "depth": 3,
+      "block": 64,
+      "guard": 0,
+      "automatic": true
+    },
+    "lan": {
+      "peer": "",
+      "enabled": false,
+      "port": 50021,
+      "block": 256,
+      "guard": 1536,
+      "frames": 32,
+      "energy": false
+    },
+    "active": {
+      "rate": 192000,
+      "bits": 32,
+      "inputs": 8,
+      "outputs": 8
+    },
+    "stats": {
+      "callbacks": 1888,
+      "frames": 45312,
+      "missing_frames": 0,
+      "callback_gap_max_us": 429.9
+    },
+    "events": [
+      {
+        "utc_ms": 1791002128090,
+        "code": "digital_test",
+        "detail": "USB digital test is running"
+      },
+      {
+        "utc_ms": 1791002128089,
+        "code": "connecting",
+        "detail": "Opening USB device"
+      },
+      {
+        "utc_ms": 1791002127881,
+        "code": "idle",
+        "detail": "Service is ready"
+      }
+    ]
+  },
+  "disconnected": {
+    "version": "2.6.0",
+    "ok": true,
+    "error": "",
+    "state": "idle",
+    "detail": "Waiting for a device",
+    "route": "none",
+    "preferred": "auto",
+    "driver_present": false,
+    "digital_test": true,
+    "identity": "00000000000000002c26e7dcd051e632",
+    "backend": "digital-loopback",
+    "usb": {
+      "present": 0,
+      "identity": "",
+      "rate": 192000,
+      "bits": 32,
+      "depth": 3,
+      "block": 64,
+      "guard": 0,
+      "automatic": true
+    },
+    "lan": {
+      "peer": "",
+      "enabled": false,
+      "port": 50021,
+      "block": 256,
+      "guard": 1536,
+      "frames": 32,
+      "energy": false
+    },
+    "active": {
+      "rate": 192000,
+      "bits": 32,
+      "inputs": 8,
+      "outputs": 8
+    },
+    "stats": {
+      "callbacks": 0,
+      "frames": 0,
+      "missing_frames": 0,
+      "callback_gap_max_us": 0
+    },
+    "events": [
+      {
+        "utc_ms": 1791002141368,
+        "code": "idle",
+        "detail": "Waiting for a device"
+      },
+      {
+        "utc_ms": 1791002141368,
+        "code": "stopping",
+        "detail": "Applying connection settings"
+      },
+      {
+        "utc_ms": 1791002140549,
+        "code": "device_unavailable",
+        "detail": "Requested AUSB device is unavailable"
+      },
+      {
+        "utc_ms": 1791002140549,
+        "code": "connecting",
+        "detail": "Opening USB device"
+      },
+      {
+        "utc_ms": 1791002140521,
+        "code": "stream_error",
+        "detail": "USB completion: 31"
+      },
+      {
+        "utc_ms": 1791002128090,
+        "code": "digital_test",
+        "detail": "USB digital test is running"
+      },
+      {
+        "utc_ms": 1791002128089,
+        "code": "connecting",
+        "detail": "Opening USB device"
+      },
+      {
+        "utc_ms": 1791002127881,
+        "code": "idle",
+        "detail": "Service is ready"
+      }
+    ]
+  },
+  "after": {
+    "version": "2.6.0",
+    "ok": true,
+    "error": "",
+    "state": "digital_test",
+    "detail": "USB digital test is running",
+    "route": "usb",
+    "preferred": "auto",
+    "driver_present": false,
+    "digital_test": true,
+    "identity": "00000000000000002c26e7dcd051e632",
+    "backend": "digital-loopback",
+    "usb": {
+      "present": 1,
+      "identity": "00000000000000002c26e7dcd051e632",
+      "rate": 192000,
+      "bits": 32,
+      "depth": 3,
+      "block": 64,
+      "guard": 0,
+      "automatic": true
+    },
+    "lan": {
+      "peer": "",
+      "enabled": false,
+      "port": 50021,
+      "block": 256,
+      "guard": 1536,
+      "frames": 32,
+      "energy": false
+    },
+    "active": {
+      "rate": 192000,
+      "bits": 32,
+      "inputs": 8,
+      "outputs": 8
+    },
+    "stats": {
+      "callbacks": 1148,
+      "frames": 27552,
+      "missing_frames": 0,
+      "callback_gap_max_us": 409
+    },
+    "events": [
+      {
+        "utc_ms": 1791002143382,
+        "code": "digital_test",
+        "detail": "USB digital test is running"
+      },
+      {
+        "utc_ms": 1791002143381,
+        "code": "connecting",
+        "detail": "Opening USB device"
+      },
+      {
+        "utc_ms": 1791002141368,
+        "code": "idle",
+        "detail": "Waiting for a device"
+      },
+      {
+        "utc_ms": 1791002141368,
+        "code": "stopping",
+        "detail": "Applying connection settings"
+      },
+      {
+        "utc_ms": 1791002140549,
+        "code": "device_unavailable",
+        "detail": "Requested AUSB device is unavailable"
+      },
+      {
+        "utc_ms": 1791002140549,
+        "code": "connecting",
+        "detail": "Opening USB device"
+      },
+      {
+        "utc_ms": 1791002140521,
+        "code": "stream_error",
+        "detail": "USB completion: 31"
+      },
+      {
+        "utc_ms": 1791002128090,
+        "code": "digital_test",
+        "detail": "USB digital test is running"
+      },
+      {
+        "utc_ms": 1791002128089,
+        "code": "connecting",
+        "detail": "Opening USB device"
+      },
+      {
+        "utc_ms": 1791002127881,
+        "code": "idle",
+        "detail": "Service is ready"
+      }
+    ]
+  },
+  "passed": true,
+  "exit_code": 0,
+  "ended_utc": "2026-10-03T04:36:12.926992+00:00"
+}

@@ -1,4 +1,6 @@
-**English** | [Русский](ACX-SERVICE.ru.md)
+Current USB/LAN service and panel: [Rey Audio Driver 2.6.0](REY-AUDIO-2.6.md).
+
+**English** | [Р СѓСЃСЃРєРёР№](ACX-SERVICE.ru.md)
 
 # Single-Pi service and ACX development driver
 
@@ -44,7 +46,7 @@ Outputs are `PiAoipService.exe` and `PiAoipWasapiProbe.exe`. There is no Steinbe
 For the supported kernel build, use Visual Studio 2022 with the x64 MSVC toolset and the matching 26100 Windows SDK/WDK. The checked-in project specifies KMDF 1.31 and ACX 1.1:
 
 ```powershell
-msbuild drivers/Acx/PiAoipAcx.vcxproj /p:Configuration=Release /p:Platform=x64
+msbuild drivers/Acx/ReyAudioAcx.vcxproj /p:Configuration=Release /p:Platform=x64
 ```
 
 This MSVC project has not yet been executed on the current workstation, which lacks the installed MSVC/WDK integration. `tools/build_acx.py` supplies an isolated Clang 22 MSVC-ABI development build using official SDK/WDK headers and libraries. It performs InfVerif/Inf2Cat and records source/binary hashes; it never signs or installs. Custom compiler assembly/ABI checks and an actual supported-toolchain build remain qualification requirements. Do not distribute Microsoft SDK/WDK libraries or sample sources as project source.
@@ -68,7 +70,7 @@ The subsequent finite profile search used 15 short screens and three separate 90
 
 ## Kernel stand and WASAPI checks
 
-Prepare a separate Windows x64 test machine/VM with recovery access, the supported-toolchain build, driver debugging and a valid test-signing setup. The supplied SYS/CAT are unsigned and cannot establish an installable product. Signing/boot-security changes and a reboot on the live workstation require a separate explicit decision. Creating a root device is also required; staging an INF alone does not instantiate this root driver. On an already prepared signing stand, a WDK DevCon root-device installation uses `devcon install PiAoipAcx.inf Root\PiAoipAcx`.
+Prepare a separate Windows x64 test machine/VM with recovery access, the supported-toolchain build, driver debugging and a valid test-signing setup. The supplied SYS/CAT are unsigned and cannot establish an installable product. Signing/boot-security changes and a reboot on the live workstation require a separate explicit decision. Creating a root device is also required; staging an INF alone does not instantiate this root driver. On an already prepared signing stand, a WDK DevCon root-device installation uses `devcon install ReyAudioAcx.inf Root\ReyAudioAcx`.
 
 After a signed root driver is installed and the updated Pi runtime is active, an elevated finite ACX console session is:
 

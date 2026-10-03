@@ -64,7 +64,7 @@ Missing/late, deadline/skipped, resync, overruns, expired output, queue/socket/c
 См. [сборку](BUILD.ru.md), [проверки](VALIDATION.ru.md) и [описание выпуска](RELEASE-2.5.0.ru.md). После поиска независимо подтверждён возврат исходного executable/config, LAN/Wi-Fi и CPU isolation Pi. Прежние FAIL, включая guard512 PCM recovery после link-cycle, сохраняются в evidence.
 
 
-[Измерения, неудачные прогоны и хеши бинарников](https://github.com/danrey-bilo/Win11-asio-AoIP/blob/v2.5.0/docs/measurements/README.ru.md)
+[Измерения, неудачные прогоны и хеши бинарников](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/v2.5.0/docs/measurements/README.ru.md)
 
 
 ## Проверка пересобранного релиза

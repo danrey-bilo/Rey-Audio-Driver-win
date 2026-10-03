@@ -7,7 +7,7 @@ For the independent service build without ASIO and the initial ACX kernel projec
 Requirements: Windows x64, CMake 3.20+, Ninja, LLVM-MinGW x64/UCRT and a separately obtained [Steinberg ASIO SDK](ASIO-SDK.md). The SDK is not part of this repository or its source archive.
 
 ```powershell
-git clone --recurse-submodules https://github.com/danrey-bilo/Win11-asio-AoIP.git
+git clone --recurse-submodules https://github.com/danrey-bilo/Rey-Audio-Driver-win.git
 cd Win11-asio-AoIP
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release `
   -DCMAKE_CXX_COMPILER=C:/Tools/llvm-mingw/bin/x86_64-w64-mingw32-clang++.exe `

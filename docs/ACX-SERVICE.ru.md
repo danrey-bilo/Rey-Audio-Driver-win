@@ -1,3 +1,5 @@
+Current USB/LAN service and panel: [Rey Audio Driver 2.6.0](REY-AUDIO-2.6.ru.md).
+
 [English](ACX-SERVICE.md) | **Русский**
 
 # Служба для одного Pi и экспериментальный драйвер ACX
@@ -44,7 +46,7 @@ cmake --build build/service --parallel 2
 Поддерживаемый путь сборки kernel-драйвера — Visual Studio 2022, x64 MSVC и согласованные Windows SDK/WDK 26100. Проект задаёт KMDF 1.31 и ACX 1.1:
 
 ```powershell
-msbuild drivers/Acx/PiAoipAcx.vcxproj /p:Configuration=Release /p:Platform=x64
+msbuild drivers/Acx/ReyAudioAcx.vcxproj /p:Configuration=Release /p:Platform=x64
 ```
 
 Этот MSVC-проект ещё не запускался на текущем ПК: интеграция MSVC/WDK здесь не установлена. `tools/build_acx.py` выполняет отдельную экспериментальную сборку Clang 22 с MSVC ABI, официальными headers/libraries, проверкой InfVerif/Inf2Cat и hash-манифестом. Скрипт не подписывает и не устанавливает драйвер. Перед квалификацией нужны сборка поддерживаемым toolchain и проверка ABI/ассемблера нестандартной сборки. SDK/WDK libraries и исходники примеров Microsoft не являются исходниками проекта для распространения.
@@ -68,7 +70,7 @@ Echo проверяет цифровой транспорт. Он не созд�
 
 ## Стенд kernel-драйвера и WASAPI
 
-Нужен отдельный Windows x64 стенд/VM с возможностью восстановления, kernel debugging, сборкой поддерживаемым toolchain и подготовленной тестовой подписью. Приложенные SYS/CAT не подписаны. Изменение подписи, boot security и перезагрузка рабочего Windows требуют отдельного явного решения. Кроме INF нужно создать root-устройство: одно добавление пакета в Driver Store его не создаёт. На уже подготовленном стенде WDK DevCon использует `devcon install PiAoipAcx.inf Root\PiAoipAcx`.
+Нужен отдельный Windows x64 стенд/VM с возможностью восстановления, kernel debugging, сборкой поддерживаемым toolchain и подготовленной тестовой подписью. Приложенные SYS/CAT не подписаны. Изменение подписи, boot security и перезагрузка рабочего Windows требуют отдельного явного решения. Кроме INF нужно создать root-устройство: одно добавление пакета в Driver Store его не создаёт. На уже подготовленном стенде WDK DevCon использует `devcon install ReyAudioAcx.inf Root\ReyAudioAcx`.
 
 После установки подписанного root-драйвера и запуска нового peer Pi конечный ACX-тест из повышенной консоли:
 

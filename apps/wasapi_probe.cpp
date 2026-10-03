@@ -99,7 +99,7 @@ bool matches(const wchar_t *name) {
       lower.end());
   std::transform(lower.begin(), lower.end(), lower.begin(),
                  [](wchar_t ch) { return std::towlower(ch); });
-  return lower.find(L"piaoip") != std::wstring::npos;
+  return lower.find(L"reyaudio") != std::wstring::npos;
 }
 bool number(const wchar_t *value, unsigned &result, unsigned maximum) {
   if (*value < L'0' || *value > L'9')
@@ -306,7 +306,7 @@ int wmain(int argc, wchar_t **argv) {
     } else {
       std::fprintf(stderr,
                    "Usage: PiAoipWasapiProbe [--all | --id endpoint-id] [--flow capture|render] "
-                   "[--raw] [--seconds 1..30 --period frames]\nDefault: PiAoIP endpoints only. "
+                   "[--raw] [--seconds 1..30 --period frames]\nDefault: Rey Audio endpoints only. "
                    "--all is read-only. Streams render silence or discard capture.\n");
       return 1;
     }

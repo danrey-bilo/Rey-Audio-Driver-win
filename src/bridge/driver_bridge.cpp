@@ -1,4 +1,5 @@
 #include "driver_bridge.hpp"
+#include "../engine/session_engine.hpp"
 #include "aoip/pcm_codec.hpp"
 #include <setupapi.h>
 namespace piaoip::bridge {
@@ -9,8 +10,33 @@ constexpr GUID control_guid = {
 DriverBridge::~DriverBridge() {
   detach();
 }
+bool DriverBridge::available() {
+  const auto devices = SetupDiGetClassDevsW(&control_guid, nullptr, nullptr,
+                                          DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);
+  if (devices == INVALID_HANDLE_VALUE)
+    return false;
+  SP_DEVICE_INTERFACE_DATA item{};
+  item.cbSize = sizeof(item);
+  const bool present = SetupDiEnumDeviceInterfaces(devices, nullptr, &control_guid, 0, &item) != FALSE;
+  SetupDiDestroyDeviceInfoList(devices);
+  return present;
+}
 bool DriverBridge::attach(const engine::SessionEngine &engine, std::string &error) {
+  const auto &cfg = engine.config();
+  const auto &peer = engine.peer();
+  PIAOIP_BRIDGE_PROFILE profile = {
+      sizeof(profile), PIAOIP_BRIDGE_VERSION, cfg.rate, cfg.bits, peer.inputs().count,
+      peer.outputs().count, unsigned(cfg.block), cfg.safety, {}};
+  std::memcpy(profile.device_id, peer.identity(), 32);
+  return attach(profile, error);
+}
+bool DriverBridge::attach(const PIAOIP_BRIDGE_PROFILE &profile, std::string &error) {
   detach();
+  if (!piaoip_bridge_valid_profile(&profile)) {
+    error = "Invalid audio bridge profile";
+    error_ = ERROR_INVALID_PARAMETER;
+    return false;
+  }
   HDEVINFO devices =
       SetupDiGetClassDevsW(&control_guid, nullptr, nullptr, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);
   if (devices == INVALID_HANDLE_VALUE) {
@@ -37,12 +63,7 @@ bool DriverBridge::attach(const engine::SessionEngine &engine, std::string &erro
     error = "Cannot open the ACX bridge: " + std::to_string(error_);
     return false;
   }
-  const auto &cfg = engine.config();
-  const auto &peer = engine.peer();
-  profile_ = {
-      sizeof(profile_),     PIAOIP_BRIDGE_VERSION, cfg.rate,   cfg.bits, peer.inputs().count,
-      peer.outputs().count, unsigned(cfg.block),   cfg.safety, {}};
-  std::memcpy(profile_.device_id, peer.identity(), 32);
+  profile_ = profile;
   DWORD bytes = 0;
   if (!piaoip_bridge_valid_profile(&profile_) ||
       !DeviceIoControl(device_, IOCTL_PIAOIP_ATTACH, &profile_, sizeof(profile_), nullptr, 0,

@@ -1,0 +1,22 @@
+{
+  "architecture": "x64",
+  "kmdf": "1.31",
+  "acx": "1.1",
+  "compiler": "Clang 22 MSVC ABI",
+  "sha256": "3113587ea4a208232e7016395f0f3b45393ba3f64ce0a3091e4ca9a110dab65b",
+  "signed": false,
+  "installed": false,
+  "infverif_exit_code": 0,
+  "inf2cat_exit_code": 0,
+  "source_sha256": {
+    "drivers/Acx/circuit.c": "c98851486dbdf8a1c2da8fdbf8e74014b955d5caecb7529318b51e1023ac6531",
+    "drivers/Acx/control.c": "92950e358ee345d175d7d48a923a8fcf5bfdf7b795d6005b02a40e3238ff9096",
+    "drivers/Acx/device.c": "e127ef716875663df7b8e95572bb21b2bc8127d0496c0b9262f9887f768360cf",
+    "drivers/Acx/driver.c": "149165aa5dc773c03ae056ea944bb95868d609936760fc2a088f93e9a021140c",
+    "drivers/Acx/driver.h": "f3b7b8e380e02aa971d8172f13d139bef1265e7374f3a2291b41b5ad87edcd11",
+    "drivers/Acx/guids.c": "39144efa984ecfed19f98970f9d80ab94e06037dd212867bca53d281c34b22cf",
+    "drivers/Acx/ReyAudioAcx.inf": "5ffda7a9ba9192a2a04b2edb30027b1f2486dec80af2927afd5d15fe6789b324",
+    "drivers/Acx/stream.c": "9beee12599d70ad821618abc52b9ce1b4742317d697de041dced9e277b02d3d4"
+  },
+  "contract_sha256": "136caad8fc17153fdc0f79fd384c297fa457e753808b3bb865104c70d68352b1"
+}

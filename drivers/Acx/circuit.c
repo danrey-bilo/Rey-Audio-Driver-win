@@ -1,4 +1,6 @@
 #include "driver.h"
+#include <initguid.h>
+#include <devpkey.h>
 
 NTSTATUS PiaoipCircuitInitialize(WDFDEVICE device, ACXCIRCUIT circuit, ACXOBJECTBAG properties) {
   const DEVPROPKEY packet_key = {
@@ -35,13 +37,18 @@ NTSTATUS PiaoipCircuitInitialize(WDFDEVICE device, ACXCIRCUIT circuit, ACXOBJECT
     return status;
   status = IoSetDeviceInterfacePropertyData(&audio_link, &packet_key, 0, 0, DEVPROP_TYPE_BINARY,
                                             sizeof(constraints), &constraints);
+  if (NT_SUCCESS(status)) {
+    const WCHAR *friendly = PiaoipCircuitContext(circuit)->capture ? L"Rey Audio Input" : L"Rey Audio Output";
+    status = IoSetDeviceInterfacePropertyData(&audio_link, &DEVPKEY_DeviceInterface_FriendlyName,
+        0, 0, DEVPROP_TYPE_STRING, (ULONG)((wcslen(friendly) + 1) * sizeof(WCHAR)), (PVOID)friendly);
+  }
   RtlFreeUnicodeString(&audio_link);
   return status;
 }
 
 NTSTATUS PiaoipCreateCircuit(WDFDEVICE device, BOOLEAN capture, ACXCIRCUIT *result) {
-  const UNICODE_STRING capture_name = RTL_CONSTANT_STRING(L"PiAoipCapture");
-  const UNICODE_STRING render_name = RTL_CONSTANT_STRING(L"PiAoipRender");
+  const UNICODE_STRING capture_name = RTL_CONSTANT_STRING(L"ReyAudioInput");
+  const UNICODE_STRING render_name = RTL_CONSTANT_STRING(L"ReyAudioOutput");
   PIAOIP_DEVICE_CONTEXT *context = PiaoipDeviceContext(device);
   PACXCIRCUIT_INIT init;
   WDF_OBJECT_ATTRIBUTES attributes;

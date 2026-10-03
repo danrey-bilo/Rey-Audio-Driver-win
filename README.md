@@ -1,61 +1,54 @@
-![Win11-asio-AoIP 2.5.0](docs/assets/header.svg)
+![Rey Audio Driver](docs/assets/rey-header.svg)
 
-# Win11-asio-AoIP
+# Rey Audio Driver
 
 **English** | [Русский](README.ru.md)
 
-Windows 11 x64 audio transport over wired Ethernet: an independent network service, the existing ASIO adapter and an experimental ACX/KMDF audio driver.
+Windows 11 x64 audio service and own ACX/KMDF driver for Raspberry Pi 5.
+Separate **USB** and **AoIP / LAN** connections, separate manual settings,
+automatic USB detection, background service and a new desktop/tray panel.
 
-The development branch also contains an [independent single-Pi service and ACX driver](docs/ACX-SERVICE.md). The service builds without ASIO; the kernel driver is unsigned and awaiting installation/WASAPI qualification.
+**2.6.0 preview:** [setup and architecture](docs/REY-AUDIO-2.6.md) ·
+[USB transport](docs/USB-TRANSPORT.md) ·
+[builds](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases).
 
-**[Download 2.5.0](https://github.com/danrey-bilo/Win11-asio-AoIP/releases/tag/v2.5.0)** · **[Release notes](docs/RELEASE-2.5.0.md)** · **[Validation](docs/VALIDATION.md)**
+The service and panel build without an ASIO SDK. The own audio driver is unsigned
+and has not been installed or qualified through WASAPI. The USB Pi backend is
+digital loopback. The panel explicitly shows driver availability; physical
+ADC/DAC and production audio-endpoint qualification remain open.
 
-[Transport and endpoint status](docs/TRANSPORT-2.5.md)
+![Rey USB panel](docs/assets/rey-usb.png)
 
-**Downloads:** ASIO MSI for the existing DAW adapter; `PiAoIP-2.5.0-Windows-service-ACX-development-x64.zip` for the independent service and unsigned driver. The ZIP requires manual setup on a prepared driver test stand. See [service setup](docs/ACX-SERVICE.md).
+| | USB | AoIP / LAN |
+|---|---|---|
+| Connection | Automatic USB interface discovery | Select/configure a Pi through the tray |
+| Format | 8 inputs + 8 outputs, PCM16/24/32, six rates 44.1–192 kHz | Format from the configured Pi, up to 8 inputs + 8 outputs |
+| Buffers | Manual transfer queue and endpoint settings | Manual block, guard and packet frames |
+| Data path | High-Speed interrupt, WinUSB overlapped I/O | UDP/IPv4, IOCP receive, bounded audio deadlines |
+| Priority | Explicit selection available | Default after a LAN connection is configured |
 
-## Get started
+Use the extracted preview's `tools/install_rey.ps1` from an Administrator
+PowerShell. It installs the automatic **Rey Audio Driver** service and tray panel,
+preserves settings and verifies executable hashes. Kernel driver installation is
+separate and requires a prepared signing/test environment. Read the
+[installation guide](docs/REY-AUDIO-2.6.md#install-the-user-mode-components).
 
-1. Download [PiAoIP-2.5.0-Windows11-x64.msi](https://github.com/danrey-bilo/Win11-asio-AoIP/releases/download/v2.5.0/PiAoIP-2.5.0-Windows11-x64.msi).
-2. Close your ASIO hosts and exit PiAoIP from the tray, then run the MSI.
-3. Open **PiAoIP Settings → Device → Find and connect** and select the Pi.
-4. Choose **Sample rate**, **Bit depth**, **ASIO buffer** and **LAN buffer**, then **Apply**.
-5. Select **Pi AoIP** in your 64-bit DAW and open its audio engine.
+The USB library and Pi gadget live in their own repository:
+[Pi5-AUSB](https://github.com/danrey-bilo/Pi5-AUSB). The
+[AoIP core](https://github.com/danrey-bilo/AoIP-lib) remains a separate dependency.
+Their visibility and license terms are unchanged.
 
-The panel, tray and installed help are in English. **Automatic buffer tuning has been removed.** Choose buffers manually and check your actual DAW workload. Device channel counts come from the Pi; use **Device → Channels** to select existing channels.
+Seven service contract checks and finite real-Pi tests cover profile isolation,
+invalid requests, USB discovery while streaming, restart and reconnection.
+[Evidence and limits](docs/REY-AUDIO-2.6.md#evidence).
 
-![PiAoIP settings](docs/assets/settings.png)
+The earlier 299-second 8x8/192kHz/32-bit USB test measured digital RTT
+p50/p95/p99/max **373/410/419/944.2 us**. This is a digital transport loopback,
+not analog or Windows audio-engine latency. [Full USB report](https://github.com/danrey-bilo/Pi5-AUSB/blob/main/docs/RESULTS.md).
 
-The MSI installs the ASIO DLL, settings/tray application, installation guide and license notices. It adds ASIO registration and a local-subnet UDP 50021 firewall rule. Both Start menu shortcuts and the application now have embedded icons.
-It does not install Windows microphone/speaker endpoints, a kernel audio driver or a Pi firmware image.
+The existing ASIO adapter and immutable [2.5.0 release](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.5.0)
+remain available during the transition. [Previous release notes](docs/RELEASE-2.5.0.md).
+One Pi is supported; multiple Pi devices, physical audio, clock feedback and a
+direct kernel USB path remain qualification work. Pi4 is not updated.
 
-## At a glance
-
-| Item | Support |
-|---|---|
-| System | Windows 11 x64; 64-bit ASIO host |
-| Main controls | Rate, PCM bit depth, ASIO buffer, LAN buffer |
-| ASIO buffer | 16–2048 samples, powers of two |
-| LAN buffer | 0–2048 samples; manual |
-| Sessions | One streaming ASIO client per Pi/PC pair |
-| Audio profiles | Up to 64 channels per direction; 44.1–192 kHz; PCM16/24/32 |
-| Transport | PiAoIP UDP/IPv4 over Ethernet; not AES67 or Dante |
-
-## Documentation
-
-[Installation](docs/INSTALL.md) · [Build](docs/BUILD.md) · [Host API](docs/API.md) · [Architecture](docs/ARCHITECTURE.md) · [Buffer guide](docs/BUFFER-GUIDE.md)
-
-English is the primary documentation language. Each maintained guide links to its Russian edition. Version 2.5.0 is a **development preview**: build and package checks do not establish physical ADC/DAC support or a guaranteed latency. The supplied Pi service generates and checks synthetic PCM; a hardware audio backend is still required for a physical sound card.
-
-## Project components
-
-| Repository | Purpose |
-|---|---|
-| [AoIP-lib](https://github.com/danrey-bilo/AoIP-lib) | Protocol and portable libraries |
-| [Win11-asio-AoIP](https://github.com/danrey-bilo/Win11-asio-AoIP) | Windows service, ASIO and ACX development driver |
-| [Pi4-AoIP](https://github.com/danrey-bilo/Pi4-AoIP) | Raspberry Pi 4 / PREEMPT_RT service |
-| [Pi5-AoIP](https://github.com/danrey-bilo/Pi5-AoIP) | Raspberry Pi 5 / PREEMPT_RT service |
-
-## License
-
-Personal, noncommercial use is free. Commercial use requires a separate paid written license. See [LICENSE](LICENSE) and the [Russian explanation](docs/LICENSE-RU.md). The external Steinberg ASIO SDK has separate terms; see [ASIO SDK](docs/ASIO-SDK.md).
+[License](LICENSE) · [Build](docs/REY-AUDIO-2.6.md#build-and-structure)

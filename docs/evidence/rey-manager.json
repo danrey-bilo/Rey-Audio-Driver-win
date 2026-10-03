@@ -1,0 +1,681 @@
+{
+  "started_utc": "2026-10-03T04:46:23.658733+00:00",
+  "binary_sha256": "857e6d0e5f9b1b1aef42b9700c50a70b80d31398bae084ccbbeced48d316421a",
+  "physical_audio_qualified": false,
+  "windows_endpoints_qualified": false,
+  "cases": [
+    {
+      "name": "USB auto discovery False",
+      "status": {
+        "version": "2.6.0",
+        "ok": true,
+        "error": "",
+        "state": "driver_unavailable",
+        "detail": "Cannot open the ACX bridge: 259",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": false,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "",
+          "enabled": false,
+          "port": 50021,
+          "block": 256,
+          "guard": 1536,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 0,
+          "frames": 0,
+          "missing_frames": 0,
+          "callback_gap_max_us": 0
+        },
+        "events": [
+          {
+            "utc_ms": 1791002783990,
+            "code": "driver_unavailable",
+            "detail": "Cannot open the ACX bridge: 259"
+          },
+          {
+            "utc_ms": 1791002783989,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002783774,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing driver is explicit",
+      "status": {
+        "version": "2.6.0",
+        "ok": true,
+        "error": "",
+        "state": "driver_unavailable",
+        "detail": "Cannot open the ACX bridge: 259",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": false,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "",
+          "enabled": false,
+          "port": 50021,
+          "block": 256,
+          "guard": 1536,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 0,
+          "frames": 0,
+          "missing_frames": 0,
+          "callback_gap_max_us": 0
+        },
+        "events": [
+          {
+            "utc_ms": 1791002783990,
+            "code": "driver_unavailable",
+            "detail": "Cannot open the ACX bridge: 259"
+          },
+          {
+            "utc_ms": 1791002783989,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002783774,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "USB auto discovery True",
+      "status": {
+        "version": "2.6.0",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "",
+          "enabled": false,
+          "port": 50021,
+          "block": 256,
+          "guard": 1536,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 651,
+          "frames": 15624,
+          "missing_frames": 0,
+          "callback_gap_max_us": 432
+        },
+        "events": [
+          {
+            "utc_ms": 1791002804016,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002804015,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002803802,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "separate LAN profile without USB restart",
+      "status": {
+        "version": "2.6.0",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 5881,
+          "frames": 141144,
+          "missing_frames": 0,
+          "callback_gap_max_us": 432.9
+        },
+        "events": [
+          {
+            "utc_ms": 1791002804016,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002804015,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002803802,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "malformed requests leave settings unchanged",
+      "passed": true
+    },
+    {
+      "name": "USB profile restart 44100/16",
+      "status": {
+        "version": "2.6.0",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 44100,
+          "bits": 16,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 44100,
+          "bits": 16,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 1469,
+          "frames": 8097,
+          "missing_frames": 0,
+          "callback_gap_max_us": 265
+        },
+        "events": [
+          {
+            "utc_ms": 1791002804878,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002804877,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002804847,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791002804016,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002804015,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002803802,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "USB profile restart 96000/24",
+      "status": {
+        "version": "2.6.0",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 96000,
+          "bits": 24,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 96000,
+          "bits": 24,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 2062,
+          "frames": 24744,
+          "missing_frames": 0,
+          "callback_gap_max_us": 272
+        },
+        "events": [
+          {
+            "utc_ms": 1791002805110,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002805110,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002805081,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791002804878,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002804877,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002804847,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791002804016,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002804015,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002803802,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "USB profile restart 192000/32",
+      "status": {
+        "version": "2.6.0",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 1025,
+          "frames": 24600,
+          "missing_frames": 0,
+          "callback_gap_max_us": 379.7
+        },
+        "events": [
+          {
+            "utc_ms": 1791002805546,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002805545,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002805517,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791002805110,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002805110,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002805081,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791002804878,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002804877,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002804847,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791002804016,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002804015,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002803802,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "USB pause and reconnect",
+      "status": {
+        "version": "2.6.0",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "usb",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 1065,
+          "frames": 25560,
+          "missing_frames": 0,
+          "callback_gap_max_us": 460.9
+        },
+        "events": [
+          {
+            "utc_ms": 1791002806004,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002806002,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002805790,
+            "code": "idle",
+            "detail": "Waiting for a device"
+          },
+          {
+            "utc_ms": 1791002805755,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791002805546,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002805545,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002805517,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791002805110,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002805110,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002805081,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791002804878,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002804877,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002804847,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791002804016,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791002804015,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791002803802,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    }
+  ],
+  "passed": true,
+  "ended_utc": "2026-10-03T04:47:38.852513+00:00"
+}

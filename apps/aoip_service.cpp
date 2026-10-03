@@ -1,5 +1,8 @@
 #include "../src/engine/session_engine.hpp"
 #include "../src/bridge/driver_bridge.hpp"
+#ifdef PIAOIP_ENABLE_USB
+#include "../src/engine/usb_session.hpp"
+#endif
 #include <cwchar>
 namespace piaoip {
 HMODULE g_module = nullptr;
@@ -13,6 +16,8 @@ struct Options {
   piaoip::Config config;
   bool console = false, echo = false, scm = false;
   unsigned seconds = 0, callback_us = 0;
+  bool usb = false;
+  unsigned usb_depth = 4;
   std::string expected_id;
 } options;
 void report_status(DWORD state, DWORD error = NO_ERROR, DWORD service_error = 0) {
@@ -77,7 +82,28 @@ void print_stats(const piaoip::engine::SessionEngine &engine, double seconds) {
               stats.tx_cpu_ns / (seconds * 1e7));
   std::fflush(stdout);
 }
+int run_usb() {
+#ifdef PIAOIP_ENABLE_USB
+  piaoip::engine::UsbSession session;
+  piaoip::bridge::DriverBridge bridge;
+  std::string error;
+  if(!session.open(options.config,options.expected_id,error)) { std::fprintf(stderr,"USB_CONNECT %s\n",error.c_str()); return 2; }
+  PIAOIP_BRIDGE_PROFILE profile{sizeof(profile),PIAOIP_BRIDGE_VERSION,options.config.rate,options.config.bits,8,8,unsigned(options.config.block),options.config.safety,{}};
+  std::memcpy(profile.device_id,session.identity().data(),32);
+  if(!options.echo && !bridge.attach(profile,error)) { std::fprintf(stderr,"USB_BRIDGE %s\n",error.c_str()); return 4; }
+  const auto process=options.echo?echo:+[](void *context,const piaoip::engine::AudioBlock &b) { return static_cast<piaoip::bridge::DriverBridge *>(context)->process(b); };
+  void *context=options.echo?static_cast<void *>(&options.callback_us):static_cast<void *>(&bridge);
+  std::printf("SERVICE_READY id=%s transport=usb backend=digital-loopback mode=%s rate=%u bits=%u inputs=8 outputs=8 depth=%u\n",
+    session.identity().c_str(),options.echo?"digital-echo":"acx",options.config.rate,options.config.bits,options.usb_depth); std::fflush(stdout);
+  const bool ok=session.run(process,context,stop_event,options.seconds,options.usb_depth,error);
+  if(!ok) std::fprintf(stderr,"USB_STREAM %s\n",error.c_str());
+  return ok?0:6;
+#else
+  std::fprintf(stderr,"This service was built without Pi5-AUSB support\n"); return 1;
+#endif
+}
 int run() {
+  if(options.usb) return run_usb();
   const auto end =
       options.seconds ? piaoip::now_ns() + uint64_t(options.seconds) * 1000000000 : UINT64_MAX;
   std::string identity = options.expected_id;
@@ -183,6 +209,13 @@ int wmain(int argc, wchar_t **argv) {
       options.scm = true;
     else if (arg == L"--echo")
       options.echo = true;
+    else if (i + 1 < argc && arg == L"--transport") {
+      const std::wstring transport=argv[++i];
+      if(transport!=L"lan" && transport!=L"usb") return 1;
+      options.usb=transport==L"usb";
+    } else if (i + 1 < argc && arg == L"--usb-depth") {
+      if(!number(argv[++i],options.usb_depth,16) || !options.usb_depth) return 1;
+    }
     else if (arg == L"--no-energy")
       options.config.energy_saving = false;
     else if (i + 1 < argc && arg == L"--peer") {
@@ -201,13 +234,17 @@ int wmain(int argc, wchar_t **argv) {
       char text[40]{};
       WideCharToMultiByte(CP_UTF8, 0, id, -1, text, sizeof(text), nullptr, nullptr);
       options.expected_id = text;
+      wchar_t transport[8]{};
+      GetPrivateProfileStringW(L"Service",L"Transport",L"lan",transport,8,path);
+      if(std::wcscmp(transport,L"lan") && std::wcscmp(transport,L"usb")) return 1;
+      options.usb=std::wcscmp(transport,L"usb")==0;
     } else if (i + 1 < argc &&
                (arg == L"--seconds" || arg == L"--block" || arg == L"--guard" ||
                 arg == L"--frames" || arg == L"--callback-us" || arg == L"--port")) {
       unsigned value = 0;
       const unsigned limit =
           arg == L"--seconds"
-              ? 3600
+              ? 300
               : arg == L"--guard" ? 8192
                                   : arg == L"--callback-us" ? 500 : arg == L"--port" ? 65535 : 256;
       if (!number(argv[++i], value, limit))
@@ -227,7 +264,7 @@ int wmain(int argc, wchar_t **argv) {
     } else {
       std::fprintf(
           stderr,
-          "Usage: PiAoipService --console [--echo] --seconds 1..3600 --peer IPv4 [--block "
+          "Usage: PiAoipService --console [--echo] --seconds 1..300 --peer IPv4 [--transport lan|usb --usb-depth 1..16 --block "
           "16..256 --guard N --frames N --port 0..65535 --callback-us N --config absolute.ini "
           "--no-energy]\nSCM: PiAoipService --service --config absolute.ini\n");
       return 1;

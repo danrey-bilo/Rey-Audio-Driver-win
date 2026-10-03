@@ -23,4 +23,4 @@ The earlier fresh-build block256/guard1024 case ran for 900 s and **FAILED**: la
 
 These are synthetic digital Pi → Windows service echo → Pi measurements. ADC/DAC, a real DAW, installed ACX/WASAPI, supported MSVC driver build and guard1024 fault recovery remain unqualified. Buffers are manual. Multiple Pi devices are deferred. USB will have a separate repository/library; its implementation is on hold. Pi4 was not rebuilt or retested and remains unchanged. **Pre-release.**
 
-[Complete measurements and failed cases](https://github.com/danrey-bilo/Win11-asio-AoIP/blob/v2.5.0/docs/measurements/README.md) · [Release notes](RELEASE-2.5.0.md)
+[Complete measurements and failed cases](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/v2.5.0/docs/measurements/README.md) · [Release notes](RELEASE-2.5.0.md)

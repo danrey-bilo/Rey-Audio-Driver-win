@@ -7,7 +7,7 @@
 Нужны Windows x64, CMake 3.20+, Ninja, LLVM-MinGW x64/UCRT и отдельно полученный [Steinberg ASIO SDK](ASIO-SDK.ru.md). SDK не входит в репозиторий и архив исходников.
 
 ```powershell
-git clone --recurse-submodules https://github.com/danrey-bilo/Win11-asio-AoIP.git
+git clone --recurse-submodules https://github.com/danrey-bilo/Rey-Audio-Driver-win.git
 cd Win11-asio-AoIP
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release `
   -DCMAKE_CXX_COMPILER=C:/Tools/llvm-mingw/bin/x86_64-w64-mingw32-clang++.exe `

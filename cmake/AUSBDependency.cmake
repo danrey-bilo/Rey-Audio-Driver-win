@@ -1,0 +1,8 @@
+set(PI5AUSB_SOURCE_DIR "" CACHE PATH "Optional Pi5-AUSB transport checkout")
+if(PI5AUSB_SOURCE_DIR)
+  set(PI5AUSB_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(PI5AUSB_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+  add_subdirectory("${PI5AUSB_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/ausb")
+else()
+  find_package(Pi5AUSB 0.1.0 CONFIG REQUIRED)
+endif()

@@ -1,0 +1,153 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Rey Audio Driver" Width="1120" Height="820" MinWidth="920" MinHeight="640"
+        WindowStartupLocation="CenterScreen" Background="#F3F6FA" FontFamily="Segoe UI" FontSize="14">
+  <Window.Resources>
+    <SolidColorBrush x:Key="Ink" Color="#16243A"/>
+    <SolidColorBrush x:Key="Muted" Color="#63748B"/>
+    <Style TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource Ink}"/><Setter Property="TextWrapping" Value="Wrap"/></Style>
+    <Style x:Key="Caption" TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource Muted}"/><Setter Property="FontSize" Value="12"/></Style>
+    <Style x:Key="FieldLabel" TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource Muted}"/><Setter Property="FontSize" Value="12"/><Setter Property="Margin" Value="0,0,0,8"/></Style>
+    <Style x:Key="Card" TargetType="Border"><Setter Property="Background" Value="White"/><Setter Property="CornerRadius" Value="14"/><Setter Property="BorderBrush" Value="#E1E7EF"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="22"/><Setter Property="Margin" Value="0,0,0,16"/></Style>
+    <Style TargetType="Button">
+      <Setter Property="Background" Value="#EAF0F6"/><Setter Property="Foreground" Value="#203650"/>
+      <Setter Property="Padding" Value="18,11"/><Setter Property="Cursor" Value="Hand"/><Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="BorderThickness" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="9" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="Opacity" Value="0.85"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="Surface" Property="Opacity" Value="0.4"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="#258C78"/><Setter TargetName="Surface" Property="BorderThickness" Value="2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Background" Value="#137F6C"/><Setter Property="Foreground" Value="White"/></Style>
+    <Style x:Key="Nav" TargetType="RadioButton">
+      <Setter Property="Foreground" Value="#ABB8CA"/><Setter Property="FontSize" Value="15"/><Setter Property="Cursor" Value="Hand"/><Setter Property="Margin" Value="12,3"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RadioButton"><Border x:Name="NavSurface" Padding="16,15" CornerRadius="10" Background="Transparent"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="NavSurface" Property="Background" Value="#26394A"/><Setter Property="Foreground" Value="#8BE5CA"/><Setter Property="FontWeight" Value="SemiBold"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="NavSurface" Property="Opacity" Value="0.8"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="NavSurface" Property="BorderBrush" Value="#72DEBD"/><Setter TargetName="NavSurface" Property="BorderThickness" Value="1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="ComboBoxItem"><Setter Property="Padding" Value="11,9"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBoxItem"><Border x:Name="Option" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border><ControlTemplate.Triggers><Trigger Property="IsHighlighted" Value="True"><Setter TargetName="Option" Property="Background" Value="#E6F2EE"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="Option" Property="Background" Value="#EAF0F6"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style>
+    <Style TargetType="ComboBox">
+      <Setter Property="Height" Value="42"/><Setter Property="FontSize" Value="14"/><Setter Property="Padding" Value="12,6"/><Setter Property="Foreground" Value="#203650"/><Setter Property="Background" Value="#F8FAFD"/><Setter Property="BorderBrush" Value="#CFDAE6"/><Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBox"><Grid>
+        <Border x:Name="ComboFrame" CornerRadius="8" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"/>
+        <ContentPresenter Margin="12,0,34,0" VerticalAlignment="Center" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+        <Path Data="M 0 0 L 4 4 L 8 0" Stroke="#63748B" StrokeThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0" IsHitTestVisible="False"/>
+        <ToggleButton Focusable="False" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"><ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border Background="Transparent"/></ControlTemplate></ToggleButton.Template></ToggleButton>
+        <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade"><Border Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" Margin="0,5,0,0" Background="White" BorderBrush="#CFDAE6" BorderThickness="1" CornerRadius="9" Padding="5"><ScrollViewer MaxHeight="260"><ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/></ScrollViewer></Border></Popup>
+      </Grid><ControlTemplate.Triggers><Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="ComboFrame" Property="BorderBrush" Value="#137F6C"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="ComboFrame" Property="Opacity" Value="0.45"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="TextBox">
+      <Setter Property="Height" Value="42"/><Setter Property="FontSize" Value="14"/><Setter Property="Padding" Value="0"/><Setter Property="Foreground" Value="#203650"/><Setter Property="Background" Value="#F8FAFD"/><Setter Property="BorderBrush" Value="#CFDAE6"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TextBox"><Border x:Name="TextFrame" CornerRadius="8" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1"><ScrollViewer x:Name="PART_ContentHost" Margin="12,0" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="TextFrame" Property="BorderBrush" Value="#137F6C"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="CheckBox">
+      <Setter Property="Foreground" Value="#344A63"/><Setter Property="FontSize" Value="14"/><Setter Property="VerticalContentAlignment" Value="Center"/><Setter Property="Margin" Value="0,8"/><Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="CheckBox"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Border x:Name="CheckFrame" Width="18" Height="18" CornerRadius="4" BorderBrush="#BFCEDB" BorderThickness="1" Background="#F8FAFD" VerticalAlignment="Center"><Path x:Name="Tick" Data="M 3 8 L 6 11 L 12 4" Stroke="White" StrokeThickness="2" Visibility="Collapsed"/></Border><ContentPresenter Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True"/></Grid><ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="Tick" Property="Visibility" Value="Visible"/><Setter TargetName="CheckFrame" Property="Background" Value="#137F6C"/><Setter TargetName="CheckFrame" Property="BorderBrush" Value="#137F6C"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="CheckFrame" Property="BorderThickness" Value="2"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="Expander"><Setter Property="Foreground" Value="#405970"/><Setter Property="FontSize" Value="13"/></Style>
+  </Window.Resources>
+  <Grid x:Name="Root" Background="#F3F6FA">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="224"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <Border Grid.Column="0" Background="#152132">
+      <Grid><Grid.RowDefinitions><RowDefinition Height="142"/><RowDefinition Height="*"/><RowDefinition Height="166"/></Grid.RowDefinitions>
+        <StackPanel Margin="28,30,12,0">
+          <StackPanel Orientation="Horizontal"><TextBlock Text="REY" Foreground="#85E5C6" FontSize="29" FontWeight="Bold"/><Border Background="#29394D" CornerRadius="5" Padding="8,3" Margin="12,9,0,0" VerticalAlignment="Top"><TextBlock Text="AUDIO" Foreground="#C6D2E2" FontSize="10" FontWeight="SemiBold"/></Border></StackPanel>
+          <TextBlock Text="Audio Driver" Foreground="White" FontSize="17" Margin="0,10,0,0"/>
+          <TextBlock Text="Управление подключениями" Foreground="#8C9CB1" FontSize="11" Margin="0,5,0,0"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1">
+          <RadioButton x:Name="NavUsb" GroupName="Pages" IsChecked="True" Style="{StaticResource Nav}" Content="USB" AutomationProperties.Name="USB"/>
+          <RadioButton x:Name="NavLan" GroupName="Pages" Style="{StaticResource Nav}" Content="AoIP / LAN" AutomationProperties.Name="AoIP LAN"/>
+          <RadioButton x:Name="NavDiagnostics" GroupName="Pages" Style="{StaticResource Nav}" Content="Диагностика"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Margin="28,18,24,22">
+          <StackPanel Orientation="Horizontal"><Ellipse Width="7" Height="7" Fill="{Binding ServiceColor}" Margin="0,0,9,0"/><TextBlock Text="{Binding ServiceLabel}" Foreground="#D7E0ED" FontSize="12"/></StackPanel>
+          <TextBlock Text="Работает в фоне. Закрытие окна оставляет управление в трее." Foreground="#8C9CB1" FontSize="11" Margin="0,12,0,0" LineHeight="17"/>
+          <TextBlock Text="2.6.0 · предварительная версия" Foreground="#63758E" FontSize="10" Margin="0,17,0,0"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+    <Grid Grid.Column="1" Margin="32,26,32,22">
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+      <Grid Margin="0,0,0,22"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <StackPanel><TextBlock Text="{Binding PageTitle}" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="{Binding PageSubtitle}" Foreground="{StaticResource Muted}" Margin="0,7,12,0"/></StackPanel>
+        <Button x:Name="ToTray" Grid.Column="1" Content="В трей" VerticalAlignment="Top" Padding="14,9" ToolTip="Свернуть окно. Служба продолжит работу."/>
+      </Grid>
+      <Border Grid.Row="1" Style="{StaticResource Card}" Padding="20,18"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="6"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Border Background="{Binding StatusColor}" CornerRadius="3"/>
+        <StackPanel Grid.Column="1" Margin="16,0,0,0"><TextBlock Text="{Binding StatusTitle}" FontSize="17" FontWeight="SemiBold"/><TextBlock Text="{Binding StatusBody}" Foreground="{StaticResource Muted}" FontSize="12" LineHeight="18" Margin="0,7,0,0"/></StackPanel>
+      </Grid></Border>
+      <Border Grid.Row="2" Background="#E4F2ED" Padding="16,11" CornerRadius="9" Margin="0,0,0,16" Visibility="{Binding MessageVisibility}"><TextBlock Text="{Binding Message}" Foreground="#246553" FontSize="12"/></Border>
+      <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,9,0">
+        <Grid>
+          <StackPanel Visibility="{Binding UsbVisibility}">
+            <Border Style="{StaticResource Card}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <StackPanel><TextBlock Text="{Binding UsbDeviceLabel}" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="{Binding UsbConnectionLabel}" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,8,10,0"/><TextBlock Text="{Binding ShortIdentity, StringFormat=ID · {0}}" Foreground="#8A98AA" FontSize="11" Margin="0,6,0,0"/></StackPanel>
+              <Button x:Name="UseUsb" Grid.Column="1" Content="Использовать USB" Style="{StaticResource Primary}" IsEnabled="{Binding CanUseUsb}" VerticalAlignment="Center"/>
+            </Grid></Border>
+            <Border Style="{StaticResource Card}"><StackPanel>
+              <TextBlock Text="Формат аудио" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
+              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel><TextBlock Text="Частота дискретизации" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="UsbRate" ItemsSource="{Binding Rates}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbRate}" AutomationProperties.Name="USB sample rate"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="Разрядность PCM" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Bits}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbBits}" AutomationProperties.Name="USB PCM bits"/></StackPanel>
+                <StackPanel Grid.Column="4"><TextBlock Text="Очередь USB" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="UsbDepth" ItemsSource="{Binding Depths}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbDepth}" AutomationProperties.Name="USB queue depth"/></StackPanel>
+              </Grid>
+              <TextBlock Text="{Binding QueueHint}" Style="{StaticResource Caption}" Margin="0,13,0,9"/>
+              <CheckBox Content="Подключать автоматически при появлении USB-устройства" IsChecked="{Binding UsbAutomatic}"/>
+            </StackPanel></Border>
+            <Border Style="{StaticResource Card}" Padding="20,16"><Expander Header="Дополнительные настройки аудио в Windows"><StackPanel Margin="0,18,0,0">
+              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel><TextBlock Text="Период аудиоустройства" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbBlock}"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="Дополнительный запас, кадров" Style="{StaticResource FieldLabel}"/><TextBox Text="{Binding UsbGuard, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+              </Grid><TextBlock Text="Ручные значения. Настройки USB не изменяют профиль LAN." Style="{StaticResource Caption}" Margin="0,13,0,0"/>
+            </StackPanel></Expander></Border>
+            <Grid Margin="0,1,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Применение перезапускает только активную USB-сессию." Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,20,0"/><Button x:Name="SaveUsb" Grid.Column="1" Content="Применить USB" Style="{StaticResource Primary}" IsEnabled="{Binding CanApply}"/></Grid>
+            <TextBlock Text="LAN выбирается по умолчанию после его подключения. Выбрать USB можно кнопкой выше." Style="{StaticResource Caption}" Margin="0,0,0,14"/>
+          </StackPanel>
+          <StackPanel Visibility="{Binding LanVisibility}">
+            <Border Style="{StaticResource Card}"><StackPanel>
+              <TextBlock Text="Устройство в локальной сети" FontSize="18" FontWeight="SemiBold"/>
+              <TextBlock Text="Подключите Pi и компьютер к Ethernet. Укажите адрес или найдите устройство." Style="{StaticResource Caption}" Margin="0,8,0,18"/>
+              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBox x:Name="LanPeer" Text="{Binding LanPeer, UpdateSourceTrigger=PropertyChanged}" ToolTip="IPv4-адрес Pi, например 192.168.1.2" AutomationProperties.Name="Pi IPv4 address"/>
+                <Button x:Name="ScanLan" Grid.Column="2" Content="Найти в сети" IsEnabled="{Binding CanApply}"/>
+                <Button x:Name="ConnectLan" Grid.Column="4" Content="{Binding LanActionLabel}" Style="{StaticResource Primary}" IsEnabled="{Binding CanApply}"/>
+              </Grid>
+              <TextBlock Text="{Binding LanFormatLabel}" Foreground="#137F6C" FontSize="12" Margin="0,15,0,0"/>
+            </StackPanel></Border>
+            <Border Style="{StaticResource Card}"><StackPanel>
+              <TextBlock Text="Задержка и стабильность" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
+              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel><TextBlock Text="Блок обработки" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding LanBlock}"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="Запас приёма, кадров" Style="{StaticResource FieldLabel}"/><TextBox Text="{Binding LanGuard, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="LAN guard frames"/></StackPanel>
+              </Grid>
+              <TextBlock Text="Меньший запас снижает задержку, но хуже переносит задержки Windows и сети. Значение выбирается вручную." Style="{StaticResource Caption}" Margin="0,14,0,0" LineHeight="18"/>
+              <CheckBox Content="Экономить трафик во время тишины" IsChecked="{Binding LanEnergy}" Margin="0,15,0,5"/>
+            </StackPanel></Border>
+            <Border Style="{StaticResource Card}" Padding="20,16"><Expander Header="Дополнительные настройки сети"><StackPanel Margin="0,18,0,0"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel><TextBlock Text="Пакет захвата, кадров · 0 = по профилю" Style="{StaticResource FieldLabel}"/><TextBox Text="{Binding LanFrames, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="Локальный UDP-порт" Style="{StaticResource FieldLabel}"/><TextBox Text="{Binding LanPort, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>
+              </Grid><TextBlock Text="Частота и разрядность задаются на Pi. USB использует отдельный профиль." Style="{StaticResource Caption}" Margin="0,13,0,0"/>
+            </StackPanel></Expander></Border>
+            <Button x:Name="SaveLan" Content="Применить LAN" Style="{StaticResource Primary}" HorizontalAlignment="Right" IsEnabled="{Binding CanApply}" Margin="0,0,0,14"/>
+          </StackPanel>
+          <StackPanel Visibility="{Binding DiagnosticsVisibility}">
+            <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Состояние системы" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,17"/>
+              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel><TextBlock Text="Активный транспорт" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding RouteLabel}" FontSize="18" FontWeight="SemiBold"/></StackPanel>
+                <StackPanel Grid.Column="1"><TextBlock Text="Аудиодрайвер Windows" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding DriverLabel}" FontSize="18" FontWeight="SemiBold"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="Выбор подключения" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding PreferredLabel}" FontSize="18" FontWeight="SemiBold"/></StackPanel>
+              </Grid><TextBlock Text="{Binding BackendLabel, StringFormat=Источник · {0}}" Style="{StaticResource Caption}" Margin="0,16,0,0"/>
+            </StackPanel></Border>
+            <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Текущая сессия" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
+              <UniformGrid Columns="4">
+                <StackPanel><TextBlock Text="Обработано блоков" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding CallbackLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>
+                <StackPanel><TextBlock Text="Кадров PCM" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding FrameLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>
+                <StackPanel><TextBlock Text="Пропущено кадров" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding MissingLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>
+                <StackPanel><TextBlock Text="Макс. пауза callback" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding GapLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>
+              </UniformGrid><TextBlock Text="Пауза callback не является RTT или задержкой ADC/DAC. Счётчики относятся к текущему запуску сессии." Style="{StaticResource Caption}" Margin="0,17,0,0" LineHeight="18"/>
+            </StackPanel></Border>
+            <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Последние события" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,14"/>
+              <ItemsControl ItemsSource="{Binding Events}"><ItemsControl.ItemTemplate><DataTemplate><Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="72"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Time}" Foreground="#8695A8" FontSize="12"/><StackPanel Grid.Column="1"><TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold"/><TextBlock Text="{Binding Detail}" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,3,0,0"/></StackPanel></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+            </StackPanel></Border>
+            <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><Button x:Name="AutoRoute" Content="LAN по умолчанию" IsEnabled="{Binding CanApply}" HorizontalAlignment="Left"/><Button x:Name="CopyReport" Grid.Column="1" Content="Копировать диагностику"/></Grid>
+          </StackPanel>
+        </Grid>
+      </ScrollViewer>
+    </Grid>
+  </Grid>
+</Window>

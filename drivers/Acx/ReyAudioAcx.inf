@@ -3,15 +3,15 @@ Signature="$WINDOWS NT$"
 Class=MEDIA
 ClassGuid={4d36e96c-e325-11ce-bfc1-08002be10318}
 Provider=%Provider%
-DriverVer=10/03/2026,2.5.0.0
-CatalogFile=PiAoipAcx.cat
+DriverVer=10/03/2026,2.6.0.0
+CatalogFile=ReyAudioAcx.cat
 PnpLockDown=1
 
 [Manufacturer]
 %Provider%=PiAoip,NTamd64.10.0...22621
 
 [PiAoip.NTamd64.10.0...22621]
-%Device%=PiAoipInstall,ROOT\PiAoipAcx
+%Device%=PiAoipInstall,ROOT\ReyAudioAcx
 
 [DestinationDirs]
 DefaultDestDir=13
@@ -20,20 +20,20 @@ DefaultDestDir=13
 CopyFiles=DriverFiles
 
 [DriverFiles]
-PiAoipAcx.sys
+ReyAudioAcx.sys
 
 [PiAoipInstall.NT.Services]
-AddService=PiAoipAcx,0x00000002,DriverService
+AddService=ReyAudioAcx,0x00000002,DriverService
 
 [DriverService]
 DisplayName=%Device%
 ServiceType=1
 StartType=3
 ErrorControl=1
-ServiceBinary=%13%\PiAoipAcx.sys
+ServiceBinary=%13%\ReyAudioAcx.sys
 
 [PiAoipInstall.NT.Wdf]
-KmdfService=PiAoipAcx,WdfSection
+KmdfService=ReyAudioAcx,WdfSection
 
 [WdfSection]
 KmdfLibraryVersion=1.31
@@ -42,9 +42,9 @@ KmdfLibraryVersion=1.31
 1=%Disk%,,,""
 
 [SourceDisksFiles]
-PiAoipAcx.sys=1
+ReyAudioAcx.sys=1
 
 [Strings]
-Provider="PiAoIP"
-Device="Pi AoIP network audio bridge"
-Disk="PiAoIP ACX development driver"
+Provider="Rey Audio"
+Device="Rey Audio Driver"
+Disk="Rey Audio Driver development package"

@@ -6,7 +6,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D1EB9D73-312A-4EA0-AFA7-54197D6717A3}</ProjectGuid>
-    <RootNamespace>PiAoipAcx</RootNamespace>
+    <RootNamespace>ReyAudioAcx</RootNamespace>
     <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
     <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
     <ACX_VERSION_MAJOR>1</ACX_VERSION_MAJOR><ACX_VERSION_MINOR>1</ACX_VERSION_MINOR>
@@ -26,7 +26,7 @@
   <PropertyGroup>
     <OutDir>$(ProjectDir)..\..\build\acx-msvc\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)obj\</IntDir>
-    <TargetName>PiAoipAcx</TargetName>
+    <TargetName>ReyAudioAcx</TargetName>
     <SignMode>Off</SignMode>
   </PropertyGroup>
   <ItemDefinitionGroup>
@@ -49,7 +49,7 @@
     <ClCompile Include="device.c" /><ClCompile Include="circuit.c" />
     <ClCompile Include="control.c" /><ClCompile Include="stream.c" />
     <ClInclude Include="driver.h" /><ClInclude Include="..\..\include\piaoip\bridge.h" />
-    <Inf Include="PiAoipAcx.inf" />
+    <Inf Include="ReyAudioAcx.inf" />
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
