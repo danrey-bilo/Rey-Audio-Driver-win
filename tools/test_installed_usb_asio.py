@@ -1,7 +1,7 @@
-"""Check 18 PCM profiles through the installed ASIO COM driver and SCM service.
+"""Check selected PCM profiles through installed ASIO COM and the SCM service.
 
 Uses one real Pi digital-loopback backend. Each native host runs for five
-seconds; the whole matrix is bounded to five minutes. Restores the USB profile
+seconds; the whole matrix is bounded to three minutes. Restores the USB profile
 and never resets the user's mixer, ASIO preferences or installed service.
 Close the DAW before running. This is not an Ableton or physical ADC/DAC test.
 """
@@ -22,7 +22,10 @@ def main():
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--block', type=int, choices=(16, 32, 64, 128, 256))
     parser.add_argument('--lead', type=int, choices=range(1, 5), default=3)
-    parser.add_argument('--depth', type=int, choices=range(1, 17), default=3)
+    parser.add_argument('--depth', type=int, choices=range(1, 17), default=4)
+    parser.add_argument('--rates', type=int, nargs='+',
+                        choices=(44100, 48000, 88200, 96000, 176400, 192000),
+                        default=(44100, 48000, 88200, 96000, 176400, 192000))
     args = parser.parse_args()
     binary, output = args.bin.resolve(), args.out.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -48,7 +51,7 @@ def main():
     def ready(rate, bits, restoring=False):
         end = time.monotonic() + 10
         if not restoring:
-            end = min(end, start + 270)
+            end = min(end, start + 145)
         while time.monotonic() < end:
             status = request('STATUS')
             if (status['identity'] == identity and status['state'] == 'streaming' and
@@ -73,9 +76,9 @@ def main():
         for name, filename in (('service', 'ReyAudioService.exe'), ('driver', 'ReyAudioAsio.dll'),
                                ('probe', 'ReyAsioProbe.exe')):
             report[name + '_sha256'] = hashlib.sha256((binary / filename).read_bytes()).hexdigest()
-        for rate in (44100, 48000, 88200, 96000, 176400, 192000):
+        for rate in dict.fromkeys(args.rates):
             for bits in (16, 24, 32):
-                if time.monotonic() - start > 265:
+                if time.monotonic() - start > 145:
                     raise RuntimeError('Finite matrix deadline exceeded')
                 block = args.block or (16 if rate <= 48000 else 32 if rate <= 96000 else 64)
                 changed = True
@@ -87,7 +90,7 @@ def main():
                     '--seconds', '5', '--block', str(block)], stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT, text=True, env=environment,
                     creationflags=subprocess.CREATE_NO_WINDOW)
-                text, _ = host.communicate(timeout=max(.1, min(15, start + 270 - time.monotonic())))
+                text, _ = host.communicate(timeout=max(.1, min(15, start + 165 - time.monotonic())))
                 after = request('STATUS')
                 metrics = {}
                 for line in text.splitlines():
@@ -108,7 +111,7 @@ def main():
                 (output / f'{rate}-{bits}-block{block}.txt').write_text(text, encoding='utf-8')
                 print('INSTALLED_ASIO_CASE', rate, bits, block, case['okay'], metrics, flush=True)
                 save()
-        report['okay'] = len(report['cases']) == 18 and all(case['okay'] for case in report['cases'])
+        report['okay'] = len(report['cases']) == len(set(args.rates)) * 3 and all(case['okay'] for case in report['cases'])
     except (OSError, RuntimeError, subprocess.TimeoutExpired) as error:
         report['okay'] = False
         report['error'] = str(error)

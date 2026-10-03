@@ -38,6 +38,29 @@ namespace ReyAudio {
         public int AsioLead { get; set; }
         public string AsioStateLabel { get; private set; }
         public string AsioCountersLabel { get; private set; }
+        private int liveAsioBlock, liveAsioLead, activeUsbDepth;
+        private bool asioRunning;
+        private bool asioDeadlineErrors;
+        public string AsioHealthColor { get { return asioDeadlineErrors ? "#B87512" : "#137F6C"; } }
+        public string AsioLatencyLabel {
+            get {
+                if (!asioRunning || ActiveRate <= 0 || liveAsioBlock <= 0 || activeUsbDepth <= 0)
+                    return "Расчёт задержки появится после запуска ASIO в приложении.";
+                double input = (liveAsioBlock + activeUsbDepth * ((ActiveRate + 7999) / 8000)) * 1000.0 / ActiveRate;
+                double output = ((liveAsioLead - 1) * liveAsioBlock + 1) * 1000.0 / ActiveRate;
+                return "ASIO сообщает: вход " + input.ToString("0.00") + " мс · выход " + output.ToString("0.00") +
+                    " мс · сумма " + (input + output).ToString("0.00") + " мс. Это расчёт буферов.";
+            }
+        }
+        public string AsioApplyHint {
+            get {
+                if (asioRunning && (liveAsioBlock != AsioBlock || liveAsioLead != AsioLead))
+                    return "Сейчас работает " + liveAsioBlock + " кадров / запас " + liveAsioLead +
+                        ". Выбрано " + AsioBlock + " / " + AsioLead + ". Сохраните ASIO и переключите No Device → Rey Audio USB ASIO в Ableton.";
+                return "Сохранение действует при следующем открытии ASIO. В Ableton переключите No Device → Rey Audio USB ASIO.";
+            }
+        }
+        public Visibility WindowsAudioSettingsVisibility { get { return AsioOnly ? Visibility.Collapsed : Visibility.Visible; } }
         public bool AsioOnly;
         public bool CanSaveAsio { get { return !Busy; } }
         public string Page = "mixer";
@@ -73,7 +96,7 @@ namespace ReyAudio {
             AsioLeads = new[] { new Choice(1, "1 блок"), new Choice(2, "2 блока"), new Choice(3, "3 блока"), new Choice(4, "4 блока") };
             var asio = AsioPreferences.Load(); AsioBlock = asio.Block; AsioLead = asio.Lead;
             AsioStateLabel = "Ожидание USB-сессии"; AsioCountersLabel = "Счётчики доступны при работающем ASIO-host";
-            UsbRate = 192000; UsbBits = 32; UsbDepth = 3; UsbBlock = 64; UsbGuard = "0"; UsbAutomatic = true;
+            UsbRate = 192000; UsbBits = 32; UsbDepth = 4; UsbBlock = 64; UsbGuard = "0"; UsbAutomatic = true;
             Message = "";
         }
         public Visibility UsbVisibility { get { return Page == "usb" ? Visibility.Visible : Visibility.Collapsed; } }
@@ -138,11 +161,16 @@ namespace ReyAudio {
             AsioOnly = Bool(data, "asio_only");
             if (data.ContainsKey("asio")) {
                 var asio = (Dictionary<string, object>)data["asio"];
+                asioRunning = Bool(asio, "running"); liveAsioBlock = Int(asio, "block"); liveAsioLead = Int(asio, "lead_blocks");
+                asioDeadlineErrors = false;
+                foreach (var counter in new[] { "capture_dropped", "render_late_frames", "render_missing_frames", "render_overflow" })
+                    if (asio.ContainsKey(counter) && Convert.ToUInt64(asio[counter]) != 0) asioDeadlineErrors = true;
                 AsioStateLabel = Bool(asio, "running") ? "ASIO работает · " + Int(asio, "block") + " кадров · запас " + Int(asio, "lead_blocks") + " блока" : Bool(asio, "ready") ? "USB-ASIO готов · откройте драйвер в Ableton" : "Ожидание активной USB-карты";
                 AsioCountersLabel = Bool(asio, "connected") ? "Пропуски входа: " + String(asio, "capture_dropped") + " · опоздания выхода: " + String(asio, "render_late_frames") + " · пропуски выхода: " + String(asio, "render_missing_frames") + " · переполнение: " + String(asio, "render_overflow") : "Счётчики появятся после запуска ASIO в приложении";
             }
             Identity = String(data, "identity"); Backend = String(data, "backend");
             var usb = (Dictionary<string, object>)data["usb"];
+            activeUsbDepth = Int(usb, "depth");
             UsbPresent = Int(usb, "present") == 1;
             if (Identity.Length == 0) Identity = String(usb, "identity");
             if (loadFields) {

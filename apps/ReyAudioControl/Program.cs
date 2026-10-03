@@ -18,8 +18,8 @@ using Forms = System.Windows.Forms;
 [assembly: AssemblyTitle("Rey Audio Driver")]
 [assembly: AssemblyProduct("Rey Audio Driver")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.0.0")]
-[assembly: AssemblyFileVersion("2.8.0.0")]
+[assembly: AssemblyVersion("2.8.1.0")]
+[assembly: AssemblyFileVersion("2.8.1.0")]
 namespace ReyAudio {
     internal sealed class Panel : IDisposable {
         private readonly Application app;
@@ -63,6 +63,8 @@ namespace ReyAudio {
                 view.Notify(); return Task.FromResult(0);
             });
             ((ComboBox)window.FindName("UsbDepth")).SelectionChanged += (s, e) => view.Notify();
+            ((ComboBox)window.FindName("AsioBlock")).SelectionChanged += (s, e) => view.Notify();
+            ((ComboBox)window.FindName("AsioLead")).SelectionChanged += (s, e) => view.Notify();
             window.Closing += (s, e) => { if (!exiting) { e.Cancel = true; window.Hide(); } };
             timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
             timer.Tick += async (s, e) => {
@@ -143,7 +145,7 @@ namespace ReyAudio {
             Directory.CreateDirectory(directory);
             await Refresh();
             var root = (FrameworkElement)window.Content;
-            double mixerBottom = 0;
+            double mixerBottom = 0, asioBottom = 0;
             foreach (var page in new[] { "mixer", "usb", "diagnostics" }) {
                 Navigate(page);
                 ((RadioButton)window.FindName(page == "mixer" ? "NavMixer" : page == "usb" ? "NavUsb" : "NavDiagnostics")).IsChecked = true;
@@ -152,6 +154,10 @@ namespace ReyAudio {
                 if (page == "mixer") {
                     var strips = (FrameworkElement)window.FindName("MixerStrips");
                     mixerBottom = strips.TransformToAncestor(root).TransformBounds(new Rect(0, 0, strips.ActualWidth, strips.ActualHeight)).Bottom;
+                }
+                if (page == "usb") {
+                    var save = (FrameworkElement)window.FindName("SaveAsio");
+                    asioBottom = save.TransformToAncestor(root).TransformBounds(new Rect(0, 0, save.ActualWidth, save.ActualHeight)).Bottom;
                 }
                 var bitmap = new RenderTargetBitmap(1120, 800, 96, 96, PixelFormats.Pbgra32); bitmap.Render(root);
                 var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap));
@@ -166,6 +172,8 @@ namespace ReyAudio {
                 lan_navigation_absent = window.FindName("NavLan") == null,
                 card_selector_absent = window.FindName("AudioCardSelector") == null,
                 all_channel_controls_visible = mixerBottom <= root.ActualHeight - 22,
+                asio_controls_visible = asioBottom <= root.ActualHeight - 22,
+                asio_apply_hint = view.AsioApplyHint, asio_latency_label = view.AsioLatencyLabel,
                 width = root.ActualWidth, height = root.ActualHeight
             }));
         }

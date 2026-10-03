@@ -1,0 +1,1377 @@
+{
+  "pid": 34844,
+  "duration_s": 5.014999999999418,
+  "read_only": true,
+  "threads": [
+    {
+      "tid": 47400,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 70.10219341974891
+    },
+    {
+      "tid": 14068,
+      "name": "Rey USB ASIO callbacks",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [
+        260
+      ],
+      "cpu_percent_one_core": 29.910269192426203
+    },
+    {
+      "tid": 24572,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 25.54835493519738
+    },
+    {
+      "tid": 41412,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 20.563310069793015
+    },
+    {
+      "tid": 41508,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 5.919740777667686
+    },
+    {
+      "tid": 9492,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 4.6734795613165945
+    },
+    {
+      "tid": 49104,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 4.6734795613165945
+    },
+    {
+      "tid": 48924,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 4.6734795613165945
+    },
+    {
+      "tid": 44344,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 4.6734795613165945
+    },
+    {
+      "tid": 52028,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 4.6734795613165945
+    },
+    {
+      "tid": 5680,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 4.050348953141048
+    },
+    {
+      "tid": 53428,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 4.050348953141048
+    },
+    {
+      "tid": 50328,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 4.050348953141048
+    },
+    {
+      "tid": 48500,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 3.7387836490532753
+    },
+    {
+      "tid": 36764,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 3.4272183449655027
+    },
+    {
+      "tid": 12356,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 3.4272183449655027
+    },
+    {
+      "tid": 52140,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 3.4272183449655027
+    },
+    {
+      "tid": 30248,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 3.4272183449655027
+    },
+    {
+      "tid": 43108,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 3.1156530408777297
+    },
+    {
+      "tid": 37912,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 3.1156530408777297
+    },
+    {
+      "tid": 9012,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 3.1156530408777297
+    },
+    {
+      "tid": 31748,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 3.1156530408777297
+    },
+    {
+      "tid": 46636,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 3.1156530408777297
+    },
+    {
+      "tid": 38316,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 2.8040877367899566
+    },
+    {
+      "tid": 43388,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 2.4925224327021835
+    },
+    {
+      "tid": 21732,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 2.180957128614411
+    },
+    {
+      "tid": 53164,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 2.180957128614411
+    },
+    {
+      "tid": 48264,
+      "name": "MainThread",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 1.8693918245266377
+    },
+    {
+      "tid": 38068,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 1.8693918245266377
+    },
+    {
+      "tid": 44144,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 1.8693918245266377
+    },
+    {
+      "tid": 37964,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 1.8693918245266377
+    },
+    {
+      "tid": 3836,
+      "name": "AudioCalc",
+      "priority": 18,
+      "group": 0,
+      "affinity_mask": "0xffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 1.5578265204388648
+    },
+    {
+      "tid": 38484,
+      "name": "DWM-Sync",
+      "priority": 15,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.9346959122633188
+    },
+    {
+      "tid": 48648,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.31156530408777294
+    },
+    {
+      "tid": 53936,
+      "name": "",
+      "priority": 2,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.31156530408777294
+    },
+    {
+      "tid": 53280,
+      "name": "NetIoThread",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 33976,
+      "name": "MojoThread",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 52964,
+      "name": "FileThread",
+      "priority": 2,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 20684,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 34028,
+      "name": "IPC Channel Reader",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 51804,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 39380,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 46796,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 52692,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 36188,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 50352,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 47004,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 29828,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 34652,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 48740,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 48568,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 33388,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 52860,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 1504,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 53768,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 26128,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 39164,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 41432,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 42332,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 35036,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 47772,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 11816,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 42952,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 15192,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 38032,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 52508,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 49464,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 45408,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 46924,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 50876,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 52720,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 45852,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 29900,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 53840,
+      "name": "browser",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 47332,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 42672,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 49796,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 12424,
+      "name": "",
+      "priority": 15,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 49132,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 22732,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 34176,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 49460,
+      "name": "",
+      "priority": 2,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 5292,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 45784,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 50872,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 45096,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 38760,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 48844,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 51652,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 36024,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 51532,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 29124,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 40088,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 51268,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 43584,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 52436,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 44456,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 36680,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 45320,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 52044,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 40836,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 17648,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 50980,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 8832,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 44124,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 53128,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 10088,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 50440,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 52744,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 49704,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 33392,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 46992,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 21908,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 5584,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 27168,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 44480,
+      "name": "sentry-http",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 45692,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 46044,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 20636,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 49228,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 48244,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 54088,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 45616,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 19708,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 20268,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 42972,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 30104,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 38332,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 52596,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 51992,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 6180,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 40224,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 43312,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 53780,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 48960,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 35172,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 5156,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 34520,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 30800,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 48628,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 44704,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 8824,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 41528,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 50504,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 51312,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 7456,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 36532,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 16996,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 48828,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 3632,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 44444,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    },
+    {
+      "tid": 29212,
+      "name": "",
+      "priority": 0,
+      "group": 0,
+      "affinity_mask": "0xffffffff",
+      "selected_cpu_sets": [],
+      "cpu_percent_one_core": 0.0
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+ASIO_PROFILE rate=192000 bits=32 channels=8x8 block=64 input_latency_frames=160 output_latency_frames=193
+ASIO_RESULT seconds=30.014 callbacks=89974 frames=5758336 pulses=1498 received=1497 missing=0 invalid=0 duplicates=0 rtt_p50_us=1625.000 rtt_p95_us=1687.100 rtt_p99_us=1806.800 rtt_max_us=1900.800 capture_dropped=0 render_late_frames=0 render_missing_frames=0 render_overflow=0 callback_gap_max_us=803.600 processing_max_us=21.300 capture_age_max_us=809.800 service_gap_max_us=553.100 positions_backwards=0 mmcss_failures=0 okay=1 physical_audio=0 ableton_host=0

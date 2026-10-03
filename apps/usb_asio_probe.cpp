@@ -11,12 +11,13 @@
 
 namespace {
 struct Pulse { uint64_t sent = 0, rtt = 0; bool received = false; };
-std::array<Pulse, 16384> pulses{};
+std::vector<Pulse> pulses;
 std::array<ASIOBufferInfo, 16> buffers{};
 IASIO *driver = nullptr;
 unsigned block = 64, rate = 192000, bits = 32, pulse_id = 0;
 uint64_t callbacks = 0, frames = 0, next_pulse = 0, invalid = 0, duplicates = 0, position_backwards = 0;
-uint64_t first_ns = 0, previous_position = 0;
+uint64_t first_ns = 0, last_ns = 0, previous_position = 0;
+bool dense_markers = false;
 int32_t sample(const uint8_t *data) {
   uint32_t value = 0; for (unsigned byte = 0; byte < bits / 8; ++byte) value |= uint32_t(data[byte]) << (byte * 8);
   if (bits < 32 && (value & (uint32_t(1) << (bits - 1)))) value |= ~((uint32_t(1) << bits) - 1);
@@ -29,6 +30,7 @@ int32_t marker(unsigned id, unsigned ch) { return int32_t(id + ch * 997) * (ch &
 void process(long half, ASIOBool) {
   const auto now = rey::now_ns();
   if (!first_ns) first_ns = now;
+  last_ns = now;
   ASIOSamples position{}; ASIOTimeStamp stamp{};
   if (driver->getSamplePosition(&position, &stamp) == ASE_OK) {
     const uint64_t p = (uint64_t(position.hi) << 32) | position.lo;
@@ -54,7 +56,7 @@ void process(long half, ASIOBool) {
     ++pulse_id; pulses[pulse_id].sent = now;
     for (unsigned ch = 0; ch < 8; ++ch)
       store(static_cast<uint8_t *>(buffers[ch + 8].buffers[half]), marker(pulse_id, ch));
-    next_pulse = frames + rate / 50;
+    next_pulse = frames + (dense_markers ? block : rate / 50);
   }
   frames += block; ++callbacks;
 }
@@ -79,6 +81,7 @@ int wmain(int argc, wchar_t **argv) {
   for (int i = 1; i < argc; ++i) {
     const std::wstring arg = argv[i];
     if (arg == L"--registered") { registered = true; continue; }
+    if (arg == L"--dense-markers") { dense_markers = true; continue; }
     if (i + 1 >= argc) return 1;
     if (arg == L"--dll") dll = argv[++i];
     else if (arg == L"--seconds") seconds = unsigned(_wtoi(argv[++i]));
@@ -86,7 +89,7 @@ int wmain(int argc, wchar_t **argv) {
     else if (arg == L"--rate") requested_rate = unsigned(_wtoi(argv[++i]));
     else return 1;
   }
-  if ((dll.empty() == !registered) || !seconds || seconds > 300 || !rey::asio::valid_block(block)) return 1;
+  if ((dll.empty() == !registered) || !seconds || seconds > 175 || !rey::asio::valid_block(block)) return 1;
   if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED))) return 2;
   HMODULE library = nullptr;
   HRESULT created = E_FAIL;
@@ -117,6 +120,15 @@ int wmain(int argc, wchar_t **argv) {
     else if (channel.type == ASIOSTInt24LSB) bits = 24;
     else if (channel.type == ASIOSTInt32LSB) bits = 32;
     else return 10;
+    const auto pulse_capacity = dense_markers ?
+        (uint64_t(rate) * (seconds + 1) + block - 1) / block + 32 : 16384;
+    if (pulse_capacity + 7 * 997 >= (uint64_t(1) << (bits - 1))) {
+      std::printf("ASIO_MARKER_ERROR dense markers exceed the PCM word range\n");
+      return 10;
+    }
+    // Allocate and touch every marker record before streaming. The callback
+    // never allocates; dense mode measures a marker in every ASIO block.
+    pulses.resize(size_t(pulse_capacity));
     for (unsigned i = 0; i < buffers.size(); ++i) {
       buffers[i].isInput = i < 8 ? ASIOTrue : ASIOFalse; buffers[i].channelNum = long(i % 8);
     }
@@ -151,6 +163,7 @@ int wmain(int argc, wchar_t **argv) {
       "rtt_p50_us=%.3f rtt_p95_us=%.3f rtt_p99_us=%.3f rtt_max_us=%.3f capture_dropped=%llu render_late_frames=%llu "
       "render_missing_frames=%llu render_overflow=%llu callback_gap_max_us=%.3f processing_max_us=%.3f "
       "capture_age_max_us=%.3f service_gap_max_us=%.3f positions_backwards=%llu mmcss_failures=%llu "
+      "cadence_seconds=%.9f cadence_frames=%llu dense_markers=%u "
       "okay=%u physical_audio=0 ableton_host=0\n", (ended - begin) / 1e9,
       (unsigned long long)callbacks, (unsigned long long)frames, pulse_id, rtts.size(), missing,
       (unsigned long long)invalid, (unsigned long long)duplicates,
@@ -159,7 +172,9 @@ int wmain(int argc, wchar_t **argv) {
       (unsigned long long)stats.render_missing_frames, (unsigned long long)stats.render_overflow,
       stats.callback_gap_max_ns / 1000.0, stats.callback_processing_max_ns / 1000.0,
       stats.capture_to_callback_max_ns / 1000.0, stats.service_gap_max_ns / 1000.0,
-      (unsigned long long)position_backwards, (unsigned long long)stats.mmcss_failures, unsigned(okay));
+      (unsigned long long)position_backwards, (unsigned long long)stats.mmcss_failures,
+      (last_ns - first_ns) / 1e9, (unsigned long long)((callbacks ? callbacks - 1 : 0) * block),
+      unsigned(dense_markers), unsigned(okay));
     driver->disposeBuffers(); return okay ? 0 : 15;
   }();
   driver->Release(); driver = nullptr; FreeLibrary(library); CoUninitialize(); return result;

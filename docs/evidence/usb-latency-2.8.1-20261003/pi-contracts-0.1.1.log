@@ -1,0 +1,115 @@
+Start testing: Oct 03 22:58 CEST
+----------------------------------------------------------
+1/7 Testing: usb_profiles
+1/7 Test: usb_profiles
+Command: "/home/admin/pi5-ausb-20261003/build/ausb_contract_tests" "profiles"
+Directory: /home/admin/pi5-ausb-20261003/build
+"usb_profiles" start time: Oct 03 22:58 CEST
+Output:
+----------------------------------------------------------
+profiles PASS
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"usb_profiles" end time: Oct 03 22:58 CEST
+"usb_profiles" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/7 Testing: usb_fractional_cadence
+2/7 Test: usb_fractional_cadence
+Command: "/home/admin/pi5-ausb-20261003/build/ausb_contract_tests" "cadence"
+Directory: /home/admin/pi5-ausb-20261003/build
+"usb_fractional_cadence" start time: Oct 03 22:58 CEST
+Output:
+----------------------------------------------------------
+cadence PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"usb_fractional_cadence" end time: Oct 03 22:58 CEST
+"usb_fractional_cadence" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/7 Testing: usb_packet_validation
+3/7 Test: usb_packet_validation
+Command: "/home/admin/pi5-ausb-20261003/build/ausb_contract_tests" "packets"
+Directory: /home/admin/pi5-ausb-20261003/build
+"usb_packet_validation" start time: Oct 03 22:58 CEST
+Output:
+----------------------------------------------------------
+packets PASS
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"usb_packet_validation" end time: Oct 03 22:58 CEST
+"usb_packet_validation" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/7 Testing: usb_pcm_exact
+4/7 Test: usb_pcm_exact
+Command: "/home/admin/pi5-ausb-20261003/build/ausb_contract_tests" "pcm"
+Directory: /home/admin/pi5-ausb-20261003/build
+"usb_pcm_exact" start time: Oct 03 22:58 CEST
+Output:
+----------------------------------------------------------
+pcm PASS
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"usb_pcm_exact" end time: Oct 03 22:58 CEST
+"usb_pcm_exact" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/7 Testing: usb_route_selection
+5/7 Test: usb_route_selection
+Command: "/home/admin/pi5-ausb-20261003/build/ausb_contract_tests" "routes"
+Directory: /home/admin/pi5-ausb-20261003/build
+"usb_route_selection" start time: Oct 03 22:58 CEST
+Output:
+----------------------------------------------------------
+routes PASS
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"usb_route_selection" end time: Oct 03 22:58 CEST
+"usb_route_selection" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/7 Testing: usb_control_validation
+6/7 Test: usb_control_validation
+Command: "/home/admin/pi5-ausb-20261003/build/ausb_contract_tests" "control"
+Directory: /home/admin/pi5-ausb-20261003/build
+"usb_control_validation" start time: Oct 03 22:58 CEST
+Output:
+----------------------------------------------------------
+control PASS
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"usb_control_validation" end time: Oct 03 22:58 CEST
+"usb_control_validation" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/7 Testing: usb_descriptor_contract
+7/7 Test: usb_descriptor_contract
+Command: "/home/admin/pi5-ausb-20261003/build/ausb_contract_tests" "descriptors"
+Directory: /home/admin/pi5-ausb-20261003/build
+"usb_descriptor_contract" start time: Oct 03 22:58 CEST
+Output:
+----------------------------------------------------------
+descriptors PASS
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"usb_descriptor_contract" end time: Oct 03 22:58 CEST
+"usb_descriptor_contract" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 03 22:58 CEST

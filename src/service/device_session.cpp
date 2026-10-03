@@ -172,7 +172,7 @@ bool DeviceSession::update(const Settings &next, std::string &error) {
 std::string DeviceSession::status_locked(const std::string &error) const {
   const auto &s = settings_;
   std::ostringstream out;
-  out << "{\"version\":\"2.8.0\",\"ok\":" << (error.empty() ? "true" : "false")
+  out << "{\"version\":\"2.8.1\",\"ok\":" << (error.empty() ? "true" : "false")
       << ",\"error\":" << json_string(error)
       << ",\"state\":" << json_string(state_)
       << ",\"detail\":" << json_string(detail_)

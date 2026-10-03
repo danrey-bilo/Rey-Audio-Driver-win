@@ -1,0 +1,19 @@
+{
+  "monotonic_ns": 104027070293158,
+  "pid": 11663,
+  "cpu_user_ticks": 104,
+  "cpu_kernel_ticks": 1039,
+  "ticks_per_second": 100,
+  "minor_faults": 705,
+  "major_faults": 0,
+  "affinity": [
+    0
+  ],
+  "scheduling_policy": 1073741825,
+  "scheduling_priority": 40,
+  "throttled": "throttled=0x50000",
+  "usb_speed": "high-speed",
+  "usb_interrupts": [
+    "184:  212203592          0          0          0    GICv2 105 Level     1000480000.usb, 1000480000.usb"
+  ]
+}

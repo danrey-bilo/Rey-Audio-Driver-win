@@ -1,0 +1,506 @@
+Start testing: Oct 03 23:15 Западная Европа (лето)
+----------------------------------------------------------
+1/32 Testing: rey_asio_ipc_invalid
+1/32 Test: rey_asio_ipc_invalid
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyAsioIpcTests.exe" "invalid"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_asio_ipc_invalid" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_asio_ipc_invalid" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_asio_ipc_invalid" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/32 Testing: rey_asio_ipc_ownership
+2/32 Test: rey_asio_ipc_ownership
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyAsioIpcTests.exe" "ownership"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_asio_ipc_ownership" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_asio_ipc_ownership" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_asio_ipc_ownership" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/32 Testing: rey_asio_ipc_capture
+3/32 Test: rey_asio_ipc_capture
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyAsioIpcTests.exe" "capture"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_asio_ipc_capture" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_asio_ipc_capture" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_asio_ipc_capture" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/32 Testing: rey_asio_ipc_render
+4/32 Test: rey_asio_ipc_render
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyAsioIpcTests.exe" "render"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_asio_ipc_render" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_asio_ipc_render" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_asio_ipc_render" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/32 Testing: rey_asio_ipc_overflow
+5/32 Test: rey_asio_ipc_overflow
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyAsioIpcTests.exe" "overflow"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_asio_ipc_overflow" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_asio_ipc_overflow" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_asio_ipc_overflow" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/32 Testing: rey_service_defaults
+6/32 Test: rey_service_defaults
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyServiceContractTests.exe" "defaults"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_service_defaults" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_CONTRACT defaults PASS
+<end of output>
+Test time =   0.06 sec
+----------------------------------------------------------
+Test Passed.
+"rey_service_defaults" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_service_defaults" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/32 Testing: rey_service_numbers
+7/32 Test: rey_service_numbers
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyServiceContractTests.exe" "numbers"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_service_numbers" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_CONTRACT numbers PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_service_numbers" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_service_numbers" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/32 Testing: rey_service_profile
+8/32 Test: rey_service_profile
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyServiceContractTests.exe" "profile"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_service_profile" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_CONTRACT profile PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_service_profile" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_service_profile" time elapsed: 00:00:00
+----------------------------------------------------------
+
+9/32 Testing: rey_service_json
+9/32 Test: rey_service_json
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyServiceContractTests.exe" "json"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_service_json" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_CONTRACT json PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_service_json" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_service_json" time elapsed: 00:00:00
+----------------------------------------------------------
+
+10/32 Testing: rey_service_persistence
+10/32 Test: rey_service_persistence
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyServiceContractTests.exe" "persistence"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_service_persistence" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_CONTRACT persistence PASS
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"rey_service_persistence" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_service_persistence" time elapsed: 00:00:00
+----------------------------------------------------------
+
+11/32 Testing: rey_service_corruption
+11/32 Test: rey_service_corruption
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyServiceContractTests.exe" "corruption"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_service_corruption" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_CONTRACT corruption PASS
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"rey_service_corruption" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_service_corruption" time elapsed: 00:00:00
+----------------------------------------------------------
+
+12/32 Testing: rey_service_legacy_v1
+12/32 Test: rey_service_legacy_v1
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyServiceContractTests.exe" "legacy_v1"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_service_legacy_v1" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_CONTRACT legacy_v1 PASS
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"rey_service_legacy_v1" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_service_legacy_v1" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/32 Testing: rey_service_legacy_v2
+13/32 Test: rey_service_legacy_v2
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyServiceContractTests.exe" "legacy_v2"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_service_legacy_v2" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_CONTRACT legacy_v2 PASS
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"rey_service_legacy_v2" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_service_legacy_v2" time elapsed: 00:00:00
+----------------------------------------------------------
+
+14/32 Testing: rey_service_commands
+14/32 Test: rey_service_commands
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyServiceContractTests.exe" "commands"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_service_commands" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_CONTRACT commands PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_service_commands" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_service_commands" time elapsed: 00:00:00
+----------------------------------------------------------
+
+15/32 Testing: rey_service_alignment
+15/32 Test: rey_service_alignment
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyServiceContractTests.exe" "alignment"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_service_alignment" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_CONTRACT alignment PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_service_alignment" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_service_alignment" time elapsed: 00:00:00
+----------------------------------------------------------
+
+16/32 Testing: rey_mixer_unity
+16/32 Test: rey_mixer_unity
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyMixerContractTests.exe" "unity"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_mixer_unity" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_MIXER unity PASS
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"rey_mixer_unity" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_mixer_unity" time elapsed: 00:00:00
+----------------------------------------------------------
+
+17/32 Testing: rey_mixer_solo_mute
+17/32 Test: rey_mixer_solo_mute
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyMixerContractTests.exe" "solo_mute"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_mixer_solo_mute" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_MIXER solo_mute PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_mixer_solo_mute" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_mixer_solo_mute" time elapsed: 00:00:00
+----------------------------------------------------------
+
+18/32 Testing: rey_mixer_gain_clip
+18/32 Test: rey_mixer_gain_clip
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyMixerContractTests.exe" "gain_clip"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_mixer_gain_clip" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_MIXER gain_clip PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_mixer_gain_clip" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_mixer_gain_clip" time elapsed: 00:00:00
+----------------------------------------------------------
+
+19/32 Testing: rey_mixer_ramp
+19/32 Test: rey_mixer_ramp
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyMixerContractTests.exe" "ramp"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_mixer_ramp" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_MIXER ramp PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_mixer_ramp" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_mixer_ramp" time elapsed: 00:00:00
+----------------------------------------------------------
+
+20/32 Testing: rey_mixer_bounds
+20/32 Test: rey_mixer_bounds
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyMixerContractTests.exe" "bounds"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_mixer_bounds" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_MIXER bounds PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_mixer_bounds" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_mixer_bounds" time elapsed: 00:00:00
+----------------------------------------------------------
+
+21/32 Testing: rey_endpoints_pairs
+21/32 Test: rey_endpoints_pairs
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyEndpointContractTests.exe" "pairs"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_endpoints_pairs" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"rey_endpoints_pairs" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_endpoints_pairs" time elapsed: 00:00:00
+----------------------------------------------------------
+
+22/32 Testing: rey_endpoints_capture
+22/32 Test: rey_endpoints_capture
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyEndpointContractTests.exe" "capture"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_endpoints_capture" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_endpoints_capture" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_endpoints_capture" time elapsed: 00:00:00
+----------------------------------------------------------
+
+23/32 Testing: rey_endpoints_render
+23/32 Test: rey_endpoints_render
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyEndpointContractTests.exe" "render"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_endpoints_render" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_endpoints_render" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_endpoints_render" time elapsed: 00:00:00
+----------------------------------------------------------
+
+24/32 Testing: rey_endpoints_clipping
+24/32 Test: rey_endpoints_clipping
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyEndpointContractTests.exe" "clipping"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_endpoints_clipping" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_endpoints_clipping" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_endpoints_clipping" time elapsed: 00:00:00
+----------------------------------------------------------
+
+25/32 Testing: rey_device_empty
+25/32 Test: rey_device_empty
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyDeviceContractTests.exe" "empty"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_device_empty" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_SINGLE_USB empty PASS
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"rey_device_empty" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_device_empty" time elapsed: 00:00:00
+----------------------------------------------------------
+
+26/32 Testing: rey_device_single
+26/32 Test: rey_device_single
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyDeviceContractTests.exe" "single"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_device_single" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_SINGLE_USB single PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_device_single" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_device_single" time elapsed: 00:00:00
+----------------------------------------------------------
+
+27/32 Testing: rey_device_sticky
+27/32 Test: rey_device_sticky
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyDeviceContractTests.exe" "sticky"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_device_sticky" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_SINGLE_USB sticky PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_device_sticky" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_device_sticky" time elapsed: 00:00:00
+----------------------------------------------------------
+
+28/32 Testing: rey_device_ambiguous
+28/32 Test: rey_device_ambiguous
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyDeviceContractTests.exe" "ambiguous"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_device_ambiguous" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_SINGLE_USB ambiguous PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_device_ambiguous" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_device_ambiguous" time elapsed: 00:00:00
+----------------------------------------------------------
+
+29/32 Testing: rey_device_disconnect
+29/32 Test: rey_device_disconnect
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyDeviceContractTests.exe" "disconnect"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_device_disconnect" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_SINGLE_USB disconnect PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"rey_device_disconnect" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_device_disconnect" time elapsed: 00:00:00
+----------------------------------------------------------
+
+30/32 Testing: rey_device_persistence
+30/32 Test: rey_device_persistence
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyDeviceContractTests.exe" "persistence"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_device_persistence" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_SINGLE_USB persistence PASS
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Passed.
+"rey_device_persistence" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_device_persistence" time elapsed: 00:00:00
+----------------------------------------------------------
+
+31/32 Testing: rey_device_retired
+31/32 Test: rey_device_retired
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyDeviceContractTests.exe" "retired"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_device_retired" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_SINGLE_USB retired PASS
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"rey_device_retired" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_device_retired" time elapsed: 00:00:00
+----------------------------------------------------------
+
+32/32 Testing: rey_device_asio_auth
+32/32 Test: rey_device_asio_auth
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003/bin/ReyDeviceContractTests.exe" "asio_auth"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Win11-asio-AoIP/build/usb-low-latency-20261003
+"rey_device_asio_auth" start time: Oct 03 23:15 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+REY_SINGLE_USB asio_auth PASS
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"rey_device_asio_auth" end time: Oct 03 23:15 Западная Европа (лето)
+"rey_device_asio_auth" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 03 23:15 Западная Европа (лето)

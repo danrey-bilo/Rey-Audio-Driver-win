@@ -9,14 +9,15 @@ Eight inputs and eight outputs, integer PCM16/24/32 and six sample rates from
 44.1 to 192 kHz. The service connects the board automatically and keeps running
 when the mixer window closes.
 
-**[Download 2.8.0 USB preview](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.0-usb-preview.1)**
+**[Download 2.8.1 USB preview](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.1)**
 · [Install & Ableton](docs/USB-ASIO.md)
 · [Documentation](docs/README.md)
 · [Pi5-AUSB transport](https://github.com/danrey-bilo/Pi5-AUSB)
 
-> **Pre-release.** The USB-only conversion, local upgrade and PCM-format checks
-> passed. Nominal frame cadence, consistently sub-2-ms RTT and physical ADC/DAC
-> latency remain unqualified. See the [exact-build report](docs/USB-ONLY-2.8.md).
+> **Pre-release.** Native 96/192 kHz profiles completed 175 s with zero PCM
+> errors and RTT p99 about 1.53 ms. Rare maxima still exceeded 3 ms.
+> Actual Ableton load checks and physical-audio limits are recorded in
+> the [2.8.1 report](docs/USB-LATENCY-2.8.1.md).
 
 ## Mixer
 
@@ -37,7 +38,7 @@ three pages: **Mixer**, **USB** and **Diagnostics**, with access from the tray.
 
 ## Start in Ableton
 
-1. Download **Rey-Audio-USB-ASIO-2.8.0-preview.1-x64.exe** from the release and
+1. Download **Rey-Audio-USB-ASIO-2.8.1-preview.1-x64.exe** from the release and
    run it. Accept UAC; the installer adds the ASIO driver, automatic service
    and mixer/tray panel.
 2. Connect one configured Pi5-AUSB board over USB. Open **Rey Audio Driver**.
@@ -68,22 +69,23 @@ The [installation guide](docs/USB-ASIO.md) describes format changes and reopenin
 
 ## Validation
 
-| Check | Result for this build |
+| Check | Result for 2.8.1 |
 |---|---|
-| Native contracts | **32/32 passed** |
-| PCM formats, block64 / lead4 / USB depth3 | **18/18 passed**, five seconds per profile |
-| 192 kHz / PCM32, block64 / lead4 / depth3 | **295 s**, zero capture drops or render late/missing frames |
-| Digital RTT in that run, p50 / p95 / p99 / max | **1.6286 / 1.8837 / 2.0103 / 3.5171 ms** |
-| Observed frame cadence | **2.09% below nominal**; still requires investigation |
+| Windows contracts | **32/32 passed** |
+| Pi5-AUSB contracts, Windows / Pi | **7/7 / 7/7 passed**; SDK 0.1.1 EXACT consumer **1/1** |
+| PCM16/24/32 × 96/192 kHz | **6/6 passed**, five seconds per format, block64/lead3/depth4 |
+| Final native 192 kHz / block64 / lead3 / depth4 | **175 s**, zero capture drops, render late/missing frames or overflow |
+| Final native 96 kHz / block32 / lead3 / depth4 | **175 s**, same zero counters |
+| Actual Ableton, 192/64 and 96/32, lead3/depth4 | **175 s each, Simulator 50%**, zero drops/late/missing/overflow |
+| RTT p50 / p95 / p99 / max, 192 kHz | **1.3536 / 1.4298 / 1.5280 / 4.3675 ms** |
+| RTT p50 / p95 / p99 / max, 96 kHz | **1.3665 / 1.4227 / 1.5199 / 3.1292 ms** |
+| Frame cadence, 192 / 96 kHz | **−0.0706% / −0.0219%**; within the digital bench's ±1% guard |
 
-The initial lead3 matrix had four failures; the 295 s lead3 run also dropped
-frames. All failed results are retained in the [report](docs/USB-ONLY-2.8.md)
-and [machine-readable evidence](docs/evidence/rey-usb-only-20261003.json).
-The host for these new-build tests was the installed native ASIO probe, not
-Ableton. The Pi used a digital loopback; ADC/DAC was not connected.
-
-ASIO's **1.3802 ms** with lead3 and **1.7135 ms** with lead4 at 192 kHz/64/depth3
-are the reported buffer model. They do not replace measured roundtrip.
+These are native-host digital measurements. Actual Ableton observations are
+separate in the [report](docs/USB-LATENCY-2.8.1.md), including failed small buffers.
+Strict maximum RTT below 3 ms is still open. ASIO reports a **1.5052 / 1.5104 ms**
+buffer model for those candidates; that calculation is not measured analog RTT.
+ADC/DAC was not connected. [Complete evidence](docs/evidence/rey-usb-latency-281-20261003.json).
 
 ## Build and explore
 
@@ -96,8 +98,8 @@ included. [Build instructions](docs/BUILD.md).
 | [Architecture](docs/ARCHITECTURE.md) | Service ownership, USB, shared PCM rings and module boundaries |
 | [Control API](docs/API.md) | USB profile, mixer and status commands |
 | [Mixer](docs/MIXER.md) | Channel controls, routing direction and meters |
-| [Release notes](docs/RELEASE-2.8.0.md) | What changed and what is included |
-| [Validation report](docs/USB-ONLY-2.8.md) | Exact binary hashes, passed/failed tests and remaining work |
+| [Release notes](docs/RELEASE-2.8.1.md) | What changed and what is included |
+| [Validation report](docs/USB-LATENCY-2.8.1.md) | Exact binary hashes, passed/failed tests and remaining work |
 | [Windows endpoints](docs/ENDPOINTS.md) | Separate system-audio backend status |
 
 From **2.8.0**, development is USB-only and supports one board. AoIP/LAN and

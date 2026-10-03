@@ -5,7 +5,7 @@
     <SolidColorBrush x:Key="Ink" Color="#16243A"/>
     <SolidColorBrush x:Key="Muted" Color="#63748B"/>
     <Style TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource Ink}"/><Setter Property="TextWrapping" Value="Wrap"/></Style>
-    <Style x:Key="Caption" TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource Muted}"/><Setter Property="FontSize" Value="12"/></Style>
+    <Style x:Key="Caption" TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource Muted}"/><Setter Property="FontSize" Value="12"/><Setter Property="TextWrapping" Value="Wrap"/></Style>
     <Style x:Key="FieldLabel" TargetType="TextBlock"><Setter Property="Foreground" Value="{StaticResource Muted}"/><Setter Property="FontSize" Value="12"/><Setter Property="Margin" Value="0,0,0,8"/></Style>
     <Style x:Key="Card" TargetType="Border"><Setter Property="Background" Value="White"/><Setter Property="CornerRadius" Value="14"/><Setter Property="BorderBrush" Value="#E1E7EF"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="22"/><Setter Property="Margin" Value="0,0,0,16"/></Style>
     <Style TargetType="Button">
@@ -80,7 +80,7 @@
         <StackPanel Grid.Row="2" Margin="28,18,24,22">
           <StackPanel Orientation="Horizontal"><Ellipse Width="7" Height="7" Fill="{Binding ServiceColor}" Margin="0,0,9,0"/><TextBlock Text="{Binding ServiceLabel}" Foreground="#D7E0ED" FontSize="12"/></StackPanel>
           <TextBlock Text="Работает в фоне. Закрытие окна оставляет управление в трее." Foreground="#8C9CB1" FontSize="11" Margin="0,12,0,0" LineHeight="17"/>
-          <TextBlock Text="2.8.0 · предварительная версия" Foreground="#63758E" FontSize="10" Margin="0,17,0,0"/>
+          <TextBlock Text="2.8.1 · предварительная версия" Foreground="#63758E" FontSize="10" Margin="0,17,0,0"/>
         </StackPanel>
       </Grid>
     </Border>
@@ -128,9 +128,19 @@
             <TextBlock Text="{Binding EndpointHint}" Style="{StaticResource Caption}" Margin="0,14,0,0"/>
           </StackPanel>
           <StackPanel Visibility="{Binding UsbVisibility}">
-            <Border Style="{StaticResource Card}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <StackPanel><TextBlock Text="{Binding UsbDeviceLabel}" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="{Binding UsbConnectionLabel}" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,8,10,0"/><TextBlock Text="{Binding ShortIdentity, StringFormat=ID · {0}}" Foreground="#8A98AA" FontSize="11" Margin="0,6,0,0"/></StackPanel>
-            </Grid></Border>
+            <Border Style="{StaticResource Card}"><StackPanel>
+              <TextBlock Text="USB-ASIO · Ableton / DAW" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,8"/>
+              <TextBlock Text="{Binding AsioStateLabel}" Foreground="{Binding AsioHealthColor}" FontSize="12" Margin="0,0,0,16"/>
+              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel><TextBlock Text="Размер буфера ASIO (Samples)" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="AsioBlock" ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioBlock}" AutomationProperties.Name="ASIO buffer size"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="Запас отправки ASIO" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="AsioLead" ItemsSource="{Binding AsioLeads}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioLead}" AutomationProperties.Name="ASIO render lead"/></StackPanel>
+              </Grid>
+              <TextBlock Text="{Binding AsioLatencyLabel}" Style="{StaticResource Caption}" Margin="0,13,0,13"/>
+              <TextBlock Text="Меньший блок сокращает время обработки и повышает риск пропусков. Проверяйте счётчики и свой проект. Все значения меняются вручную." Style="{StaticResource Caption}" Margin="0,0,0,13"/>
+              <TextBlock Text="{Binding AsioCountersLabel}" Foreground="{Binding AsioHealthColor}" Style="{StaticResource Caption}" Margin="0,0,0,13"/>
+              <Button x:Name="SaveAsio" Content="Сохранить ASIO" HorizontalAlignment="Right" IsEnabled="{Binding CanSaveAsio}"/>
+              <TextBlock Text="{Binding AsioApplyHint}" Style="{StaticResource Caption}" Margin="0,13,0,0"/>
+            </StackPanel></Border>
             <Border Style="{StaticResource Card}"><StackPanel>
               <TextBlock Text="Формат аудио" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
               <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -141,19 +151,7 @@
               <TextBlock Text="{Binding QueueHint}" Style="{StaticResource Caption}" Margin="0,13,0,9"/>
               <CheckBox Content="Подключать автоматически при появлении USB-устройства" IsChecked="{Binding UsbAutomatic}"/>
             </StackPanel></Border>
-            <Border Style="{StaticResource Card}"><StackPanel>
-              <TextBlock Text="USB-ASIO · Ableton / DAW" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,8"/>
-              <TextBlock Text="{Binding AsioStateLabel}" Foreground="#137F6C" FontSize="12" Margin="0,0,0,16"/>
-              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Предпочитаемый блок ASIO" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioBlock}" AutomationProperties.Name="ASIO buffer size"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="Запас отправки ASIO" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding AsioLeads}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioLead}" AutomationProperties.Name="ASIO render lead"/></StackPanel>
-              </Grid>
-              <TextBlock Text="Для начала: 64 кадра, запас 3 блока, USB-очередь 3. Меньший блок требует проверки проекта в DAW. Значения меняются только вручную." Style="{StaticResource Caption}" Margin="0,13,0,13"/>
-              <TextBlock Text="{Binding AsioCountersLabel}" Style="{StaticResource Caption}" Margin="0,0,0,13"/>
-              <Button x:Name="SaveAsio" Content="Сохранить ASIO" HorizontalAlignment="Right" IsEnabled="{Binding CanSaveAsio}"/>
-              <TextBlock Text="После сохранения заново выберите Rey Audio USB ASIO в Ableton. Драйвер использует одну подключённую USB-карту." Style="{StaticResource Caption}" Margin="0,13,0,0"/>
-            </StackPanel></Border>
-            <Border Style="{StaticResource Card}" Padding="20,16"><Expander Header="Дополнительные настройки аудио в Windows"><StackPanel Margin="0,18,0,0">
+            <Border Style="{StaticResource Card}" Padding="20,16" Visibility="{Binding WindowsAudioSettingsVisibility}"><Expander Header="Дополнительные настройки аудио в Windows"><StackPanel Margin="0,18,0,0">
               <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                 <StackPanel><TextBlock Text="Период аудиоустройства" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbBlock}"/></StackPanel>
                 <StackPanel Grid.Column="2"><TextBlock Text="Дополнительный запас, кадров" Style="{StaticResource FieldLabel}"/><TextBox Text="{Binding UsbGuard, UpdateSourceTrigger=PropertyChanged}"/></StackPanel>

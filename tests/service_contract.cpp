@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   if (argc != 2) return 1;
   Settings s; std::string error; const std::string test = argv[1]; bool ok = false;
   if (test == "defaults")
-    ok = valid(s, error) && s.usb.rate == 192000 && s.usb.bits == 32 && s.usb_depth == 3 &&
+    ok = valid(s, error) && s.usb.rate == 192000 && s.usb.bits == 32 && s.usb_depth == 4 &&
          s.usb.block == 64 && s.usb.safety == 0 && s.usb.inputs == 8 && s.usb.outputs == 8;
   else if (test == "numbers") {
     unsigned n = 0;

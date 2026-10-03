@@ -20,7 +20,8 @@ INI, SYS/CAT, SDK и правила брандмауэра в USB-пакет н�
 Проверяются 32 контракта: IPC, timeline, перенос настроек, PCM, микшер,
 отображение каналов и правило одной карты. Реальные проверки выполняются
 через установленный COM/ASIO и службу; ASIO в DAW должен быть закрыт.
-Один аудиопрогон ограничен 295 секундами. [Отчёт](USB-ONLY-2.8.ru.md).
+Один аудиопрогон ограничен 175 секундами, с завершением до трёх минут.
+[Отчёт](USB-LATENCY-2.8.1.ru.md).
 
 TAG (`REY_ENABLE_TAG_BRIDGE=ON`) и ACX — отдельные эксперименты обычных
 аудиоустройств Windows. Они не являются зависимостями USB-ASIO установщика.
@@ -32,7 +33,7 @@ Windows ARM64 не поддерживается. Успешная сборка �
 
 ```powershell
 python tools/package_usb_release.py --setup build/usb-setup --out dist/usb-release `
-  --asio-notice C:/SDK/asio/LICENSE.txt --ref HEAD --version 2.8.0-preview.1
+  --asio-notice C:/SDK/asio/LICENSE.txt --ref HEAD --version 2.8.1-preview.1
 ```
 
 Скрипт проверяет hash EXE и манифест одной USB-карты, архивирует только файлы

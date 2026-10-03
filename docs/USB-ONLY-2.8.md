@@ -2,6 +2,10 @@
 
 # Rey Audio Driver 2.8: one USB device
 
+Historical **2.8.0** qualification. Subsequent 96/192 kHz results are in the
+[2.8.1 latency report](USB-LATENCY-2.8.1.md). Earlier failures and 295-second
+measurements below are preserved; current runs are limited to three minutes.
+
 The Windows software now uses only Pi5-AUSB and one attached Rey Audio USB
 board. The 2.8.0 USB preview was built and upgraded on the Windows/Pi5 bench
 on 2026-10-03. The USB-only conversion passed its build, installation, settings
@@ -119,7 +123,7 @@ Close the DAW; use one board with a unity mixer for native marker checks:
 python tools/test_installed_usb_asio.py --bin 'C:/Program Files/ReyAudio/USBASIO' `
   --out build/proof-formats --block 64 --lead 4 --depth 3
 python tools/test_usb_asio_profile.py --bin 'C:/Program Files/ReyAudio/USBASIO' `
-  --out build/proof-profile --seconds 295 --block 64 --lead 4 --depth 3
+  --out build/proof-profile --seconds 175 --block 64 --lead 4 --depth 3
 powershell -NoProfile -File tools/verify_usb_install.ps1 `
   -SetupDirectory build/usb-setup -Output build/install-check.json
 ```

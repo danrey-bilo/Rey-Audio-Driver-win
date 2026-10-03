@@ -1,0 +1,584 @@
+{
+  "started_utc": "2026-10-03T21:16:42.012035+00:00",
+  "physical_audio": false,
+  "actual_ableton_host": false,
+  "installed_com": true,
+  "block": 64,
+  "lead_blocks": 3,
+  "seconds_requested": 175,
+  "rtt_limit_ms": 3.0,
+  "dense_markers_requested": true,
+  "saved_preferences_changed": false,
+  "live": [
+    {
+      "elapsed_s": 30.016,
+      "asio": {
+        "ready": true,
+        "connected": true,
+        "connection_id": 1,
+        "pid": 42928,
+        "running": true,
+        "block": 64,
+        "lead_blocks": 3,
+        "capture_dropped": 0,
+        "render_late_frames": 0,
+        "render_missing_frames": 0,
+        "render_overflow": 0,
+        "clock_position": 11622912
+      },
+      "stats": {
+        "generation": 1,
+        "callbacks": 484288,
+        "frames": 11622912,
+        "missing_frames": 0,
+        "callback_gap_max_us": 3140.9,
+        "processing_max_us": 327.6,
+        "processing_average_us": 2.10129
+      },
+      "host_cpu_seconds": 0.46875
+    },
+    {
+      "elapsed_s": 60.016,
+      "asio": {
+        "ready": true,
+        "connected": true,
+        "connection_id": 1,
+        "pid": 42928,
+        "running": true,
+        "block": 64,
+        "lead_blocks": 3,
+        "capture_dropped": 0,
+        "render_late_frames": 0,
+        "render_missing_frames": 0,
+        "render_overflow": 0,
+        "clock_position": 17380368
+      },
+      "stats": {
+        "generation": 1,
+        "callbacks": 724182,
+        "frames": 17380368,
+        "missing_frames": 0,
+        "callback_gap_max_us": 3140.9,
+        "processing_max_us": 327.6,
+        "processing_average_us": 2.31911
+      },
+      "host_cpu_seconds": 1.21875
+    },
+    {
+      "elapsed_s": 90.032,
+      "asio": {
+        "ready": true,
+        "connected": true,
+        "connection_id": 1,
+        "pid": 42928,
+        "running": true,
+        "block": 64,
+        "lead_blocks": 3,
+        "capture_dropped": 0,
+        "render_late_frames": 0,
+        "render_missing_frames": 0,
+        "render_overflow": 0,
+        "clock_position": 23137080
+      },
+      "stats": {
+        "generation": 1,
+        "callbacks": 964045,
+        "frames": 23137080,
+        "missing_frames": 0,
+        "callback_gap_max_us": 3140.9,
+        "processing_max_us": 327.6,
+        "processing_average_us": 2.43239
+      },
+      "host_cpu_seconds": 2.671875
+    },
+    {
+      "elapsed_s": 120.032,
+      "asio": {
+        "ready": true,
+        "connected": true,
+        "connection_id": 1,
+        "pid": 42928,
+        "running": true,
+        "block": 64,
+        "lead_blocks": 3,
+        "capture_dropped": 0,
+        "render_late_frames": 0,
+        "render_missing_frames": 0,
+        "render_overflow": 0,
+        "clock_position": 28894872
+      },
+      "stats": {
+        "generation": 1,
+        "callbacks": 1203953,
+        "frames": 28894872,
+        "missing_frames": 0,
+        "callback_gap_max_us": 3140.9,
+        "processing_max_us": 327.6,
+        "processing_average_us": 2.50548
+      },
+      "host_cpu_seconds": 4.765625
+    },
+    {
+      "elapsed_s": 150.047,
+      "asio": {
+        "ready": true,
+        "connected": true,
+        "connection_id": 1,
+        "pid": 42928,
+        "running": true,
+        "block": 64,
+        "lead_blocks": 3,
+        "capture_dropped": 0,
+        "render_late_frames": 0,
+        "render_missing_frames": 0,
+        "render_overflow": 0,
+        "clock_position": 34652520
+      },
+      "stats": {
+        "generation": 1,
+        "callbacks": 1443855,
+        "frames": 34652520,
+        "missing_frames": 0,
+        "callback_gap_max_us": 3140.9,
+        "processing_max_us": 327.6,
+        "processing_average_us": 2.55549
+      },
+      "host_cpu_seconds": 5.78125
+    }
+  ],
+  "before": {
+    "version": "2.8.1",
+    "ok": true,
+    "error": "",
+    "state": "streaming",
+    "detail": "USB ASIO service is ready",
+    "route": "usb",
+    "driver_present": false,
+    "asio_only": true,
+    "digital_test": false,
+    "identity": "00000000000000002c26e7dcd051e632",
+    "backend": "digital-loopback",
+    "usb": {
+      "present": 1,
+      "identity": "00000000000000002c26e7dcd051e632",
+      "rate": 192000,
+      "bits": 32,
+      "depth": 4,
+      "block": 64,
+      "guard": 0,
+      "automatic": true
+    },
+    "active": {
+      "rate": 192000,
+      "bits": 32,
+      "inputs": 8,
+      "outputs": 8
+    },
+    "stats": {
+      "generation": 1,
+      "callbacks": 244291,
+      "frames": 5862984,
+      "missing_frames": 0,
+      "callback_gap_max_us": 595.4,
+      "processing_max_us": 244.5,
+      "processing_average_us": 1.47956
+    },
+    "asio": {
+      "ready": true,
+      "connected": false
+    },
+    "mixer": {
+      "master_cdb": 0,
+      "master_mute": false,
+      "inputs": [
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        }
+      ],
+      "outputs": [
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        }
+      ]
+    },
+    "events": [
+      {
+        "utc_ms": 1791062171461,
+        "code": "streaming",
+        "detail": "USB ASIO service is ready"
+      },
+      {
+        "utc_ms": 1791062171460,
+        "code": "connecting",
+        "detail": "Opening USB device"
+      }
+    ],
+    "device_limit": 1,
+    "device_warning": ""
+  },
+  "service_sha256": "09593dbb95ea48ccecbecb8697297da7743d7f1f80380881fbec61412f90008c",
+  "driver_sha256": "d459e5b0a1abd045f5c5fbe31446e34d8b826d49fc88ef9aba7d690fcc6f8392",
+  "probe_sha256": "d1474d83c8e7ddf7bfa523d7d5a3d496453d86d865cc0f55690e73c95cd94925",
+  "service_cpu_unavailable": "[WinError 5] \u041e\u0442\u043a\u0430\u0437\u0430\u043d\u043e \u0432 \u0434\u043e\u0441\u0442\u0443\u043f\u0435.",
+  "output": "ASIO_PROFILE rate=192000 bits=32 channels=8x8 block=64 input_latency_frames=160 output_latency_frames=129\nASIO_RESULT seconds=175.012 callbacks=524662 frames=33578368 pulses=524511 received=524507 missing=0 invalid=0 duplicates=0 rtt_p50_us=1353.600 rtt_p95_us=1429.800 rtt_p99_us=1528.000 rtt_max_us=4367.500 capture_dropped=0 render_late_frames=0 render_missing_frames=0 render_overflow=0 callback_gap_max_us=3272.900 processing_max_us=42.700 capture_age_max_us=3279.600 service_gap_max_us=3140.900 positions_backwards=0 mmcss_failures=0 cadence_seconds=175.010625700 cadence_frames=33578304 dense_markers=1 okay=1 physical_audio=0 ableton_host=0\n",
+  "exit_code": 0,
+  "metrics": {
+    "seconds": "175.012",
+    "callbacks": "524662",
+    "frames": "33578368",
+    "pulses": "524511",
+    "received": "524507",
+    "missing": "0",
+    "invalid": "0",
+    "duplicates": "0",
+    "rtt_p50_us": "1353.600",
+    "rtt_p95_us": "1429.800",
+    "rtt_p99_us": "1528.000",
+    "rtt_max_us": "4367.500",
+    "capture_dropped": "0",
+    "render_late_frames": "0",
+    "render_missing_frames": "0",
+    "render_overflow": "0",
+    "callback_gap_max_us": "3272.900",
+    "processing_max_us": "42.700",
+    "capture_age_max_us": "3279.600",
+    "service_gap_max_us": "3140.900",
+    "positions_backwards": "0",
+    "mmcss_failures": "0",
+    "cadence_seconds": "175.010625700",
+    "cadence_frames": "33578304",
+    "dense_markers": "1",
+    "okay": "1",
+    "physical_audio": "0",
+    "ableton_host": "0"
+  },
+  "after": {
+    "version": "2.8.1",
+    "ok": true,
+    "error": "",
+    "state": "streaming",
+    "detail": "USB ASIO service is ready",
+    "route": "usb",
+    "driver_present": false,
+    "asio_only": true,
+    "digital_test": false,
+    "identity": "00000000000000002c26e7dcd051e632",
+    "backend": "digital-loopback",
+    "usb": {
+      "present": 1,
+      "identity": "00000000000000002c26e7dcd051e632",
+      "rate": 192000,
+      "bits": 32,
+      "depth": 4,
+      "block": 64,
+      "guard": 0,
+      "automatic": true
+    },
+    "active": {
+      "rate": 192000,
+      "bits": 32,
+      "inputs": 8,
+      "outputs": 8
+    },
+    "stats": {
+      "generation": 1,
+      "callbacks": 1643820,
+      "frames": 39451680,
+      "missing_frames": 0,
+      "callback_gap_max_us": 3140.9,
+      "processing_max_us": 327.6,
+      "processing_average_us": 2.58081
+    },
+    "asio": {
+      "ready": true,
+      "connected": false
+    },
+    "mixer": {
+      "master_cdb": 0,
+      "master_mute": false,
+      "inputs": [
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        }
+      ],
+      "outputs": [
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        },
+        {
+          "gain_cdb": 0,
+          "mute": false,
+          "solo": false,
+          "invert": false,
+          "peak": 0,
+          "clips": 0
+        }
+      ]
+    },
+    "events": [
+      {
+        "utc_ms": 1791062171461,
+        "code": "streaming",
+        "detail": "USB ASIO service is ready"
+      },
+      {
+        "utc_ms": 1791062171460,
+        "code": "connecting",
+        "detail": "Opening USB device"
+      }
+    ],
+    "device_limit": 1,
+    "device_warning": ""
+  },
+  "profile_unchanged": true,
+  "session_continues": true,
+  "host_cpu_seconds": 6.21875,
+  "host_cpu_percent_of_one_core": 3.553327771809933,
+  "okay": true,
+  "wall_clock_frames_per_second": 191863.23223550385,
+  "observed_frames_per_second": 191864.37318131365,
+  "nominal_rate_ratio": 0.9992936103193419,
+  "cadence_within_one_percent": true,
+  "sampled_rtt_max_below_2ms": false,
+  "sampled_rtt_max_below_limit": false,
+  "marker_mode_verified": true,
+  "low_latency_candidate_qualified": false,
+  "duration_s": 175.063,
+  "completed_utc": "2026-10-03T21:19:37.077343+00:00"
+}

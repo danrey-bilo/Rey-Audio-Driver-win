@@ -87,8 +87,9 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
       error = "USB packet encoding failed";
       return false;
     }
-    return usb_.submit_capture(slot, error) &&
-           usb_.submit_render(slot, packet.data(), bytes, error);
+    if (initial && !usb_.submit_capture(slot, error))
+      return false;
+    return usb_.submit_render(slot, packet.data(), bytes, error);
   };
   for (unsigned slot = 0; slot < depth; ++slot)
     if (!submit(slot, true)) {
@@ -123,6 +124,14 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
         !pi5ausb::unpack_pcm(capture.data(), view.info.frames * 8, view.pcm,
                              view.pcm_bytes, profile_.bits)) {
       error = "USB capture timeline/PCM invalid";
+      ok = false;
+      break;
+    }
+    // The PCM and packet metadata are now local. Rearm IN before mixer/IPC
+    // work and the OUT completion wait, keeping the controller's receive
+    // queue populated even when that work crosses the next microframe.
+    // No pointer into the resubmitted WinUSB slot is read below.
+    if (!usb_.submit_capture(slot, error)) {
       ok = false;
       break;
     }

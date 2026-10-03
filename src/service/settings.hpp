@@ -4,7 +4,7 @@
 namespace rey::service {
 struct Settings {
   engine::UsbProfile usb;
-  unsigned usb_depth = 3;
+  unsigned usb_depth = 4;
   bool usb_auto = true;
   audio::Mix mix;
 };

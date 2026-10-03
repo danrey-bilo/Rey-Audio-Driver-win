@@ -2,17 +2,17 @@
 
 # Rey Audio Driver documentation
 
-Rey Audio Driver 2.8 is the USB-ASIO preview for one Raspberry Pi 5 and
+Rey Audio Driver 2.8.1 is the USB-ASIO preview for one Raspberry Pi 5 and
 8×8 audio. Start with installation, then set the mixer and manual buffers.
 
 | I want to… | Guide |
 |---|---|
-| Download the Windows installer | [USB preview release](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.0-usb-preview.1) |
+| Download the Windows installer | [USB preview release](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.1) |
 | Install and select the driver in Ableton | [USB-ASIO](USB-ASIO.md) |
 | Set block size, render reserve and USB queue | [Buffer guide](BUFFER-GUIDE.md) |
 | Control channels and meters | [Mixer](MIXER.md) |
-| Read measurements and limitations | [2.8 validation](USB-ONLY-2.8.md) · [Raw evidence](evidence/rey-usb-only-20261003.json) |
-| See what changed | [Release notes](RELEASE-2.8.0.md) |
+| Read measurements and limitations | [96/192 kHz validation](USB-LATENCY-2.8.1.md) · [Raw evidence](evidence/rey-usb-latency-281-20261003.json) |
+| See what changed | [Release notes](RELEASE-2.8.1.md) |
 | Build the software and installer | [Build](BUILD.md) · [External ASIO SDK](ASIO-SDK.md) |
 | Understand the audio path | [Architecture](ARCHITECTURE.md) · [USB transport](USB-TRANSPORT.md) |
 | Integrate USB/mixer control | [Control API](API.md) |

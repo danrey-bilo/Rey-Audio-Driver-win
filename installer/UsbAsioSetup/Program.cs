@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,8 +12,8 @@ using Microsoft.Win32;
 [assembly: AssemblyTitle("Rey Audio USB ASIO Setup")]
 [assembly: AssemblyProduct("Rey Audio USB ASIO local preview")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.0.0")]
-[assembly: AssemblyFileVersion("2.8.0.0")]
+[assembly: AssemblyVersion("2.8.1.0")]
+[assembly: AssemblyFileVersion("2.8.1.0")]
 namespace ReyAudio.UsbAsioSetup {
     internal static class Program {
         private const string OwnerKey = @"Software\ReyAudio\USBASIOSetup";
@@ -75,7 +76,7 @@ namespace ReyAudio.UsbAsioSetup {
         private static void WriteMetadata() {
             using (var key = Registry.LocalMachine.CreateSubKey(OwnerKey)) key.SetValue("InstallLocation", Target);
             using (var key = Registry.LocalMachine.CreateSubKey(UninstallKey)) {
-                key.SetValue("DisplayName", "Rey Audio USB ASIO (local preview)"); key.SetValue("DisplayVersion", "2.8.0-usb-preview");
+                key.SetValue("DisplayName", "Rey Audio USB ASIO (local preview)"); key.SetValue("DisplayVersion", "2.8.1-usb-preview");
                 key.SetValue("Publisher", "Rey Audio"); key.SetValue("InstallLocation", Target);
                 key.SetValue("DisplayIcon", Path.Combine(Target, "ReyAudioControl.exe"));
                 key.SetValue("UninstallString", Quote(Path.Combine(Target, "USBASIOSetup.exe")) + " --uninstall");
@@ -99,23 +100,30 @@ namespace ReyAudio.UsbAsioSetup {
                 files[name] = ReadPayload(name); string path = Path.Combine(Target, name);
                 if (File.Exists(path)) previous[name] = File.ReadAllBytes(path);
             }
+            var replacements = new Dictionary<string, byte[]>();
+            foreach (var file in files) {
+                byte[] oldBytes;
+                if (!previous.TryGetValue(file.Key, out oldBytes) || !file.Value.SequenceEqual(oldBytes))
+                    replacements[file.Key] = file.Value;
+            }
             bool existed = ServiceRegistration.Exists, owned = Owned();
             var changed = new List<string>();
             string asioDll = Path.Combine(Target, "ReyAudioAsio.dll");
-            if (File.Exists(asioDll))
+            if (replacements.ContainsKey("ReyAudioAsio.dll") && File.Exists(asioDll))
                 using (var access = new FileStream(asioDll, FileMode.Open, FileAccess.ReadWrite, FileShare.Read)) { }
             CloseOwnPanel(); ServiceRegistration.Stop(); Directory.CreateDirectory(Target);
             try {
                 // Check locks before replacing any payload. A DAW may retain the
                 // COM DLL after choosing No Device; that requires closing the host.
-                foreach (var name in previous.Keys)
+                foreach (var name in previous.Keys.Where(replacements.ContainsKey))
                     using (var access = new FileStream(Path.Combine(Target, name), FileMode.Open, FileAccess.ReadWrite, FileShare.Read)) { }
                 using (var key = Registry.LocalMachine.CreateSubKey(OwnerKey)) key.SetValue("InstallLocation", Target);
-                foreach (var file in files) { changed.Add(file.Key); File.WriteAllBytes(Path.Combine(Target, file.Key), file.Value); }
+                foreach (var file in replacements) { changed.Add(file.Key); File.WriteAllBytes(Path.Combine(Target, file.Key), file.Value); }
                 string self = Assembly.GetExecutingAssembly().Location, installedSetup = Path.Combine(Target, "USBASIOSetup.exe");
                 if (!string.Equals(Path.GetFullPath(self), installedSetup, StringComparison.OrdinalIgnoreCase)) File.Copy(self, installedSetup, true);
                 RegisterDll(false); ServiceRegistration.Register(BinaryPath); ServiceRegistration.Start(); WriteMetadata();
-                Record("INSTALL_OK: USB ASIO registered; auto-start service Running; no kernel/boot changes.");
+                Record("INSTALL_OK: USB ASIO registered; auto-start service Running; replaced " +
+                    string.Join(", ", changed) + "; no kernel/boot changes.");
             } catch {
                 try {
                     ServiceRegistration.Stop();

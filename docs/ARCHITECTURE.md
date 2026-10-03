@@ -31,6 +31,16 @@ network operations, allocate buffers or run UI code. The host callback runs
 on its own Pro Audio MMCSS thread. USB depth and ASIO render lead are distinct
 manual controls. No queue is added by the channel faders.
 
+In 2.8.1, IN is rearmed as soon as packet metadata and decoded PCM have moved
+into local storage, before mixer/IPC and the OUT completion wait. No pointer
+into that resubmitted slot is used afterward. Fresh USB profiles use depth4;
+saved profiles retain their values. USB packets remain 125 µs apart, independent
+of the ASIO block. Smaller ASIO blocks increase host callback frequency.
+
+The installer verifies all payloads and replaces only files whose bytes differ
+from the owned installation. A retained ASIO DLL blocks replacement if it changes;
+identical DLLs do not need rewriting during a service/panel update.
+
 Only the current USB interface is owned. A second attached interface cannot
 replace a running card. If multiple interfaces exist with no current owner,
 stream startup waits until exactly one remains. This policy is covered by

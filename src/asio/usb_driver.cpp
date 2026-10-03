@@ -73,7 +73,7 @@ public:
     set_error(error); initialized_ = false; return ASIOFalse;
   }
   void getDriverName(char *name) override { if (name) std::strcpy(name, "Rey Audio USB ASIO"); }
-  long getDriverVersion() override { return 280; }
+  long getDriverVersion() override { return 281; }
   void getErrorMessage(char *text) override {
     if (text) std::strcpy(text, stream_lost_.load() ? "USB stream ended; reopen Rey USB ASIO" : error_.data());
   }

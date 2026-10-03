@@ -1,7 +1,7 @@
 """Finite USB-ASIO PCM/RTT checks on one real Pi digital-loopback backend.
 
-No service installation, kernel driver or boot change. Soak host <=295 seconds;
-each isolated console service exits within 300 seconds. Not a physical audio
+No service installation, kernel driver or boot change. Soak host <=175 seconds;
+each isolated console service exits within 180 seconds. Not a physical audio
 test and not an Ableton-host performance result.
 """
 import argparse
@@ -30,11 +30,11 @@ def main():
     parser.add_argument('--bin', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--mode', choices=['smoke', 'matrix', 'soak'], default='smoke')
-    parser.add_argument('--seconds', type=int, default=295)
+    parser.add_argument('--seconds', type=int, default=175)
     parser.add_argument('--block', type=int, default=64)
     parser.add_argument('--lead', type=int, default=3)
     args = parser.parse_args()
-    if not 1 <= args.seconds <= 295 or args.block not in (16, 32, 64, 128, 256) or args.lead not in (1, 2, 3, 4):
+    if not 1 <= args.seconds <= 175 or args.block not in (16, 32, 64, 128, 256) or args.lead not in (1, 2, 3, 4):
         parser.error('Invalid finite duration or manual buffer setting')
     binary, output = args.bin.resolve(), args.out.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -46,7 +46,7 @@ def main():
     elif args.mode == 'matrix':
         cases = [(rate, bits, 16 if rate <= 48000 else 32 if rate <= 96000 else 64, 3, 5)
             for rate in (44100, 48000, 88200, 96000, 176400, 192000) for bits in (16, 24, 32)]
-    duration = 300 if args.mode == 'soak' else 150 if args.mode == 'matrix' else 40
+    duration = min(args.seconds + 5, 180) if args.mode == 'soak' else 150 if args.mode == 'matrix' else 40
     report = {'started_utc': datetime.now(timezone.utc).isoformat(), 'mode': args.mode,
               'physical_audio': False, 'actual_ableton_host': False, 'cases': [],
               'service_sha256': hashlib.sha256((binary / 'ReyAudioService.exe').read_bytes()).hexdigest(),
@@ -87,7 +87,7 @@ def main():
                     stderr=subprocess.STDOUT, text=True, env=environment, creationflags=subprocess.CREATE_NO_WINDOW)
                 while True:
                     try:
-                        text, _ = host.communicate(timeout=min(60, seconds + 20))
+                        text, _ = host.communicate(timeout=min(30, seconds + 5))
                         break
                     except subprocess.TimeoutExpired:
                         if time.monotonic() - start > duration + 5:

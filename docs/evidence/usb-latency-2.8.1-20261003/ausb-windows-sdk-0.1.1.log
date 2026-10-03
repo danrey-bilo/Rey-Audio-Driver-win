@@ -1,0 +1,18 @@
+Start testing: Oct 03 22:56 Западная Европа (лето)
+----------------------------------------------------------
+1/1 Testing: sdk_consumer
+1/1 Test: sdk_consumer
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-consumer/ausb_sdk_consumer.exe"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-consumer
+"sdk_consumer" start time: Oct 03 22:56 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.06 sec
+----------------------------------------------------------
+Test Passed.
+"sdk_consumer" end time: Oct 03 22:56 Западная Европа (лето)
+"sdk_consumer" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 03 22:56 Западная Европа (лето)

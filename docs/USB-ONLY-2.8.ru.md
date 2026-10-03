@@ -2,6 +2,10 @@
 
 # Rey Audio Driver 2.8: одна USB-карта
 
+Историческая проверка **2.8.0**. Результаты следующего этапа для 96/192 кГц:
+[низкая задержка 2.8.1](USB-LATENCY-2.8.1.ru.md). Прежние FAIL и измерения
+по 295 секунд сохранены ниже; новые прогоны ограничены тремя минутами.
+
 Windows-ПО переведено только на Pi5-AUSB и одну подключённую карту Rey Audio
 USB. Предварительная сборка 2.8.0 собрана и обновлена на стенде Windows/Pi5
 03.10.2026. Проверки сборки, установки, настроек и форматов PCM прошли.
@@ -120,7 +124,7 @@ RTT ниже 2 мс.
 python tools/test_installed_usb_asio.py --bin 'C:/Program Files/ReyAudio/USBASIO' `
   --out build/proof-formats --block 64 --lead 4 --depth 3
 python tools/test_usb_asio_profile.py --bin 'C:/Program Files/ReyAudio/USBASIO' `
-  --out build/proof-profile --seconds 295 --block 64 --lead 4 --depth 3
+  --out build/proof-profile --seconds 175 --block 64 --lead 4 --depth 3
 powershell -NoProfile -File tools/verify_usb_install.ps1 `
   -SetupDirectory build/usb-setup -Output build/install-check.json
 ```

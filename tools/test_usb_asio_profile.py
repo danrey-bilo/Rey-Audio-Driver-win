@@ -1,7 +1,7 @@
 """Finite manual-buffer check through installed COM ASIO.
 
 Requires an idle USB-ASIO service and unity mixer. Checks one native digital
-loopback profile for up to 295 seconds, with periodic status and CPU evidence.
+loopback profile for up to 175 seconds, with periodic status and CPU evidence.
 ASIO preferences are unchanged; an optional USB depth is restored afterward.
 This is not an Ableton-host or physical ADC/DAC latency measurement.
 """
@@ -24,36 +24,49 @@ def main():
     parser.add_argument('--block', type=int, required=True, choices=(16, 32, 64, 128, 256))
     parser.add_argument('--lead', type=int, required=True, choices=(1, 2, 3, 4))
     parser.add_argument('--depth', type=int, choices=(1, 2, 3, 4, 6, 8, 12, 16))
-    parser.add_argument('--seconds', type=int, default=295)
+    parser.add_argument('--rate', type=int, choices=(96000, 192000))
+    parser.add_argument('--service-pid', type=int,
+                        help='SCM service PID for optional CPU measurement')
+    parser.add_argument('--seconds', type=int, default=175)
+    parser.add_argument('--rtt-limit-ms', type=float, default=3.0)
+    parser.add_argument('--dense-markers', action='store_true',
+                        help='Measure a PCM marker in every ASIO block (PCM24/32)')
     args = parser.parse_args()
-    if not 1 <= args.seconds <= 295:
-        parser.error('Audio duration must be 1..295 seconds')
+    if not 1 <= args.seconds <= 175:
+        parser.error('Audio duration must be 1..175 seconds (three-minute test limit)')
+    if not 0 < args.rtt_limit_ms <= 100:
+        parser.error('RTT limit must be greater than zero and at most 100 ms')
     binary, output = args.bin.resolve(), args.out.resolve()
     output.mkdir(parents=True, exist_ok=True)
     tools = Path(__file__).resolve().parent
     request = runpy.run_path(str(tools / 'test_manager.py'))['request']
     cpu_seconds = runpy.run_path(str(tools / 'test_usb_asio.py'))['cpu_seconds']
+    Process = runpy.run_path(str(tools / 'observe_asio_host.py'))['Process']
     report = {'started_utc': datetime.now(timezone.utc).isoformat(),
         'physical_audio': False, 'actual_ableton_host': False, 'installed_com': True,
         'block': args.block, 'lead_blocks': args.lead, 'seconds_requested': args.seconds,
+        'rtt_limit_ms': args.rtt_limit_ms,
+        'dense_markers_requested': args.dense_markers,
         'saved_preferences_changed': False, 'live': []}
     start, host, original, usb_changed = time.monotonic(), None, None, False
+    service_cpu = None
 
-    def usb_profile(status, depth):
+    def usb_profile(status, depth, rate=None):
         profile = status['usb']
         reply = request('USB ' + ' '.join(map(str,
-            (profile['rate'], profile['bits'], depth, profile['block'], profile['guard'],
+            (rate or profile['rate'], profile['bits'], depth, profile['block'], profile['guard'],
              int(profile['automatic'])))))
         if not reply['ok']:
             raise RuntimeError('Temporary USB profile rejected: ' + reply.get('error', ''))
 
-    def ready_after(generation, status, depth):
+    def ready_after(generation, status, depth, rate=None):
         end = time.monotonic() + 10
+        expected_active = dict(status['active'], rate=rate or status['active']['rate'])
         while time.monotonic() < end:
             current = request('STATUS')
             if (current['identity'] == status['identity'] and current['state'] == 'streaming' and
                     current['stats']['generation'] > generation and current['usb']['depth'] == depth and
-                    current['active'] == status['active'] and current.get('asio', {}).get('ready') and
+                    current['active'] == expected_active and current.get('asio', {}).get('ready') and
                     current['stats']['callbacks'] > 500):
                 return current
             time.sleep(.1)
@@ -82,19 +95,35 @@ def main():
         for name, filename in (('service', 'ReyAudioService.exe'), ('driver', 'ReyAudioAsio.dll'),
                                ('probe', 'ReyAsioProbe.exe')):
             report[name + '_sha256'] = hashlib.sha256((binary / filename).read_bytes()).hexdigest()
-        if args.depth is not None and args.depth != before['usb']['depth']:
+        selected_depth = args.depth or before['usb']['depth']
+        if selected_depth != before['usb']['depth'] or (args.rate and args.rate != before['usb']['rate']):
             original = before
             report['original'] = original
-            usb_profile(original, args.depth)
+            usb_profile(original, selected_depth, args.rate)
             usb_changed = True
-            before = ready_after(original['stats']['generation'], original, args.depth)
+            before = ready_after(original['stats']['generation'], original, selected_depth, args.rate)
             report['before'] = before
         environment = dict(os.environ, REY_ASIO_LEAD_BLOCKS=str(args.lead))
-        host = subprocess.Popen([str(binary / 'ReyAsioProbe.exe'), '--registered',
-            '--seconds', str(args.seconds), '--block', str(args.block)], env=environment,
+        if args.service_pid:
+            try:
+                service_cpu = Process(args.service_pid)
+                if Path(service_cpu.path).resolve() != binary / 'ReyAudioService.exe':
+                    raise RuntimeError('--service-pid does not identify the installed service')
+                service_cpu_start = service_cpu.cpu()
+                service_cpu_time = time.monotonic()
+            except OSError as error:
+                report['service_cpu_unavailable'] = str(error)
+                if service_cpu is not None:
+                    service_cpu.close()
+                service_cpu = None
+        probe_args = [str(binary / 'ReyAsioProbe.exe'), '--registered',
+            '--seconds', str(args.seconds), '--block', str(args.block)]
+        if args.dense_markers:
+            probe_args.append('--dense-markers')
+        host = subprocess.Popen(probe_args, env=environment,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
             creationflags=subprocess.CREATE_NO_WINDOW)
-        probe_deadline = time.monotonic() + 300
+        probe_deadline = time.monotonic() + min(args.seconds + 5, 180)
         save()
         while True:
             remaining = probe_deadline - time.monotonic()
@@ -123,19 +152,32 @@ def main():
         report['session_continues'] = (after['state'] == 'streaming' and
             after['stats']['generation'] == before['stats']['generation'])
         report['host_cpu_seconds'] = cpu_seconds(host)
+        if service_cpu is not None:
+            report['service_cpu_seconds'] = service_cpu.cpu() - service_cpu_start
+            report['service_cpu_window_seconds'] = time.monotonic() - service_cpu_time
+            report['service_cpu_percent_of_one_core'] = report['service_cpu_seconds'] / report['service_cpu_window_seconds'] * 100
         report['host_cpu_percent_of_one_core'] = report['host_cpu_seconds'] / float(
             report['metrics'].get('seconds', args.seconds)) * 100
         report['okay'] = (host.returncode == 0 and report['metrics'].get('okay') == '1' and
             report['profile_unchanged'] and report['session_continues'])
         if all(name in report['metrics'] for name in ('frames', 'seconds', 'rtt_max_us')):
-            report['observed_frames_per_second'] = int(report['metrics']['frames']) / float(report['metrics']['seconds'])
+            report['wall_clock_frames_per_second'] = int(report['metrics']['frames']) / float(report['metrics']['seconds'])
+            # Prefer the span between the first and last callbacks: setup,
+            # stop/join and timer overshoot do not belong to the audio cadence.
+            cadence_seconds = float(report['metrics'].get('cadence_seconds', report['metrics']['seconds']))
+            cadence_frames = int(report['metrics'].get('cadence_frames', report['metrics']['frames']))
+            if cadence_seconds <= 0 or before['active']['rate'] <= 0:
+                raise RuntimeError('Probe returned no valid audio cadence span')
+            report['observed_frames_per_second'] = cadence_frames / cadence_seconds
             report['nominal_rate_ratio'] = report['observed_frames_per_second'] / before['active']['rate']
             # This detects gross slowing on the synthetic bench. It is not an
             # independent hardware-clock accuracy qualification.
             report['cadence_within_one_percent'] = abs(report['nominal_rate_ratio'] - 1) <= .01
             report['sampled_rtt_max_below_2ms'] = float(report['metrics']['rtt_max_us']) < 2000
+            report['sampled_rtt_max_below_limit'] = float(report['metrics']['rtt_max_us']) < args.rtt_limit_ms * 1000
+            report['marker_mode_verified'] = not args.dense_markers or report['metrics'].get('dense_markers') == '1'
             report['low_latency_candidate_qualified'] = (report['okay'] and
-                report['cadence_within_one_percent'] and report['sampled_rtt_max_below_2ms'])
+                report['cadence_within_one_percent'] and report['sampled_rtt_max_below_limit'] and report['marker_mode_verified'])
         else:
             report['okay'] = False
             report['error'] = 'Probe returned no complete ASIO_RESULT'
@@ -144,6 +186,8 @@ def main():
         report['okay'] = False
         report['error'] = str(error)
     finally:
+        if service_cpu is not None:
+            service_cpu.close()
         if host is not None and host.poll() is None:
             host.terminate()
             host.wait(timeout=5)

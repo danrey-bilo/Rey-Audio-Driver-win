@@ -1,0 +1,20 @@
+{
+  "utc": "2026-10-03T20:24:51.088242+00:00",
+  "before": {
+    "unit_sha256": "6ddb1ca4bf150c192894de01aae46bd2b96417e1e3d6ffc3bf750a40091cdcca",
+    "gadget_sha256": "acf7ba90199309388fb1df0827d7afba4c7970405b26660b9c9f2554e9638509",
+    "source_sha256": "93478148bf02f489edf203c8683c59dd4d9ed75d1c9e8dd3bbb2a98a71284ef1"
+  },
+  "build": "[ 53%] Built target pi5ausb_core\n[ 76%] Building CXX object CMakeFiles/ausb_gadget.dir/src/linux/gadget.cpp.o\n[ 76%] Built target ausb_profile_budget\n[ 92%] Built target ausb_contract_tests\n[100%] Linking CXX executable ausb_gadget\n[100%] Built target ausb_gadget\n",
+  "contracts": "Internal ctest changing into directory: /home/admin/pi5-ausb-20261003/build\nTest project /home/admin/pi5-ausb-20261003/build\n    Start 1: usb_profiles\n1/7 Test #1: usb_profiles .....................   Passed    0.00 sec\n    Start 2: usb_fractional_cadence\n2/7 Test #2: usb_fractional_cadence ...........   Passed    0.01 sec\n    Start 3: usb_packet_validation\n3/7 Test #3: usb_packet_validation ............   Passed    0.00 sec\n    Start 4: usb_pcm_exact\n4/7 Test #4: usb_pcm_exact ....................   Passed    0.00 sec\n    Start 5: usb_route_selection\n5/7 Test #5: usb_route_selection ..............   Passed    0.00 sec\n    Start 6: usb_control_validation\n6/7 Test #6: usb_control_validation ...........   Passed    0.00 sec\n    Start 7: usb_descriptor_contract\n7/7 Test #7: usb_descriptor_contract ..........   Passed    0.00 sec\n\n100% tests passed, 0 tests failed out of 7\n\nTotal Test time (real) =   0.03 sec\n",
+  "after": {
+    "unit_sha256": "e739c6fa9d74ebd7d8a0d532fd18049b3b632b03fa1614278e1748c696f882b1",
+    "gadget_sha256": "0554785534301fba710834590434f75c149f6eb30c399a02ea6d8bbef7d25ecc",
+    "source_sha256": "5601fb2cd28773a58e5a9632cfa5c2338bccbf74f8d79626d46bc9bc70d55d5b",
+    "status": "MainPID=11663\nCPUSchedulingPolicy=1\nCPUSchedulingPriority=40\nCPUAffinity=0\nActiveState=active\n",
+    "usb_speed": "UNKNOWN",
+    "journal": "Oct 03 22:24:52 pi5 systemd[1]: Stopped pi5-ausb-lab.service - Rey Audio USB laboratory transport.\nOct 03 22:24:52 pi5 systemd[1]: pi5-ausb-lab.service: Consumed 16min 47.629s CPU time.\nOct 03 22:24:55 pi5 systemd[1]: Starting pi5-ausb-lab.service - Rey Audio USB laboratory transport...\nOct 03 22:24:55 pi5 python3[11659]: {\"prepared\": true, \"id\": \"00000000000000002c26e7dcd051e632\", \"mount\": \"/dev/ffs-ausb\"}\nOct 03 22:24:55 pi5 ausb_gadget[11663]: AUSB_REALTIME policy=1073741825 priority=40 memory_locked=1\nOct 03 22:24:55 pi5 ausb_gadget[11663]: AUSB_GADGET_READY backend=digital-loopback endpoints=interrupt interval_us=125 capacity=832\nOct 03 22:24:55 pi5 python3[11664]: {\"bound\": true, \"udc\": \"1000480000.usb\"}\nOct 03 22:24:55 pi5 systemd[1]: Started pi5-ausb-lab.service - Rey Audio USB laboratory transport.\n",
+    "throttled": "throttled=0x50000"
+  },
+  "okay": true
+}

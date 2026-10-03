@@ -39,8 +39,8 @@ own import libraries. ARM64 is not supported.
 Validation covers 32 contracts (IPC ownership/timeline, settings migration,
 PCM alignment, mixer, endpoint mapping and single-device selection). Use the
 installed COM matrix and profile tools only with an idle ASIO host, one Pi,
-and unity mixer. Maximum audio test duration is 295 seconds per run.
-[Current report](USB-ONLY-2.8.md). A build is not physical audio qualification.
+and unity mixer. Audio tests use at most 175 seconds, completing within three minutes.
+[Current report](USB-LATENCY-2.8.1.md). A build is not physical audio qualification.
 
 ## Release archives
 
@@ -48,7 +48,7 @@ After committing the tested source, package the EXE, documentation and source:
 
 ```powershell
 python tools/package_usb_release.py --setup build/usb-setup --out dist/usb-release `
-  --asio-notice C:/SDK/asio/LICENSE.txt --ref HEAD --version 2.8.0-preview.1
+  --asio-notice C:/SDK/asio/LICENSE.txt --ref HEAD --version 2.8.1-preview.1
 ```
 
 The tool checks the installer hash and one-device manifest, archives committed

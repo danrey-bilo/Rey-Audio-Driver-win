@@ -1,0 +1,115 @@
+Start testing: Oct 03 22:56 Западная Европа (лето)
+----------------------------------------------------------
+1/7 Testing: usb_profiles
+1/7 Test: usb_profiles
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core/ausb_contract_tests.exe" "profiles"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core
+"usb_profiles" start time: Oct 03 22:56 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+profiles PASS
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"usb_profiles" end time: Oct 03 22:56 Западная Европа (лето)
+"usb_profiles" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/7 Testing: usb_fractional_cadence
+2/7 Test: usb_fractional_cadence
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core/ausb_contract_tests.exe" "cadence"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core
+"usb_fractional_cadence" start time: Oct 03 22:56 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+cadence PASS
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"usb_fractional_cadence" end time: Oct 03 22:56 Западная Европа (лето)
+"usb_fractional_cadence" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/7 Testing: usb_packet_validation
+3/7 Test: usb_packet_validation
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core/ausb_contract_tests.exe" "packets"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core
+"usb_packet_validation" start time: Oct 03 22:56 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+packets PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"usb_packet_validation" end time: Oct 03 22:56 Западная Европа (лето)
+"usb_packet_validation" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/7 Testing: usb_pcm_exact
+4/7 Test: usb_pcm_exact
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core/ausb_contract_tests.exe" "pcm"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core
+"usb_pcm_exact" start time: Oct 03 22:56 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+pcm PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"usb_pcm_exact" end time: Oct 03 22:56 Западная Европа (лето)
+"usb_pcm_exact" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/7 Testing: usb_route_selection
+5/7 Test: usb_route_selection
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core/ausb_contract_tests.exe" "routes"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core
+"usb_route_selection" start time: Oct 03 22:56 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+routes PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"usb_route_selection" end time: Oct 03 22:56 Западная Европа (лето)
+"usb_route_selection" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/7 Testing: usb_control_validation
+6/7 Test: usb_control_validation
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core/ausb_contract_tests.exe" "control"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core
+"usb_control_validation" start time: Oct 03 22:56 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+control PASS
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"usb_control_validation" end time: Oct 03 22:56 Западная Европа (лето)
+"usb_control_validation" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/7 Testing: usb_descriptor_contract
+7/7 Test: usb_descriptor_contract
+Command: "C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core/ausb_contract_tests.exe" "descriptors"
+Directory: C:/Users/windo/Documents/ChatGPT/PiAoIP/repositories/Pi5-AUSB/build/windows-core
+"usb_descriptor_contract" start time: Oct 03 22:56 Западная Европа (лето)
+Output:
+----------------------------------------------------------
+descriptors PASS
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"usb_descriptor_contract" end time: Oct 03 22:56 Западная Европа (лето)
+"usb_descriptor_contract" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Oct 03 22:56 Западная Европа (лето)
