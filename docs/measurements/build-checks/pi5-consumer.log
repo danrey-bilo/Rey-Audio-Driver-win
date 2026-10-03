@@ -1,0 +1,40 @@
+-- The CXX compiler identification is GNU 14.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Configuring done (0.4s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/admin/piaoip-release-2.5.0-20261003/consumer-core
+[ 50%] Building CXX object CMakeFiles/consumer.dir/home/admin/piaoip-release-2.5.0-20261003/src/AoIP-debug-tool/examples/core/peer_profile.cpp.o
+[100%] Linking CXX executable consumer
+[100%] Built target consumer
+Internal ctest changing into directory: /home/admin/piaoip-release-2.5.0-20261003/consumer-core
+Test project /home/admin/piaoip-release-2.5.0-20261003/consumer-core
+    Start 1: installed_sdk
+1/1 Test #1: installed_sdk ....................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.00 sec
+-- The CXX compiler identification is GNU 14.2.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Configuring done (3.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/admin/piaoip-release-2.5.0-20261003/consumer-pi5
+[ 50%] Building CXX object CMakeFiles/pi5_sdk_consumer.dir/main.cpp.o
+[100%] Linking CXX executable pi5_sdk_consumer
+[100%] Built target pi5_sdk_consumer
+SDK consumer model=Raspberry Pi 5 Model B Rev 1.1 kernel=6.18.50+rpt-rpi-v8-rt realtime=1
+PASS installed SDK: CPU0 for all roles, FIFO70 for RX/TX, aligned capture16

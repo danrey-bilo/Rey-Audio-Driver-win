@@ -1,13 +1,13 @@
 **English** | [Русский](INSTALL.ru.md)
 
-# PiAoIP 2.4.3 — Windows installation
+# PiAoIP 2.5.0 — Windows installation
 
 PiAoIP connects a 64-bit ASIO host on Windows 11 x64 to a compatible Raspberry Pi service. It does not create Windows microphone/speaker endpoints. The panel, tray, installer and installed help use English.
 
 ## Install and connect
 
 1. Close ASIO hosts and exit the PiAoIP tray icon.
-2. Run `PiAoIP-2.4.3-Windows11-x64.msi`. Windows requests administrator access for installation, ASIO registration and a local-subnet UDP 50021 inbound rule.
+2. Run `PiAoIP-2.5.0-Windows11-x64.msi`. Windows requests administrator access for installation, ASIO registration and a local-subnet UDP 50021 inbound rule.
 3. Connect the PC and Pi over Gigabit Ethernet and configure reachable IPv4 addresses. Example dedicated subnet: PC `192.168.50.1/24`, Pi `192.168.50.2/24`, no Ethernet gateway/DNS. These are examples, not driver defaults.
 4. Configure the PC address on the Pi with `sudo piaoip-configure --interface eth0 --peer 192.168.50.1 --restart`.
 5. Open **PiAoIP Settings → Device → Find and connect**. Discover or connect to the Pi IPv4 address.
@@ -30,7 +30,7 @@ Live counters belong to the running ASIO instance. Open its panel from the DAW t
 
 The profile is `%LOCALAPPDATA%\PiAoIP\PiAoipAsio.ini`. Existing values are preserved by the upgrade. Back up the file with ASIO hosts closed if you need an exact rollback. Change buffers manually and check the real project for missing/late frames and deadline misses.
 
-Use **Installed apps → PiAoIP** to repair or uninstall. Version 2.4.3 includes embedded settings/guide icons, explicit Start menu shortcut icons and an Installed apps icon. Windows may retain an existing shortcut image briefly until Explorer refreshes it.
+Use **Installed apps → PiAoIP** to repair or uninstall. Version 2.5.0 includes embedded settings/guide icons, explicit Start menu shortcut icons and an Installed apps icon. Windows may retain an existing shortcut image briefly until Explorer refreshes it.
 
 Windows ARM64, Windows Server and 32-bit ASIO hosts are outside this package. The Pi needs its separate service and an RT kernel. The MSI does not configure NICs, CPU affinity, Windows power settings, virtual machines or the Pi OS.
 

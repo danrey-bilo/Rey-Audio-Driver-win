@@ -1,0 +1,109 @@
+{
+  "monotonic_ns": 23600924979523,
+  "pid": 6174,
+  "active": "active",
+  "kernel": "6.18.50+rpt-rpi-v8-rt",
+  "isolated": "2-3",
+  "cores": {
+    "cpu0": [
+      17568,
+      2,
+      94593,
+      2148323,
+      43840,
+      0,
+      106260,
+      0,
+      0,
+      0
+    ],
+    "cpu1": [
+      1501,
+      7,
+      1014,
+      2300994,
+      55442,
+      0,
+      748,
+      0,
+      0,
+      0
+    ],
+    "cpu2": [
+      0,
+      0,
+      0,
+      2360093,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cpu3": [
+      0,
+      0,
+      0,
+      2360093,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "threads": {
+    "6174": {
+      "name": "aoip_peer_rpi5",
+      "runtime_ns": 27705133,
+      "allowed_cpus": "0",
+      "policy": 1,
+      "priority": 70
+    },
+    "6183": {
+      "name": "aoip_peer_rpi5",
+      "runtime_ns": 32315,
+      "allowed_cpus": "0",
+      "policy": 1,
+      "priority": 70
+    },
+    "6184": {
+      "name": "aoip_peer_rpi5",
+      "runtime_ns": 2162634,
+      "allowed_cpus": "0",
+      "policy": 0,
+      "priority": 0
+    },
+    "6185": {
+      "name": "aoip_peer_rpi5",
+      "runtime_ns": 175458,
+      "allowed_cpus": "0",
+      "policy": 0,
+      "priority": 0
+    }
+  },
+  "eth0": {
+    "rx_bytes": 40487420540,
+    "tx_bytes": 41844166981,
+    "rx_packets": 44749165,
+    "tx_packets": 52760645,
+    "rx_errors": 0,
+    "tx_errors": 0,
+    "rx_dropped": 0,
+    "tx_dropped": 14
+  },
+  "throttled_raw": "throttled=0x50000",
+  "temperature_raw": "temp=47.7'C",
+  "cpu0_freq_khz": "2400000",
+  "cpu0_governor": "performance",
+  "interfaces": "lo               UNKNOWN        127.0.0.1/8 ::1/128 \neth0             UP             192.168.1.2/24 fe80::6f33:46af:bade:8bff/64 \nwlan0            UP             192.168.178.48/24 fdf8:bc78:5d77:0:8aa2:9eff:fede:6c74/64 2a06:34c0:a04:e300:8aa2:9eff:fede:6c74/64 fe80::8aa2:9eff:fede:6c74/64",
+  "config_hashes": {
+    "/etc/piaoip/peer.conf": "82dd28705860b2532ec2e944af9798fb491a103d44b7364b8aeb7905d52c025c",
+    "/var/lib/piaoip/profile.txt": "98337ca18154867c4f77ed78a474092b7f712ca1009418ffbd65c3f2b1399af0",
+    "/etc/systemd/system/pi-aoip.service": null
+  },
+  "binary_sha256": "90f970e5500f8a9185c5753338194b42ea10621883ae40d6489f2aa559057463",
+  "command": "/usr/lib/piaoip/aoip_peer_rpi5 pi 192.168.1.1 50020 50021 8 192000 32 16 0 8 "
+}

@@ -54,3 +54,27 @@ DLL загружается в процесс DAW через COM/IASIO. MSI ре�
 WDM/WaveRT/WASAPI endpoint, системный микрофон, общий микшер приложений, AES67/PTP
 и аналоговый ADC/DAC round trip здесь не реализованы. Сеть использует собственный
 протокол из [AoIP-lib](https://github.com/danrey-bilo/AoIP-lib/blob/main/docs/PROTOCOL.md).
+
+
+## Путь службы/драйвера в 2.5
+
+```mermaid
+flowchart LR
+    Pi["Pi5 CPU0: synthetic PCM peer"]
+    Net["Built-in LAN / UDP"]
+    RX["Windows IOCP"]
+    Engine["SessionEngine: slots / Timeline / frame clock"]
+    Bridge["Bounded PCM bridge"]
+    ACX["ACX child: capture + render circuits"]
+    OS["WASAPI / Windows audio clients"]
+    Pi <--> Net
+    Net <--> RX
+    RX <--> Engine
+    Engine <--> Bridge
+    Bridge <--> ACX
+    ACX <--> OS
+```
+
+StartGate готовит workers и публикует принятый epoch до запуска PCM. DeviceId и V3 lease связывают одного владельца службы с одной платой. Диаграмма описывает реализованные development layers; ACX/WASAPI ещё не установлен и не измерен. ASIO остаётся отдельным адаптером с общими transport components.
+
+Development driver создаёт один multichannel input endpoint и один multichannel output endpoint, до восьми каналов каждый. Несколько Pi и отдельные endpoints по каналам требуют самостоятельных clock, enumeration и lifecycle проверок.

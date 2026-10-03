@@ -1,0 +1,15 @@
+{
+  "tag": "startup-regression-b64-g512-cb50",
+  "elapsed_s": 270.6,
+  "planned_s": 300,
+  "windows_final_counters": "pending",
+  "rtt_so_far": {
+    "count": 1620512,
+    "min_us": 2848,
+    "p50_us": 3057,
+    "p95_us": 3149,
+    "p99_us": 3214,
+    "max_us": 10045,
+    "active": 1
+  }
+}

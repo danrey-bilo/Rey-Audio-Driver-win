@@ -76,6 +76,11 @@ void read_ini(const wchar_t* path, Config& c) {
     const long value=std::wcstol(spin,&spin_end,10);
     if(spin_end!=spin && *spin_end==L'\0' && value>=0 && value<=80) c.audio_spin_us=unsigned(value);
   }
+  wchar_t capture[24]{},*capture_end=nullptr;
+  if(GetPrivateProfileStringW(L"AoIP",L"CaptureFrames",L"",capture,24,path)) {
+    const long value=std::wcstol(capture,&capture_end,10);
+    if(capture_end!=capture && *capture_end==L'\0' && value>=0 && value<=256) c.capture_frames=unsigned(value);
+  }
 }
 void read_legacy_registry(Config& c) {
   constexpr auto key = L"Software\\PiAoIP\\ASIO";
@@ -137,7 +142,8 @@ void read_config(Config& c) {
 }
 void read_config_file(const wchar_t* path,Config& c) { read_ini(path,c); }
 bool write_config_file(const wchar_t* path,const Config& c) {
-  if(!aoip::valid_rate(c.rate) || !aoip::valid_bits(c.bits) || !aoip::valid_buffer(unsigned(c.block)) || c.safety>2048) return false;
+  if(!aoip::valid_rate(c.rate) || !aoip::valid_bits(c.bits) || !aoip::valid_buffer(unsigned(c.block)) ||
+     c.safety>2048 || c.capture_frames>256 || (c.capture_frames && unsigned(c.block)%c.capture_frames)) return false;
   wchar_t temporary[MAX_PATH]{};
   if(std::swprintf(temporary,MAX_PATH,L"%ls.%lu.tmp",path,GetCurrentProcessId())<0) return false;
   // Preserve unrelated INI sections and future settings. Commit with one rename.
@@ -156,6 +162,7 @@ bool write_config_file(const wchar_t* path,const Config& c) {
   number(L"EnergySaving",c.energy_saving ? 1 : 0);
   number(L"AudioCpu",c.realtime_cpus[0]); number(L"ReceiveCpu",c.realtime_cpus[1]); number(L"TransmitCpu",c.realtime_cpus[2]);
   number(L"AudioSpinUs",c.audio_spin_us);
+  number(L"CaptureFrames",c.capture_frames);
   wchar_t mask[32]{}; std::swprintf(mask,32,L"%016llx",static_cast<unsigned long long>(c.input_mask)); text(L"InputMask",mask);
   std::swprintf(mask,32,L"%016llx",static_cast<unsigned long long>(c.output_mask)); text(L"OutputMask",mask);
   // The all-null cache-flush form does not report a settings write. Verify the

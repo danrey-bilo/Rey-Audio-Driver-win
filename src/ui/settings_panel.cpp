@@ -9,7 +9,7 @@ namespace {
 constexpr COLORREF panel_bg=RGB(20,23,27), panel_surface=RGB(29,34,40),panel_text=RGB(237,242,246),panel_muted=RGB(166,178,188),panel_accent=RGB(111,224,196);
 constexpr int menu_device=3400,menu_settings=3401,menu_diagnostics=3402;
 constexpr int page_audio=3410,page_connection=3411,page_advanced=3412,page_diagnostics=3413;
-int panel_height(PanelPage page) { return page==PanelPage::audio || page==PanelPage::advanced ? 196 : 276; }
+int panel_height(PanelPage page) { return page==PanelPage::audio ? 196 : 276; }
 void dark_caption(HWND window) {
   // Shared resources keep the ASIO-hosted panel and standalone app consistent.
   for(int size:{ICON_SMALL,ICON_BIG}) {
@@ -230,15 +230,16 @@ void refresh_rates(HWND window, SettingsDialog& state, unsigned preferred) {
   BOOL valid_bits = FALSE;
   unsigned bits = GetDlgItemInt(window, 3003, &valid_bits, FALSE);
   if (!valid_bits || !channels || !bits) return;
-  unsigned max_frames = (1472 - 40) / (channels * (bits / 8));
+  const auto protocol=device.v3 ? aoip::WireProtocol::v3 : aoip::WireProtocol::v1;
+  unsigned max_frames = aoip::packet_capacity(channels,bits,protocol);
   unsigned frames = max_frames;
   HWND combo = GetDlgItem(window, 3002);
   SendMessageA(combo, CB_RESETCONTENT, 0, 0);
   LRESULT selection = CB_ERR;
   for (unsigned value : device.rates) {
     if ((state.is_live && value > 192000) ||
-        !profile_fits_link(channels, value, bits, frames,
-                           device.max_pps, device.link_mbps)) continue;
+        !aoip::direction_fits(aoip::direction_budget(channels,value,bits,frames,
+          aoip::Packetization::capture_cadence,protocol),device.link_mbps,device.max_pps)) continue;
     char label[32]{};
     std::snprintf(label, sizeof(label), "%u", value);
     LRESULT item = SendMessageA(combo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(label));
@@ -274,6 +275,8 @@ void show_device(HWND window, SettingsDialog& state, int index) {
     if (chosen != CB_ERR) SendMessageA(combo, CB_SETCURSEL, chosen, 0);
   };
   fill(3010,{0,16,32,64,96,128,192,224,256,384,448,480,512,1024,2048},state.current.safety,true);
+  fill(3113,{0,1,2,4,8,16,32,64,128,256},state.current.capture_frames,true);
+  EnableWindow(GetDlgItem(window,3113),device.v3);
   fill(3003, device.supported_bits, device.bits);
   fill(3004, device.buffers, state.current.block);
   refresh_rates(window, state, device.rate);
@@ -284,7 +287,7 @@ void show_device(HWND window, SettingsDialog& state, int index) {
   SetDlgItemTextW(window,3124,status);
   EnableWindow(GetDlgItem(window,3110),device.v3);
   unsigned channel=std::min(device.channels,device.outputs);
-  std::swprintf(status,240,L"RTT: route input %u to output %u in your DAW (PCM32).",channel,channel);
+  std::swprintf(status,240,L"RTT: route input %u to output %u in your DAW (PCM24/32).",channel,channel);
   SetDlgItemTextW(window,3105,status);
 }
 
@@ -359,7 +362,7 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     button(L"Close",148,194,78,IDCANCEL); button(L"Apply",230,194,78,IDOK);
     auto combo=[&](int id,const wchar_t* label,int x,int y,int width,unsigned value) {
       add(L"STATIC",label,0,x,y,width,12,0);
-      HWND control=add(L"COMBOBOX",L"",WS_TABSTOP|CBS_OWNERDRAWFIXED|CBS_HASSTRINGS|(id==3010 ? CBS_DROPDOWN : CBS_DROPDOWNLIST)|WS_VSCROLL,
+      HWND control=add(L"COMBOBOX",L"",WS_TABSTOP|CBS_OWNERDRAWFIXED|CBS_HASSTRINGS|((id==3010 || id==3113) ? CBS_DROPDOWN : CBS_DROPDOWNLIST)|WS_VSCROLL,
         x,y+15,width,150,id);
       LOGFONTW f{}; GetObjectW(reinterpret_cast<HFONT>(SendMessageW(control,WM_GETFONT,0,0)),sizeof(f),&f);
       SendMessageW(control,CB_SETITEMHEIGHT,WPARAM(-1),std::abs(f.lfHeight)+8);
@@ -389,10 +392,13 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     SetWindowTheme(energy,L"",nullptr);
     CheckDlgButton(window,3110,state->current.energy_saving ? BST_CHECKED : BST_UNCHECKED);
     add(L"STATIC",L"Disabled channels do not use network bandwidth. Select them in Device → Channels.",0,24,112,272,32,3112);
+    combo(3113,L"Capture packet · samples",24,152,128,state->current.capture_frames);
+    SendDlgItemMessageW(window,3113,CB_LIMITTEXT,3,0);
+    add(L"STATIC",L"0 keeps the default. Larger packets reduce traffic and CPU, but add capture delay.",0,24,199,272,32,3114);
     page=int(PanelPage::diagnostics);
     add(L"STATIC",L"Stream counters",0,24,76,272,14,3352);
     add(L"STATIC",L"Open this panel from your running DAW to view its stream counters.",0,24,98,272,52,3120);
-    add(L"STATIC",L"RTT requires PCM32 and a DAW route from an input to the matching output.",0,24,160,272,48,kMeasured);
+    add(L"STATIC",L"RTT requires PCM24/32 and a DAW route from an input to the matching output.",0,24,160,272,48,kMeasured);
     button(L"Measure RTT",24,205,136,kMeasure);
     panel_page(window,*state);
     SendMessageW(window,WM_CHANGEUISTATE,MAKEWPARAM(UIS_SET,UISF_HIDEACCEL|UISF_HIDEFOCUS),0);
@@ -656,6 +662,14 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
   BOOL valid_guard=FALSE;
   const unsigned inputs=device.channels, outputs=device.outputs;
   unsigned guard=GetDlgItemInt(window,3010,&valid_guard,FALSE);
+  BOOL valid_capture=FALSE;
+  const unsigned capture=GetDlgItemInt(window,3113,&valid_capture,FALSE);
+  char capture_text[16]{}; GetDlgItemTextA(window,3113,capture_text,sizeof(capture_text));
+  for(const char* digit=capture_text;*digit;++digit) if(*digit<'0' || *digit>'9') valid_capture=FALSE;
+  if(!valid_capture || capture>256 || (capture && block%capture)) {
+    MessageBoxW(window,L"Capture packet must be 0 or 1–256 samples and divide the audio buffer.",L"Pi AoIP",MB_OK|MB_ICONERROR);
+    SetFocus(GetDlgItem(window,3113)); return TRUE;
+  }
   char guard_text[16]{}; GetDlgItemTextA(window,3010,guard_text,sizeof(guard_text));
   for(const char* digit=guard_text;*digit;++digit) if(*digit<'0' || *digit>'9') valid_guard=FALSE;
   if(!valid_guard || guard>2048) {
@@ -690,6 +704,7 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
   Config updated=state->current;
   std::snprintf(updated.peer,sizeof(updated.peer),"%s",peer);
   updated.rate=rate; updated.bits=uint16_t(bits); updated.block=block; updated.safety=guard;
+  updated.capture_frames=capture;
   updated.energy_saving=IsDlgButtonChecked(window,3110)==BST_CHECKED;
   if(GetFileAttributesW(state->path)!=INVALID_FILE_ATTRIBUTES && !CopyFileW(state->path,temporary,FALSE)) {
     MessageBoxW(window,L"Could not create a copy of the current settings.",L"Pi AoIP",MB_OK|MB_ICONERROR); return TRUE;
@@ -698,11 +713,18 @@ INT_PTR CALLBACK settings_dialog_proc(HWND window, UINT message, WPARAM wparam, 
     DeleteFileW(temporary);
     MessageBoxW(window,L"Could not save settings. Check access to the profile folder.",L"Pi AoIP",MB_OK|MB_ICONERROR); return TRUE;
   }
-  unsigned max_frames = (1472 - 40) / (channels * bits / 8);
-  unsigned frames = device.v2 ? aoip::low_latency_frames(channels,rate,bits,block) : std::min(device.frames,max_frames);
-  if (!profile_fits_link(channels, rate, bits, frames,
-                         device.max_pps, device.link_mbps) ||
-      !profile_fits_link(wire_outputs,rate,bits,aoip::packet_frames(wire_outputs,bits),device.max_pps,device.link_mbps)) {
+  const auto protocol=device.v3 ? aoip::WireProtocol::v3 : aoip::WireProtocol::v1;
+  const auto max_frames=aoip::packet_capacity(channels,bits,protocol);
+  const unsigned frames=device.v3 ? aoip::select_capture_frames(channels,rate,bits,block,max_frames,capture) :
+    (device.v2 ? aoip::low_latency_frames(channels,rate,bits,block) : std::min(device.frames,max_frames));
+  const auto budget=aoip::transport_budget({channels,wire_outputs,rate,bits,block},frames,
+    protocol,device.link_mbps,device.max_pps);
+  const auto legacy_render=aoip::direction_budget(wire_outputs,rate,bits,
+    aoip::low_latency_frames(wire_outputs,rate,bits,block),aoip::Packetization::capture_cadence,protocol);
+  const bool fits=device.v3 ? budget.fits :
+    aoip::direction_fits(budget.capture,device.link_mbps,device.max_pps) &&
+    aoip::direction_fits(legacy_render,device.link_mbps,device.max_pps);
+  if (!frames || !fits) {
     MessageBoxW(window,L"The format exceeds the device bandwidth or packet-rate limit.",L"Pi AoIP", MB_OK | MB_ICONERROR);
     DeleteFileW(temporary);
     return TRUE;
@@ -877,7 +899,7 @@ bool render_settings_preview(const wchar_t* path,unsigned scale,unsigned page) {
   // Native EDIT/COMBOBOX omit their value when WM_PRINT targets an invisible
   // ancestor. Compose that text from the real control (selection, font, rect),
   // without ever showing the window or sampling pixels from the desktop.
-  for(int id:{3000,3002,3003,3004,3010}) {
+  for(int id:{3000,3002,3003,3004,3010,3113}) {
     HWND control=GetDlgItem(window,id);
     if(!(GetWindowLongPtrW(control,GWL_STYLE)&WS_VISIBLE)) continue;
     RECT r{}; GetWindowRect(control,&r); MapWindowPoints(nullptr,window,reinterpret_cast<POINT*>(&r),2);

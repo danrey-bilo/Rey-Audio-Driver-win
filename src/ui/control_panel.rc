@@ -6,8 +6,8 @@ IDI_PIAOIP ICON "assets/PiAoIP.ico"
 IDI_PIAOIP_GUIDE ICON "assets/PiAoIP-Guide.ico"
 
 1 VERSIONINFO
-FILEVERSION 2,4,3,0
-PRODUCTVERSION 2,4,3,0
+FILEVERSION 2,5,0,0
+PRODUCTVERSION 2,5,0,0
 FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
 FILEFLAGS 0
 FILEOS VOS_NT_WINDOWS32
@@ -19,11 +19,11 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "PiAoIP Project"
       VALUE "FileDescription", "PiAoIP Settings"
-      VALUE "FileVersion", "2.4.3.0"
+      VALUE "FileVersion", "2.5.0.0"
       VALUE "InternalName", "PiAoipControl"
       VALUE "OriginalFilename", "PiAoipControl.exe"
       VALUE "ProductName", "PiAoIP"
-      VALUE "ProductVersion", "2.4.3"
+      VALUE "ProductVersion", "2.5.0"
     END
   END
   BLOCK "VarFileInfo"

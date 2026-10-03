@@ -1,0 +1,51 @@
+{
+  "tag": "manual-b64-g448-cb50",
+  "seconds": 600,
+  "block": 64,
+  "guard": 448,
+  "bits": 24,
+  "capture_frames": 32,
+  "callback_us": 50,
+  "command": [
+    "workspace\\repositories\\AoIP-debug-tool\\build\\transport-stage5-20261002\\bin\\PiAoipService.exe",
+    "--console",
+    "--echo",
+    "--seconds",
+    "600",
+    "--peer",
+    "192.168.1.2",
+    "--block",
+    "64",
+    "--guard",
+    "448",
+    "--frames",
+    "32",
+    "--callback-us",
+    "50",
+    "--no-energy"
+  ],
+  "started_utc": "2026-10-02T22:02:07.480563+00:00",
+  "exe_sha256": "7e5a259e66dca0a66ac9c1ab7352c3ab8cec2d0dc0dca546e0e3f2f15aa11569",
+  "before": {
+    "tx": 0,
+    "rx": 0,
+    "lost": 0,
+    "bad": 0,
+    "skipped_source_frames": 0,
+    "out_of_order": 0,
+    "duplicates": 0,
+    "tx_retries": 0,
+    "tx_expired": 0,
+    "max_send_late_us": 0,
+    "max_rx_gap_us": 0
+  },
+  "identity_raw": "PIAOIP_IDENTITY_V1 id=00000000000000002c26e7dcd051e632 origin=board-serial backend=synthetic",
+  "probe_start": "PIAOIP_MEASURE_STARTED_V2 channel=8",
+  "other_owner": {
+    "exit_code": 5,
+    "output": "SERVICE_START PIAOIP_BUSY_V3\n"
+  },
+  "error": "",
+  "elapsed_s": 224.04752290000033,
+  "output": "SERVICE_READY id=00000000000000002c26e7dcd051e632 backend=synthetic mode=digital-echo rate=192000 bits=24 inputs=8 outputs=8 block=64 guard=448 capture_frames=32 capture_pps=6000 render_pps=6000 capture_bps=42336000 render_bps=42336000\nSERVICE_STATS seconds=224.034 rx=1344238 invalid=0 rx_overflow=0 late_frames=0 missing_frames=0 resync=0 callbacks=672112 deadline_misses=0 skipped_frames=0 callback_max_us=204.9 wake_max_us=505.3 rx_gap_max_us=854.4 tx=1344220 tx_overflow=0 tx_expired=2 tx_errors=0 mmcss_failures=0 host_overruns=0 expired_output_frames=0 control_failures=0 budget_yields=0 suppressed_frames=0 tx_age_max_us=3245.0\nSERVICE_IO calls=1344246 completions=1344246 waits=1344125 max_batch=8 overflows=0 errors=0 audio_percent=22.834 rx_percent=2.818 tx_percent=3.459\n"
+}

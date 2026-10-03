@@ -4,8 +4,8 @@
 #include "resource.h"
 IDI_PIAOIP ICON "assets/PiAoIP.ico"
 1 VERSIONINFO
-FILEVERSION 2,4,3,0
-PRODUCTVERSION 2,4,3,0
+FILEVERSION 2,5,0,0
+PRODUCTVERSION 2,5,0,0
 FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
 FILEFLAGS 0
 FILEOS VOS_NT_WINDOWS32
@@ -17,11 +17,11 @@ BEGIN
     BEGIN
       VALUE "CompanyName", "PiAoIP Project"
       VALUE "FileDescription", "PiAoIP ASIO audio transport"
-      VALUE "FileVersion", "2.4.3.0"
+      VALUE "FileVersion", "2.5.0.0"
       VALUE "InternalName", "PiAoipAsio"
       VALUE "OriginalFilename", "PiAoipAsio.dll"
       VALUE "ProductName", "PiAoIP"
-      VALUE "ProductVersion", "2.4.3"
+      VALUE "ProductVersion", "2.5.0"
     END
   END
   BLOCK "VarFileInfo"

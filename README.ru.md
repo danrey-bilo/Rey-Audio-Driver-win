@@ -1,16 +1,22 @@
-![Win11-asio-AoIP 2.4.3](docs/assets/header.svg)
+![Win11-asio-AoIP 2.5.0](docs/assets/header.svg)
 
 # Win11-asio-AoIP
 
 [English](README.md) | **Русский**
 
-Драйвер ASIO для Windows 11 x64: соединяет DAW с совместимым сервисом Raspberry Pi AoIP через проводной Ethernet.
+Аудиотранспорт Windows 11 x64 через проводной Ethernet: самостоятельная сетевая служба, существующий адаптер ASIO и экспериментальный аудиодрайвер ACX/KMDF.
 
-**[Скачать 2.4.3](https://github.com/danrey-bilo/Win11-asio-AoIP/releases/tag/v2.4.3)** · **[Описание релиза](docs/RELEASE-2.4.3.ru.md)** · **[Проверки](docs/VALIDATION.ru.md)**
+В рабочей ветке также есть [независимая служба для одного Pi и драйвер ACX](docs/ACX-SERVICE.ru.md). Служба собирается без ASIO; kernel-драйвер не подписан и ожидает проверки установки и WASAPI.
+
+**[Скачать 2.5.0](https://github.com/danrey-bilo/Win11-asio-AoIP/releases/tag/v2.5.0)** · **[Описание релиза](docs/RELEASE-2.5.0.ru.md)** · **[Проверки](docs/VALIDATION.ru.md)**
+
+[Транспорт и статус endpoints](docs/TRANSPORT-2.5.ru.md)
+
+**Пакеты:** ASIO MSI — существующий адаптер DAW; `PiAoIP-2.5.0-Windows-service-ACX-development-x64.zip` — самостоятельная служба и unsigned-драйвер. ZIP требует ручной настройки на подготовленном драйверном стенде. [Настройка службы](docs/ACX-SERVICE.ru.md).
 
 ## Начало работы
 
-1. Скачайте [PiAoIP-2.4.3-Windows11-x64.msi](https://github.com/danrey-bilo/Win11-asio-AoIP/releases/download/v2.4.3/PiAoIP-2.4.3-Windows11-x64.msi).
+1. Скачайте [PiAoIP-2.5.0-Windows11-x64.msi](https://github.com/danrey-bilo/Win11-asio-AoIP/releases/download/v2.5.0/PiAoIP-2.5.0-Windows11-x64.msi).
 2. Закройте ASIO-приложения и PiAoIP в трее, затем запустите MSI.
 3. Откройте **PiAoIP Settings → Device → Find and connect** и выберите Pi.
 4. Задайте **Sample rate**, **Bit depth**, **ASIO buffer** и **LAN buffer**, затем нажмите **Apply**.
@@ -39,7 +45,7 @@ MSI устанавливает ASIO DLL, приложение настроек/�
 
 [Установка](docs/INSTALL.ru.md) · [Сборка](docs/BUILD.ru.md) · [API хоста](docs/API.ru.md) · [Архитектура](docs/ARCHITECTURE.ru.md) · [Буферы](docs/BUFFER-GUIDE.ru.md)
 
-Основной язык документации — английский; у актуальных руководств есть русские версии. Версия 2.4.3 — **предварительный выпуск**. Проверка сборки и пакетов не подтверждает физическую работу ADC/DAC или гарантированную задержку. Сервис Pi генерирует и проверяет синтетический PCM; для физической звуковой карты нужен аппаратный аудиобэкенд.
+Основной язык документации — английский; у актуальных руководств есть русские версии. Версия 2.5.0 — **предварительный выпуск**. Проверка сборки и пакетов не подтверждает физическую работу ADC/DAC или гарантированную задержку. Сервис Pi генерирует и проверяет синтетический PCM; для физической звуковой карты нужен аппаратный аудиобэкенд.
 
 ## Компоненты проекта
 

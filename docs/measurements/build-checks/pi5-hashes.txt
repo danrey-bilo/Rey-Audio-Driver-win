@@ -1,0 +1,4 @@
+252a146bad247a75332b6710a52b04bd0a7360c3bae1fd47163d3e380a2aad1c  /home/admin/piaoip-release-2.5.0-20261003/src/AoIP-debug-tool/build/package-pi5/cmake/bin/aoip_peer_rpi5
+8e1d173951f1b2d75bed330a37106b000becc95c6bb9f0f1c3e2e9911ae8cf76  artifacts/AoIP-2.5.0-SDK-linux-arm64.tar.gz
+fc8eac0a43c16c5e02b644385d5bc8759f7badd78306c99011ca652ba05e1539  artifacts/piaoip-rpi5_2.5.0-1_arm64.deb
+2d0e94b0ef420aa3285933066b2a26e488f209dc19c2ca468b6cad0b15042ce5  artifacts/piaoip-rpi5-sdk_2.5.0-1_arm64.deb

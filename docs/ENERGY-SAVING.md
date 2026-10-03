@@ -13,4 +13,4 @@ An entirely silent direction emits three transition markers, then stops audio da
 
 These features need V3 support. Pi 5 uses the demand-driven service; Pi 4 retains its legacy continuous wrapper. See [protocol V3](https://github.com/danrey-bilo/AoIP-lib/blob/main/docs/PROTOCOL-V3.md).
 
-`PiAoipControl.exe --tray` monitors connection state. Its icon appears when a Pi is found; click it to open settings and use the right-click menu to exit. `--quit` asks the existing tray instance to close. The MSI configures tray startup at sign-in. Version 2.4.3 uses embedded multi-resolution icons for the EXE, panel, tray, shortcuts and Installed apps.
+`PiAoipControl.exe --tray` monitors connection state. Its icon appears when a Pi is found; click it to open settings and use the right-click menu to exit. `--quit` asks the existing tray instance to close. The MSI configures tray startup at sign-in. Version 2.5.0 uses embedded multi-resolution icons for the EXE, panel, tray, shortcuts and Installed apps.

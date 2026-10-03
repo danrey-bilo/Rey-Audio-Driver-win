@@ -90,7 +90,8 @@ bool parse_device(const char* reply, const sockaddr_in& address, SettingsDialog:
     device.outputs = device.max_outputs = device.channels;
   }
   valid = valid && aoip::valid_rate(device.rate) && aoip::valid_bits(device.bits) &&
-    device.frames <= aoip::packet_frames(device.channels, device.bits);
+    device.frames <= aoip::packet_capacity(device.channels, device.bits,
+      device.v3 ? aoip::WireProtocol::v3 : aoip::WireProtocol::v1);
   for (auto buffer : device.buffers) valid = valid && aoip::valid_buffer(buffer);
   for (auto bit : device.supported_bits) valid = valid && aoip::valid_bits(bit);
   if (valid) valid = inet_ntop(AF_INET, &address.sin_addr, device.ip, sizeof(device.ip)) != nullptr;

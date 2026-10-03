@@ -2,6 +2,8 @@
 #include "iasiodrv.h"
 #include "aoip/timeline.hpp"
 #include "aoip/spsc_queue.hpp"
+#include "aoip/receive_budget.hpp"
+#include "../transport/iocp_receiver.hpp"
 namespace piaoip {
 HMODULE g_module=nullptr;
 std::atomic<long> g_objects{0};
@@ -19,6 +21,7 @@ public:
   ~Driver() {
     stop();
     disposeBuffers();
+    iocp_receiver_.reset();
     if (socket_ != INVALID_SOCKET) closesocket(socket_);
     if (socket_event_ != WSA_INVALID_EVENT) WSACloseEvent(socket_event_);
     if (stop_event_) CloseHandle(stop_event_);
@@ -40,6 +43,7 @@ public:
   ASIOBool init(void*) override try {
     if (socket_ != INVALID_SOCKET) {
       stop();
+      iocp_receiver_.reset();
       closesocket(socket_);
       socket_ = INVALID_SOCKET;
       if (wsa_) { WSACleanup(); wsa_ = false; }
@@ -88,6 +92,7 @@ public:
     if (!cfg_.inputs && !cfg_.outputs) { std::strcpy(error_, "Enable at least one input or output"); return ASIOFalse; }
     physical_outputs_=source.outputs; wire_outputs_=source.outputs;
     source_frames_=source.frames; source_v2_=source.v2; source_v3_=source.v3;
+    link_mbps_=source.link_mbps; max_pps_=source.max_pps;
     cfg_.rate = source.rate;
     cfg_.bits = static_cast<uint16_t>(source.bits);
     if (std::find(source.buffers.begin(), source.buffers.end(),
@@ -125,6 +130,16 @@ public:
     if (!start_event_) start_event_=CreateEventW(nullptr,TRUE,FALSE,nullptr);
     if (!stop_event_ || !rx_event_ || !tx_event_ || !start_event_ || !config_event_ || socket_event_==WSA_INVALID_EVENT ||
         WSAEventSelect(socket_,socket_event_,FD_READ | FD_CLOSE)) return ASIOFalse;
+    char backend[16]{};
+    if(GetEnvironmentVariableA("PIAOIP_RX_BACKEND",backend,sizeof(backend))==4 && std::strcmp(backend,"iocp")==0) {
+      // Keep the measured event path as the default until the new dispatcher
+      // passes LAN A/B. Backend selection applies only to this process/init.
+      WSAEventSelect(socket_,socket_event_,0);
+      iocp_receiver_=std::make_unique<transport::IocpReceiver>();
+      if(!iocp_receiver_->attach(socket_)) {
+        std::strcpy(error_,"IOCP socket attachment failed"); return ASIOFalse;
+      }
+    }
     int send_buffer=64*1024;
     setsockopt(socket_,SOL_SOCKET,SO_SNDBUF,reinterpret_cast<const char*>(&send_buffer),sizeof(send_buffer));
     timeline_.prepare(cfg_.channels);
@@ -139,12 +154,22 @@ public:
   ASIOError start() override {
     if (socket_ == INVALID_SOCKET || !callbacks_ || running_) return ASE_InvalidMode;
     if(worker_.joinable() || receiver_.joinable() || sender_.joinable() || heartbeat_.joinable()) stop();
+    if(source_v3_) {
+      const auto frames=capture_packet_frames();
+      const auto budget=aoip::transport_budget({input_map_.count,wire_outputs_,cfg_.rate,cfg_.bits,unsigned(block_)},
+        frames,aoip::WireProtocol::v3,link_mbps_,max_pps_);
+      if(!frames || !budget.fits) {
+        std::strcpy(error_,"CaptureFrames or actual packet rate exceeds this profile's limits");
+        return ASE_InvalidParameter;
+      }
+    }
     start_requested_ns_=now_ns(); first_callback_ns_=0;
     silent_output_blocks_=0; suppressed_output_frames_=0; output_signal_mask_=0; control_failures_=0;
     output_silent_=false; remote_silent_=false; expected_rx_epoch_=0;
     silence_first_=UINT64_MAX;
     audio_cpu_ns_=0; rx_cpu_ns_=0; tx_cpu_ns_=0;
     max_tx_queue_age_ns_=0;
+    rx_budget_yields_=0; max_rx_drain_ns_=0; max_rx_drain_packets_=0;
     rx_gap_over_500us_=0; rx_gap_over_1000us_=0; rx_gap_over_1500us_=0;
     rx_max_batch_=0; rx_fast_after_gap_=0; rx_max_queue_depth_=0;
     for(auto& bucket:rx_gap_hist_) bucket=0;
@@ -157,6 +182,7 @@ public:
     std::array<char,aoip::packet_bytes> stale{};
     for (unsigned i=0;i<4096;++i) if(recv(socket_,stale.data(),int(stale.size()),0)==SOCKET_ERROR) break;
     rx_queue_->reset(); tx_queue_->reset(); timeline_.reset(0); stats_.reset();
+    if(iocp_receiver_ && !iocp_receiver_->reset()) return ASE_InvalidMode;
     position_=0; stream_position_=0; timestamp_=now_ns(); tx_frame_=0; tx_seq_=0; half_=0;
     tx_epoch_=uint16_t((now_ns()>>8)%65535+1);
     partial_frames_=0; pending_half_=-1;
@@ -172,7 +198,7 @@ public:
     char request[256]{}, reply[512]{};
     unsigned requested_frames=0;
     if(source_v3_) {
-      const unsigned frames=std::min(source_frames_,aoip::low_latency_frames(cfg_.channels,cfg_.rate,cfg_.bits,unsigned(block_)));
+      const unsigned frames=capture_packet_frames();
       requested_frames=frames;
       std::snprintf(request,sizeof(request),
         "PIAOIP_SUBSCRIBE_V3 port=%u channels=%u rate=%u bits=%u outputs=%u in_mask=%016llx out_mask=%016llx frames=%u session=%u energy=%u",
@@ -203,6 +229,7 @@ public:
   ASIOError stop() override {
     if (audio_thread_id_ && audio_thread_id_==GetCurrentThreadId()) return ASE_InvalidMode;
     running_=false;
+    if(iocp_receiver_) iocp_receiver_->wake();
     if(stop_event_) SetEvent(stop_event_);
     if(worker_.joinable()) worker_.join();
     if(receiver_.joinable()) receiver_.join();
@@ -264,8 +291,8 @@ public:
   }
   ASIOError getLatencies(long* input, long* output) override {
     if (!input || !output) return ASE_InvalidParameter;
-    const auto capture_frames=source_v3_ ? std::min(source_frames_,
-      aoip::low_latency_frames(cfg_.channels,cfg_.rate,cfg_.bits,unsigned(block_))) : source_frames_;
+    const auto capture_frames=source_v3_ ? capture_packet_frames() : source_frames_;
+    if(!capture_frames) return ASE_InvalidParameter;
     *input = cfg_.inputs ? block_ + cfg_.safety + capture_frames : 0;
     *output = cfg_.outputs ? block_ + (source_v3_ ? 0 : output_packet_frames()) : 0;
     return ASE_OK;
@@ -379,6 +406,41 @@ public:
     return ASE_OK;
   }
   ASIOError future(long selector, void* data) override {
+    if(selector==aoip::receive_io_diagnostics_selector && data) {
+      auto& out=*static_cast<aoip::ReceiveIoDiagnostics*>(data);
+      if(out.size!=sizeof(out) || out.version!=1) return ASE_InvalidParameter;
+      out.backend=iocp_receiver_ ? 1 : 0; out.pending_limit=iocp_receiver_ ? 8 : 0;
+      if(iocp_receiver_) {
+        const auto metrics=iocp_receiver_->metrics();
+        out.calls=metrics.calls; out.completions=metrics.completions; out.waits=metrics.waits;
+        out.max_batch=metrics.max_batch; out.overflows=metrics.overflows; out.errors=metrics.errors;
+      }
+      return ASE_SUCCESS;
+    }
+    if(selector==aoip::wire_diagnostics_selector && data) {
+      auto& out=*static_cast<aoip::WireDiagnostics*>(data);
+      if(out.size!=sizeof(out) || out.version!=1) return ASE_InvalidParameter;
+      const auto frames=source_v3_ ? capture_packet_frames() : source_frames_;
+      const auto protocol=source_v3_ ? aoip::WireProtocol::v3 : aoip::WireProtocol::v1;
+      const auto capture=aoip::direction_budget(input_map_.count,cfg_.rate,cfg_.bits,frames,
+        aoip::Packetization::capture_cadence,protocol);
+      const auto render=aoip::direction_budget(wire_outputs_,cfg_.rate,cfg_.bits,
+        source_v3_ ? unsigned(block_) : output_packet_frames(),
+        source_v3_ ? aoip::Packetization::ready_block : aoip::Packetization::capture_cadence,protocol);
+      out.capture_frames=frames; out.wire_bits=cfg_.bits;
+      out.capture_pps=capture.packets_per_second_ceiling; out.render_pps=render.packets_per_second_ceiling;
+      out.capture_bps=capture.wire_bits_per_second; out.render_bps=render.wire_bits_per_second;
+      out.render_fragments=render.fragments_per_period;
+      return ASE_SUCCESS;
+    }
+    if(selector==aoip::transport_diagnostics_selector && data) {
+      auto& out=*static_cast<aoip::TransportDiagnostics*>(data);
+      if(out.size!=sizeof(out) || out.version!=1) return ASE_InvalidParameter;
+      out.rx_budget_yields=rx_budget_yields_.load();
+      out.max_rx_drain_ns=max_rx_drain_ns_.load();
+      out.max_rx_drain_packets=max_rx_drain_packets_.load();
+      return ASE_SUCCESS;
+    }
     if(selector==aoip::stream_diagnostics_selector && data) {
       auto& out=*static_cast<aoip::StreamDiagnostics*>(data);
       if(out.size!=sizeof(out) || out.version!=1) return ASE_InvalidParameter;

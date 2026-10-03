@@ -1,0 +1,15 @@
+{
+  "tag": "margin-b64-g1536-cb50",
+  "elapsed_s": 870.8,
+  "planned_s": 900,
+  "windows_final_counters": "pending",
+  "rtt_so_far": {
+    "count": 5221932,
+    "min_us": 8178,
+    "p50_us": 8392,
+    "p95_us": 8532,
+    "p99_us": 8566,
+    "max_us": 13446,
+    "active": 1
+  }
+}

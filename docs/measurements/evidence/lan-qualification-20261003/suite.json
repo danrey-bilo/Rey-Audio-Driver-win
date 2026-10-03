@@ -1,0 +1,11 @@
+{
+  "started_utc": "2026-10-02T22:02:04.360135+00:00",
+  "kind": "digital-only",
+  "windows_nic_priority_changed": false,
+  "service_sha256": "7e5a259e66dca0a66ac9c1ab7352c3ab8cec2d0dc0dca546e0e3f2f15aa11569",
+  "normal": [],
+  "faults": [],
+  "restored": true,
+  "error": "",
+  "ended_utc": "2026-10-02T22:05:51.949837+00:00"
+}

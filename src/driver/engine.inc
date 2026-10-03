@@ -22,6 +22,45 @@
 #undef AOIP_COUNTERS
   } stats_;
 
+  bool accept_received(aoip::Packet& packet,uint64_t& previous,unsigned& fast_after_gap,
+                       uint64_t recv_begin=0,uint64_t wait_begin=0,uint64_t wait_end=0) {
+    packet.time_ns=now_ns();
+    if(!aoip::validate_packet(packet.data,packet.size,1,cfg_.channels,cfg_.rate,cfg_.bits) ||
+      (source_v3_ && (aoip::get16(packet.data+4)!=3 || (aoip::get64(packet.data+40) & ~input_map_.mask)))) {
+      ++stats_.invalid_packets; return false;
+    }
+    if(source_v3_ && aoip::get16(packet.data+34)!=expected_rx_epoch_.load()) return false;
+    const bool silent=source_v3_ && aoip::get64(packet.data+40)==0;
+    if(previous && !silent) {
+      const uint64_t gap=packet.time_ns-previous;
+      max_counter(stats_.max_rx_gap_ns,gap);
+      if(timing_trace_enabled_) {
+        if(gap>=250000) {
+          if(rx_gap_record_count_<rx_gap_records_.size())
+            rx_gap_records_[rx_gap_record_count_++]={previous,packet.time_ns,recv_begin,wait_begin,wait_end,
+              aoip::get32(packet.data+12),GetCurrentProcessorNumber()};
+          else ++rx_gap_records_dropped_;
+        }
+        ++rx_gap_hist_[std::min<uint64_t>(gap/5000,rx_gap_hist_.size()-1)];
+        if(gap>=500000) ++rx_gap_over_500us_;
+        if(gap>=1000000) { ++rx_gap_over_1000us_; fast_after_gap=1; }
+        else if(fast_after_gap && gap<=20000) { ++fast_after_gap; max_counter(rx_fast_after_gap_,fast_after_gap); }
+        else fast_after_gap=0;
+        if(gap>=1500000) ++rx_gap_over_1500us_;
+      }
+    }
+    previous=silent ? 0 : packet.time_ns;
+    ++stats_.rx_packets; return true;
+  }
+  const aoip::Packet* acquire_received() const {
+    return iocp_receiver_ ? iocp_receiver_->acquire() : rx_queue_->acquire_read();
+  }
+  void release_received() {
+    if(iocp_receiver_) iocp_receiver_->release(); else rx_queue_->release_read();
+  }
+  uint64_t received_size() const {
+    return iocp_receiver_ ? iocp_receiver_->size() : rx_queue_->size();
+  }
   void receive_loop() {
     RealtimeThread realtime(stats_.mmcss_failures,1,cfg_.realtime_cpus[1]);
     rx_trace_tid_=GetCurrentThreadId();
@@ -33,15 +72,30 @@
       HANDLE start_events[]={stop_event_,start_event_};
       if(WaitForMultipleObjects(2,start_events,FALSE,INFINITE)!=WAIT_OBJECT_0+1) { rx_cpu_ns_=thread_cpu_ns(); return; }
     }
-    aoip::Packet packet;
+    aoip::Packet discard;
     uint64_t previous=0;
     uint64_t wait_begin=0,wait_end=0;
     unsigned fast_after_gap=0;
+    if(iocp_receiver_) {
+      struct Context { Driver* owner; uint64_t previous=0; unsigned fast=0; } context{this};
+      iocp_receiver_->run(running_,rx_event_,[](void* value,aoip::Packet& packet) {
+        auto& state=*static_cast<Context*>(value);
+        return state.owner->accept_received(packet,state.previous,state.fast);
+      },&context);
+      const auto metrics=iocp_receiver_->metrics();
+      stats_.rx_queue_overflows+=metrics.overflows;
+      stats_.invalid_packets+=metrics.errors;
+      rx_cpu_ns_=thread_cpu_ns(); return;
+    }
     HANDLE events[]={stop_event_,socket_event_};
     while(running_.load(std::memory_order_relaxed)) {
       bool received=false;
       unsigned batch_count=0;
       for(unsigned batch=0; batch<256 && running_; ++batch) {
+        auto* slot=rx_queue_->reserve_write();
+        // Still drain the socket when the ring is full. Invalid datagrams must
+        // never publish a slot, and overflow must not stall the receive thread.
+        auto& packet=slot ? *slot : discard;
         const uint64_t recv_begin=timing_trace_enabled_ ? now_ns() : 0;
         int n=recv(socket_,reinterpret_cast<char*>(packet.data),sizeof(packet.data),0);
         if(n==SOCKET_ERROR) {
@@ -49,38 +103,13 @@
           if(error!=WSAEWOULDBLOCK && error!=WSAECONNRESET) ++stats_.invalid_packets;
           break;
         }
-        packet.time_ns=now_ns(); packet.size=unsigned(n);
-        if(!aoip::validate_packet(packet.data,packet.size,1,cfg_.channels,cfg_.rate,cfg_.bits) ||
-          (source_v3_ && (aoip::get16(packet.data+4)!=3 || (aoip::get64(packet.data+40) & ~input_map_.mask)))) {
-          ++stats_.invalid_packets; continue;
+        packet.size=unsigned(n);
+        if(!accept_received(packet,previous,fast_after_gap,recv_begin,wait_begin,wait_end)) continue;
+        if(!slot) ++stats_.rx_queue_overflows;
+        else {
+          rx_queue_->commit_write();
+          if(timing_trace_enabled_) max_counter(rx_max_queue_depth_,rx_queue_->size());
         }
-        if(source_v3_ && aoip::get16(packet.data+34)!=expected_rx_epoch_.load()) continue;
-        const bool silent=source_v3_ && aoip::get64(packet.data+40)==0;
-        if(previous && !silent) {
-          const uint64_t gap=packet.time_ns-previous;
-          max_counter(stats_.max_rx_gap_ns,gap);
-          if(timing_trace_enabled_) {
-            if(gap>=250000) {
-              if(rx_gap_record_count_<rx_gap_records_.size())
-                rx_gap_records_[rx_gap_record_count_++]={previous,packet.time_ns,recv_begin,wait_begin,wait_end,
-                  aoip::get32(packet.data+12),GetCurrentProcessorNumber()};
-              else ++rx_gap_records_dropped_;
-            }
-            // 5 us buckets preserve tail information without logging on the
-            // real-time receive thread. The final bucket also covers >2.55 ms.
-            ++rx_gap_hist_[std::min<uint64_t>(gap/5000,rx_gap_hist_.size()-1)];
-            if(gap>=500000) ++rx_gap_over_500us_;
-            if(gap>=1000000) { ++rx_gap_over_1000us_; fast_after_gap=1; }
-            else if(fast_after_gap && gap<=20000) {
-              ++fast_after_gap; max_counter(rx_fast_after_gap_,fast_after_gap);
-            } else fast_after_gap=0;
-            if(gap>=1500000) ++rx_gap_over_1500us_;
-          }
-        }
-        previous=silent ? 0 : packet.time_ns;
-        ++stats_.rx_packets;
-        if(!rx_queue_->push(packet)) ++stats_.rx_queue_overflows;
-        else if(timing_trace_enabled_) max_counter(rx_max_queue_depth_,rx_queue_->size());
         ++batch_count;
         received=true;
       }
@@ -131,39 +160,48 @@
     }
   }
 
+  void transmit_packet(const aoip::Packet& packet,DeadlineWaiter& waiter,uint64_t expiry) {
+    const auto age=now_ns(); if(age>packet.time_ns) max_counter(max_tx_queue_age_ns_,age-packet.time_ns);
+    if(now_ns()>packet.time_ns+expiry) { ++stats_.tx_expired_packets; return; }
+    waiter.wait(packet.time_ns,stop_event_);
+    if(!running_) return;
+    if(now_ns()>packet.time_ns+expiry) { ++stats_.tx_expired_packets; return; }
+    while(running_) {
+      if(now_ns()>packet.time_ns+expiry) { ++stats_.tx_expired_packets; break; }
+      int n=send(socket_,reinterpret_cast<const char*>(packet.data),int(packet.size),0);
+      if(n==int(packet.size)) { ++stats_.tx_packets; break; }
+      const int error=WSAGetLastError();
+      if(n==SOCKET_ERROR && error==WSAEWOULDBLOCK) {
+        // Hold the read slot throughout retries; the producer cannot reuse it.
+        ++stats_.tx_retries;
+        waiter.wait(now_ns()+25000,stop_event_);
+        continue;
+      }
+      ++stats_.tx_errors; stats_.last_tx_error=error; break;
+    }
+  }
+
   void send_loop() {
     RealtimeThread realtime(stats_.mmcss_failures,2,cfg_.realtime_cpus[2]);
     tx_trace_tid_=GetCurrentThreadId();
     SetThreadDescription(GetCurrentThread(),L"PiAoIP transmit");
     DeadlineWaiter waiter;
-    aoip::Packet packet;
     HANDLE events[]={stop_event_,tx_event_};
     // This is a discard bound, not a wait. Independent TX scheduling may stall
     // briefly after audio has rendered; allow a measured 3 ms scheduling grace.
     const uint64_t expiry=std::max<uint64_t>(3000000,uint64_t(block_+cfg_.safety)*1000000000/cfg_.rate);
     while(running_.load(std::memory_order_relaxed)) {
-      if(!tx_queue_->pop(packet)) { WaitForMultipleObjects(2,events,FALSE,100); continue; }
-      const auto age=now_ns(); if(age>packet.time_ns) max_counter(max_tx_queue_age_ns_,age-packet.time_ns);
-      if(now_ns()>packet.time_ns+expiry) { ++stats_.tx_expired_packets; continue; }
-      waiter.wait(packet.time_ns,stop_event_);
-      if(!running_) break;
-      if(now_ns()>packet.time_ns+expiry) { ++stats_.tx_expired_packets; continue; }
-      while(running_) {
-        if(now_ns()>packet.time_ns+expiry) { ++stats_.tx_expired_packets; break; }
-        int n=send(socket_,reinterpret_cast<const char*>(packet.data),int(packet.size),0);
-        if(n==int(packet.size)) { ++stats_.tx_packets; break; }
-        const int error=WSAGetLastError();
-        if(n==SOCKET_ERROR && error==WSAEWOULDBLOCK) {
-          // Transient backpressure is retried only until the original deadline.
-          // The audio thread remains independent and the retry is observable.
-          ++stats_.tx_retries;
-          waiter.wait(now_ns()+25000,stop_event_);
-          continue;
-        }
-        ++stats_.tx_errors; stats_.last_tx_error=error; break;
-      }
+      const auto* packet=tx_queue_->acquire_read();
+      if(!packet) { WaitForMultipleObjects(2,events,FALSE,100); continue; }
+      transmit_packet(*packet,waiter,expiry);
+      tx_queue_->release_read();
     }
     tx_cpu_ns_=thread_cpu_ns();
+  }
+
+  unsigned capture_packet_frames() const {
+    return aoip::select_capture_frames(cfg_.channels,cfg_.rate,cfg_.bits,unsigned(block_),
+      source_frames_,cfg_.capture_frames);
   }
 
   unsigned output_packet_frames() const {
@@ -196,23 +234,25 @@
       unsigned offset=0;
       do {
         const unsigned frames=signal ? std::min(limit,unsigned(block_)-offset) : std::min(256u,unsigned(block_));
-        aoip::Packet packet; packet.time_ns=now; // this block is already rendered; send it immediately
-        aoip::write_masked_header(packet.data,2,tx_seq_++,tx_frame_+offset,signal,cfg_.rate,cfg_.bits,frames,tx_epoch_);
         const unsigned stride=wire.count*(cfg_.bits/8);
-        for(auto& channel:buffers_) if(!channel.input && channel.enabled && wire.packed[unsigned(channel.channel)]>=0) {
-          const unsigned packed=unsigned(wire.packed[unsigned(channel.channel)]);
-          for(unsigned f=0;f<frames;++f)
-            std::memcpy(packet.data+aoip::masked_header_bytes+size_t(f)*stride+packed*(cfg_.bits/8),
-              channel.halves[half].get()+size_t(offset+f)*asio_bytes,cfg_.bits/8);
-        }
-        packet.size=aoip::masked_header_bytes+frames*stride;
-        aoip::put32(packet.data+36,aoip::packet_crc(packet.data,packet.size));
         // Repeat the silence transition three times, then send no audio during
         // digital zero. PCM resumes in the first nonzero block, with its frame tag.
         const unsigned copies=signal ? 1 : 3;
         for(unsigned copy=0;copy<copies;++copy) {
-          if(copy) { aoip::put32(packet.data+12,tx_seq_++); aoip::put32(packet.data+36,aoip::packet_crc(packet.data,packet.size)); }
-          if(!tx_queue_->push(packet)) ++stats_.tx_queue_overflows;
+          const auto sequence=tx_seq_++;
+          auto* packet=tx_queue_->reserve_write();
+          if(!packet) { ++stats_.tx_queue_overflows; continue; }
+          packet->time_ns=now; // rendered host block, ready for immediate TX
+          aoip::write_masked_header(packet->data,2,sequence,tx_frame_+offset,signal,cfg_.rate,cfg_.bits,frames,tx_epoch_);
+          for(auto& channel:buffers_) if(!channel.input && channel.enabled && wire.packed[unsigned(channel.channel)]>=0) {
+            const unsigned packed=unsigned(wire.packed[unsigned(channel.channel)]);
+            for(unsigned f=0;f<frames;++f)
+              std::memcpy(packet->data+aoip::masked_header_bytes+size_t(f)*stride+packed*(cfg_.bits/8),
+                channel.halves[half].get()+size_t(offset+f)*asio_bytes,cfg_.bits/8);
+          }
+          packet->size=aoip::masked_header_bytes+frames*stride;
+          aoip::put32(packet->data+36,aoip::packet_crc(packet->data,packet->size));
+          tx_queue_->commit_write();
         }
         offset=signal ? offset+frames : unsigned(block_);
       } while(offset<unsigned(block_));
@@ -237,8 +277,15 @@
       if(++partial_frames_==packet_frames) {
         partial_.size=aoip::header_bytes+packet_frames*stride;
         aoip::put32(partial_.data+36,aoip::packet_crc(partial_.data,partial_.size));
-        if(!tx_queue_->push(partial_)) ++stats_.tx_queue_overflows;
-        else SetEvent(tx_event_);
+        auto* packet=tx_queue_->reserve_write();
+        if(!packet) ++stats_.tx_queue_overflows;
+        else {
+          // Legacy packet assembly can span callbacks. Copy only live bytes;
+          // the V3 path above constructs its complete packet in the ring.
+          packet->time_ns=partial_.time_ns; packet->size=partial_.size;
+          std::memcpy(packet->data,partial_.data,partial_.size);
+          tx_queue_->commit_write(); SetEvent(tx_event_);
+        }
         partial_frames_=0;
       }
     }
@@ -302,6 +349,43 @@
     half_^=1;
   }
 
+  void insert_received_packet(const aoip::Packet& packet,bool& locked,uint16_t& receive_epoch,
+                              uint64_t& last_packet_ns,double& deadline) {
+    const auto first=aoip::get64(packet.data+16);
+    const bool v2=aoip::get16(packet.data+4)>=2;
+    const bool silence=source_v3_ && aoip::get64(packet.data+40)==0;
+    const uint16_t epoch=aoip::get16(packet.data+34);
+    if(locked && !silence && remote_silent_ && silence_first_!=UINT64_MAX && first<silence_first_) {
+      stats_.late_frames+=aoip::get16(packet.data+30); return;
+    }
+    const bool restart=locked && (v2 ? epoch!=receive_epoch :
+      (first<timeline_.cursor && timeline_.cursor-first>cfg_.rate/4));
+    const bool reacquire=locked && !silence && (remote_silent_.load() || (last_packet_ns && packet.time_ns-last_packet_ns>250000000));
+    const bool far_ahead=locked && first>timeline_.cursor && first-timeline_.cursor>cfg_.rate/4;
+    if(!locked || restart || reacquire || far_ahead) {
+      if(locked) ++stats_.resyncs;
+      timeline_.reset(first); locked=true;
+      silence_first_=UINT64_MAX; remote_silent_=false;
+      receive_epoch=epoch;
+      // One block plus the explicitly selected guard, independent of wire MTU.
+      deadline=double(packet.time_ns)+double(block_+cfg_.safety)*1000000000.0/cfg_.rate;
+    }
+    last_packet_ns=packet.time_ns;
+    if(silence) {
+      if(first<timeline_.latest) {
+        // A delayed marker must not mute newer PCM already in the timeline.
+        timeline_.insert_silence(first,first+aoip::get16(packet.data+30));
+      } else silence_first_=std::min(silence_first_,first);
+    } else {
+      if(silence_first_!=UINT64_MAX && first>=silence_first_) {
+        // Retain a short quiet interval and the original frame clock.
+        timeline_.insert_silence(silence_first_,first); silence_first_=UINT64_MAX;
+      }
+      remote_silent_=false;
+      stats_.late_frames+=timeline_.insert(packet.data,source_v3_ ? &input_map_ : nullptr);
+    }
+  }
+
   void audio_loop() {
     audio_thread_id_=GetCurrentThreadId();
     audio_trace_tid_=GetCurrentThreadId();
@@ -310,55 +394,35 @@
     DeadlineWaiter waiter;
     HANDLE start_events[]={stop_event_,start_event_};
     if(WaitForMultipleObjects(2,start_events,FALSE,INFINITE)!=WAIT_OBJECT_0+1) { audio_thread_id_=0; return; }
-    aoip::Packet packet;
     const double nominal=double(block_)*1000000000.0/cfg_.rate;
     double deadline=double(now_ns())+nominal;
     uint64_t last_packet_ns=0;
     bool locked=source_v3_ && input_map_.count==0;
     uint16_t receive_epoch=0;
     while(running_.load(std::memory_order_relaxed)) {
-      // Bound work even if a faulty sender floods the socket. A queue holds
-      // <=1024 packets; old frames are discarded using the source timeline.
-      for(unsigned batch=0; batch<1024 && rx_queue_->pop(packet); ++batch) {
+      // Revisit the callback deadline between bounded RX slices, even if a
+      // faulty sender keeps the ring full. Never wait to fill a batch.
+      const uint64_t drain_started=now_ns();
+      const aoip::ReceiveBudget budget(drain_started,uint64_t(nominal));
+      unsigned drained=0;
+      bool budget_yield=false;
+      while(drained<1024) {
+        const auto* slot=acquire_received();
+        if(!slot) break;
+        if(drained && budget.exhausted(now_ns(),locked ? uint64_t(deadline) : UINT64_MAX)) {
+          budget_yield=true; ++rx_budget_yields_; break;
+        }
+        const auto& packet=*slot;
         if(timing_trace_enabled_) {
           const uint64_t read_at=now_ns();
           if(read_at>packet.time_ns) max_counter(audio_max_packet_age_ns_,read_at-packet.time_ns);
         }
-        const auto first=aoip::get64(packet.data+16);
-        const bool v2=aoip::get16(packet.data+4)>=2;
-        const bool silence=source_v3_ && aoip::get64(packet.data+40)==0;
-        const uint16_t epoch=aoip::get16(packet.data+34);
-        if(locked && !silence && remote_silent_ && silence_first_!=UINT64_MAX && first<silence_first_) {
-          stats_.late_frames+=aoip::get16(packet.data+30); continue;
-        }
-        const bool restart=locked && (v2 ? epoch!=receive_epoch :
-          (first<timeline_.cursor && timeline_.cursor-first>cfg_.rate/4));
-        const bool reacquire=locked && !silence && (remote_silent_.load() || (last_packet_ns && packet.time_ns-last_packet_ns>250000000));
-        const bool far_ahead=locked && first>timeline_.cursor && first-timeline_.cursor>cfg_.rate/4;
-        if(!locked || restart || reacquire || far_ahead) {
-          if(locked) ++stats_.resyncs;
-          timeline_.reset(first); locked=true;
-          silence_first_=UINT64_MAX; remote_silent_=false;
-          receive_epoch=epoch;
-          // One block plus an explicit, small guard; host buffering is independent
-          // of the MTU-sized wire packets.
-          deadline=double(packet.time_ns)+double(block_+cfg_.safety)*1000000000.0/cfg_.rate;
-        }
-        last_packet_ns=packet.time_ns;
-        if(silence) {
-          if(first<timeline_.latest) {
-            // A delayed marker must not mute newer PCM already in the timeline.
-            timeline_.insert_silence(first,first+aoip::get16(packet.data+30));
-          } else silence_first_=std::min(silence_first_,first);
-        } else {
-          if(silence_first_!=UINT64_MAX && first>=silence_first_) {
-            // Short quiet intervals can resume before their buffered boundary is
-            // played. Tag the intentional gap and keep the original clock.
-            timeline_.insert_silence(silence_first_,first); silence_first_=UINT64_MAX;
-          }
-          remote_silent_=false;
-          stats_.late_frames+=timeline_.insert(packet.data,source_v3_ ? &input_map_ : nullptr);
-        }
+        insert_received_packet(packet,locked,receive_epoch,last_packet_ns,deadline);
+        release_received(); ++drained;
+      }
+      if(drained) {
+        max_counter(max_rx_drain_ns_,now_ns()-drain_started);
+        max_counter(max_rx_drain_packets_,drained);
       }
       if(!locked) {
         HANDLE events[]={stop_event_,rx_event_};
@@ -367,6 +431,10 @@
       }
       const auto now=now_ns();
       if(double(now)<deadline) {
+        // A budget break leaves packets in the ring. An auto-reset RX event may
+        // already have been consumed, so continue draining without waiting for
+        // another datagram. Each slice rechecks the current audio deadline.
+        if(budget_yield || (drained==1024 && received_size())) continue;
         const bool idle=cfg_.energy_saving && (!input_map_.count || remote_silent_) && output_silent_;
         // Network arrivals provide an early wake for the Pi clock; Windows
         // timers alone may sleep longer than a small ASIO period. The tail spin
@@ -434,6 +502,7 @@
   std::atomic<uint64_t> first_callback_ns_{0},silent_output_blocks_{0},suppressed_output_frames_{0},output_signal_mask_{0},control_failures_{0};
   std::atomic<uint64_t> audio_cpu_ns_{0},rx_cpu_ns_{0},tx_cpu_ns_{0};
   std::atomic<uint64_t> max_tx_queue_age_ns_{0};
+  std::atomic<uint64_t> rx_budget_yields_{0},max_rx_drain_ns_{0},max_rx_drain_packets_{0};
   bool timing_trace_enabled_=false,timing_trace_printed_=false;
   // Single-writer fixed storage; formatted only after all audio threads join.
   // Absolute QPC-derived ns lets ETW correlate gaps without real-time logging.
@@ -453,6 +522,7 @@
   std::atomic<ResetCallback> reset_callback_{nullptr};
   std::vector<ChannelBuffer> buffers_;
   std::unique_ptr<aoip::SpscQueue<aoip::Packet,1024>> rx_queue_,tx_queue_;
+  std::unique_ptr<transport::IocpReceiver> iocp_receiver_;
   aoip::Timeline timeline_;
   std::vector<int32_t> input_scratch_;
   std::atomic<uint64_t> position_{0},timestamp_{0};
@@ -462,6 +532,7 @@
   uint32_t tx_seq_=0;
   uint16_t tx_epoch_=1;
   unsigned wire_outputs_=0,physical_outputs_=0,source_frames_=1,partial_frames_=0;
+  unsigned link_mbps_=1000,max_pps_=aoip::max_packet_rate;
   bool source_v2_=false,source_v3_=false;
   aoip::Packet partial_;
   long block_=32;

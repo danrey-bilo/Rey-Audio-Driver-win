@@ -1,0 +1,801 @@
+{
+  "transformation": "Absolute workspace paths normalized; measurement values unchanged.",
+  "originals": {
+    "evidence/lan-qualification-20261003-15min/suite.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/suite.json",
+      "sha256": "0d4c26709a743f0e161058962503815ad1c7d22f253431a50385ec7bcf80c82a",
+      "export_sha256": "8d6c3156b9819cb19a4f3ab5f40f4b554b520714598f67de809032fa41c82f5f"
+    },
+    "evidence/lan-qualification-20261003-15min/15min-b64-g512-cb100.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/15min-b64-g512-cb100.json",
+      "sha256": "9f65e89eeb2cf90696c1e1085a1a0c5138b37d41f158744b1c8247094fbba6b8",
+      "export_sha256": "91a1c1f75a41def241c7323913b0cf5ee1ff9f23ed537ed2a2a603befe4cb9cb"
+    },
+    "evidence/lan-qualification-20261003-15min/graceful-reopen-0.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/graceful-reopen-0.json",
+      "sha256": "a471af50490ac61750819bca819793370b796ab1ea3d5416107b357e5fa0bd57",
+      "export_sha256": "52a83d94393c3d83371286f9f6d0cb2032a557925556b70cb6dc47f272ffe3ad"
+    },
+    "evidence/lan-qualification-20261003-15min/graceful-reopen-1.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/graceful-reopen-1.json",
+      "sha256": "a3421b1c757f0c9b589c1a6c555e7d8e0604d73ae3a0a3d49fda30c28b8c0475",
+      "export_sha256": "d89a40ada495c92db2bb4b4a334d4bb8a062f41eec72682ab710dca620d393b1"
+    },
+    "evidence/lan-qualification-20261003-15min/graceful-reopen-2.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/graceful-reopen-2.json",
+      "sha256": "114f0acc86d1bb2defee5027a5f1d733c539409abc3b0056d20dcce11f1884e6",
+      "export_sha256": "a1e7564504d2c8ae32f4e806f0e89d6c4a6024879e733f5cf169fdc987a030c9"
+    },
+    "evidence/lan-qualification-20261003-15min/crash-owner-recovery.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/crash-owner-recovery.json",
+      "sha256": "4fac073105facfd446f322ddae2512d88644062785293555c8709c9c0d80593c",
+      "export_sha256": "33dbe0c289efb22d7662efd3208acac11cac3aa5e5b2c789e5d85c686187e782"
+    },
+    "evidence/lan-qualification-20261003-15min/admin-link-recovery.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/admin-link-recovery.json",
+      "sha256": "569edfc15ad453df130d1520f7afbc1e79868b03c03734b471a3c1431f94fd09",
+      "export_sha256": "44e722387a27386611a8bbc489091693065c7e0fb65dc287487c410fd8abe2a3"
+    },
+    "evidence/lan-qualification-20261003-15min/crash-owner.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/crash-owner.json",
+      "sha256": "eb5f96079908ee05c7f7ace0a71e867e20c7a3543e6631c66dbc14fcad9b6e63",
+      "export_sha256": "5824887b82f1b1a6b10446dc5734ff0a272cae96e10852e4ee092f95f1838674"
+    },
+    "evidence/lan-qualification-20261003-15min/admin-link-cycle.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/admin-link-cycle.json",
+      "sha256": "a790b9e4b0edb3eb8992e723edb4a8a29ed99bb22cdfb54d22a09d06a040eb5a",
+      "export_sha256": "4e08626c92d3d64e225fb4622f3558944a77670eed8e39ae4c6d6bfaefb6e5f6"
+    },
+    "evidence/lan-qualification-20261003-15min/original.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/original.json",
+      "sha256": "ce70f3dabeb01b678628b0bb3405cdb662c1cb59b8e0a87c6e1f0e64a2414246",
+      "export_sha256": "ce70f3dabeb01b678628b0bb3405cdb662c1cb59b8e0a87c6e1f0e64a2414246"
+    },
+    "evidence/lan-qualification-20261003-15min/restored.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/restored.json",
+      "sha256": "96ec0b0069b87cfe832e71b06287b6c0ad13d70d05885a19eae967931c1c25d1",
+      "export_sha256": "96ec0b0069b87cfe832e71b06287b6c0ad13d70d05885a19eae967931c1c25d1"
+    },
+    "AOIP_LAN_15MIN_VALIDATION_2026-10-03_RU.md": {
+      "source": "AOIP_LAN_15MIN_VALIDATION_2026-10-03_RU.md",
+      "sha256": "b0f27a406bd1263a6de2d40ea591aa92e70355b7d85ade70a1274391babb0777"
+    },
+    "evidence/lan-startup-fix-20261003/suite.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/suite.json",
+      "sha256": "d13966531c75f99fef0c26b050bee97bc19d4623caf22f40d3c3369a8757fbf8",
+      "export_sha256": "3fb4bf0e1c1f8bee0b9dabb4609548bf2b420677d1c9f2a4b541ad71a850e86f"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-0.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-0.json",
+      "sha256": "6c6131d48db2d9f3684b929ac394c3dcaebfb049447d3fa354c063f3ddfda046",
+      "export_sha256": "39befc68a0cc3cc6631cf51fb2e6ae1b690daeb8c179742fa14fccdaf52adeef"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-1.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-1.json",
+      "sha256": "04178c53a411f3875805068853a4f2c5b3ff0bfe87a58424d1ff9f408495b9a0",
+      "export_sha256": "d6d24ed2d772110e80792f4c4b53c35bbdf3c36e36db48a86d7bbed610a1b209"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-2.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-2.json",
+      "sha256": "501f377c98055ab711e8aa46e7aae80b071f5a1b15e698095688f9b83220b8c0",
+      "export_sha256": "a93bc2db6a80bd50f33fb93e51f7bfcb17d717e5393ef722ab6d8ff555612ec7"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-3.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-3.json",
+      "sha256": "86c69765d7e46ccc59d274d4e3ce5a96442033c1a3c990f26eb58d63bc01650b",
+      "export_sha256": "4b652afff83aa68af1fcdfaa0ffdcb5d97a7db7d9f9a8dbbf6496d0ecc3bec09"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-4.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-4.json",
+      "sha256": "68514e23753f0fcc0490072d06a9345373876bd9c78db1be3a7d88fe578a9002",
+      "export_sha256": "e18eff7ac0aed51770b1017413d4ca6563e3004a8cc8abfb0f92ceea565403ea"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-5.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-5.json",
+      "sha256": "63651fa212a31baff3d9e35b6ae9b69bed7690f86d1751389374382eb4b54f8d",
+      "export_sha256": "e4d84ab7ccd6f1e7222ada0ab303fad534a62b77732f7f06efc7e2485dcbe477"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-6.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-6.json",
+      "sha256": "54f59effeac821ded720a579d8b86af6d17373b9c780f447cc2764410f6497e2",
+      "export_sha256": "1515cbd508c993319be8f461cbec9dedc5d24e7a22e7fb6587d8e44c7b68bf31"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-7.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-7.json",
+      "sha256": "69c4c399cef7d2e6dc11c8e8f9b57ed1f44fe6436db6cee71826d442633afc5e",
+      "export_sha256": "dfb303edcb95b03351ad3bae7affeba3fc3f2af720175c7f8902c0baa851e96e"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-8.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-8.json",
+      "sha256": "4d8bdb4e8a4f1e52a4f0f153acd7c313e0c6e922afaa08462bbdb806f39d4637",
+      "export_sha256": "9ec14608d4e8a53a9bfcad6900eb21d8e550f4201f4e59621ad2b4bd328df7c6"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-9.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-9.json",
+      "sha256": "b0212104bdbeb37beaf085a0d29e856680060f4bfe60fa091eac484cdd50d278",
+      "export_sha256": "68344187f8f90822fabc02bbecd586ab9d0501f3af3d318c29ff71e8828cb401"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-10.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-10.json",
+      "sha256": "ef947499d2ae95f35347e8a0680f4b3efdb0f0d59e6a2f0b9227b6f2690dbcc6",
+      "export_sha256": "600fe7a2b92d797f1ae253f137cce67399400c3016f2a7c5a5fce5eeba0eb604"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-11.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-11.json",
+      "sha256": "733c90006f06f67ab0a68f9130047a5a53c4ab32724c02f01ddbc15550cd76bd",
+      "export_sha256": "92470063724666ace1bfa3476b9cbf5f05566f399f941aaac7ecc25ba84bcf40"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-12.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-12.json",
+      "sha256": "0235603546ab607bd83bf735542284b8f17117c88aa2ee65191bb18112bec717",
+      "export_sha256": "d6c1b1eb581ebdeadfa16a78634533111459d88579faeeeec4682e4fc3c453f9"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-13.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-13.json",
+      "sha256": "408f157a84bf135e83f65b0e9bac57d08119d9b0a4f665d4dc7a842149266f25",
+      "export_sha256": "e1834fd85942c8e7919f281a93f3ae57a12e004dbd15db39512f569a4c01b285"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-14.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-14.json",
+      "sha256": "fd16ce3046f68bb5e984fe13662f5bbd4c2c7c22bca22a9c51bd2a7de4785c0a",
+      "export_sha256": "7e933908cd8f9bf50b22f2109b379614e9c1671f96d2c2e446b536d1f5e36c01"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-15.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-15.json",
+      "sha256": "2bae1ffd2d918e301fbc2708c4ee6eba8095ff8eb56ad89a52921ff99cc555de",
+      "export_sha256": "d17e21e3b8961219b4116aeece2e53bececccbb8243384ba33ed06ec4cee42ce"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-16.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-16.json",
+      "sha256": "08a102417c286d6ef53794504ad01df7afac2cf7a95ff51ca06cc13299f31c19",
+      "export_sha256": "763ab816ad568ac19c3a5acda65c6b35ea39fbba3347878e02346b6581872531"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-17.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-17.json",
+      "sha256": "366d53e37eea99377267e0433120d30f808eab760a47025a26ec86f4916fb3aa",
+      "export_sha256": "6cf707f015f00fe9e104aabf3aad246298468b77f4304fe421dfedd1d2bb571e"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-18.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-18.json",
+      "sha256": "9293cff8cc7f22fbdaebcaa2906fe789771c33e63426b6cbe5d6c2a03db1be11",
+      "export_sha256": "313f4218a934207494a71a7030823d430a939100b6f39d8b5d2aed305893430b"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-19.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-19.json",
+      "sha256": "fce12d4d0d5c3dd392a236ae54846396d34fd0c44b0751f316afe834549eb9c4",
+      "export_sha256": "91979436bef92a25c401f02860bab33ba56a559d1c5b7ee816da3bc064afd958"
+    },
+    "evidence/lan-startup-fix-20261003/startup-regression-b64-g512-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-regression-b64-g512-cb50.json",
+      "sha256": "c7878b1c40a7128b7d97795170e0fcd2ce7e29e74b73cc7f43139c368c95d3e2",
+      "export_sha256": "7f46f6ec8989f157c90e7d08a3b4c5531b60a5dd80ee2f75c3ecece6890840b3"
+    },
+    "evidence/lan-startup-fix-20261003/crash-owner-recovery.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/crash-owner-recovery.json",
+      "sha256": "a9cb0a093cd34a3d49573a9a8cfd000791fd802d9b42757df37272748ed93871",
+      "export_sha256": "87773ed06972c283a38ec17003fc5485775d220c1d287700417ea2d8faacbe08"
+    },
+    "evidence/lan-startup-fix-20261003/crash-owner.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/crash-owner.json",
+      "sha256": "e65d40e98c7df173ad35c1da089fedab9adbd6df763d57d2adbe6ca532356e21",
+      "export_sha256": "e718974f2cf06a83813e5febb2289c347427eb38bf2b9e0092dd3a4d0048464c"
+    },
+    "evidence/lan-startup-fix-20261003/original.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/original.json",
+      "sha256": "73ac958c130c3505a4b77124e2a5441772e905bf3e29923638e18a51e9f604b2",
+      "export_sha256": "73ac958c130c3505a4b77124e2a5441772e905bf3e29923638e18a51e9f604b2"
+    },
+    "evidence/lan-startup-fix-20261003/restored.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/restored.json",
+      "sha256": "d82e1fbe65165f91382d7494fd6adbc17bcd3134ec96d68569e111fd9e5db347",
+      "export_sha256": "d82e1fbe65165f91382d7494fd6adbc17bcd3134ec96d68569e111fd9e5db347"
+    },
+    "evidence/lan-startup-fix-20261003/ctest.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/ctest.log",
+      "sha256": "9db6ee5849b2fb4ad7c654248d943d07df8e512116998b45479500e5b7fbc6e4",
+      "export_sha256": "4224e2d02982cfc4a25993df5cd711561fd3c2e51bb929d0b3ec16fa0b469529"
+    },
+    "AOIP_LAN_STARTUP_FIX_2026-10-03_RU.md": {
+      "source": "AOIP_LAN_STARTUP_FIX_2026-10-03_RU.md",
+      "sha256": "a40f3a685e0d2d581db946f743c9fd3d2cf7e14f4252f3a89eab25315ddc6b6c"
+    },
+    "evidence/lan-margin-20261003/suite.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/suite.json",
+      "sha256": "9bbbac680cac17446ac88584318036ddf02be76b217cadb500c65e00ad6a5670",
+      "export_sha256": "bfe8fab1568edff48245a254b81f29ad46fb573106e0aff6358cc1b134d9c13b"
+    },
+    "evidence/lan-margin-20261003/margin-b64-g1536-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/margin-b64-g1536-cb50.json",
+      "sha256": "02fae02cb28f733d715372a6d9f706d7e37311cd6581791fd68f4c34fbf0cbd1",
+      "export_sha256": "7587b62d0dd5f3183ecc5f0a6df252ffce9b5725bff16cad54b641f75ef9a42a"
+    },
+    "evidence/lan-margin-20261003/crash-owner-recovery.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/crash-owner-recovery.json",
+      "sha256": "76281691140f9990f24599171040b94c7899bdd55c734d1b98679fe6872feedb",
+      "export_sha256": "4e673308ed60db63ba4745f5315280f204413a326876304549fb6bf545d98a6d"
+    },
+    "evidence/lan-margin-20261003/admin-link-recovery.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/admin-link-recovery.json",
+      "sha256": "3502823917076e4071a3ccc091290b6da4f1ee61b928898cd4c42579d3be05fa",
+      "export_sha256": "0da4df0cada8c7952e9879a7d3f0e82d8cf8f51b0e6984c6dbcb925bf6cc289e"
+    },
+    "evidence/lan-margin-20261003/crash-owner.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/crash-owner.json",
+      "sha256": "b826ca48b135adc643b499f49735ae91a0f9bff0d055e0f82c5090c133fc48aa",
+      "export_sha256": "0e319bf410d365f3ea87d8d8c2d2f393701fbb54238313132166c529d8583120"
+    },
+    "evidence/lan-margin-20261003/admin-link-cycle.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/admin-link-cycle.json",
+      "sha256": "bc8c6d0725cab98b06db90134fa2a327567b082606832acdeb6def573ab6ef4e",
+      "export_sha256": "469c304f951e78dc8d209874113e24ee18a1c733fd5b0ac43c14d47b62a2846d"
+    },
+    "evidence/lan-margin-20261003/original.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/original.json",
+      "sha256": "82361723c5cb98f76cc7889ad6e6f8fb62f01004de092a0606a0a9dffe3ad94b",
+      "export_sha256": "82361723c5cb98f76cc7889ad6e6f8fb62f01004de092a0606a0a9dffe3ad94b"
+    },
+    "evidence/lan-margin-20261003/restored.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/restored.json",
+      "sha256": "532c8f8e325b4cc824740eff1d8855d966e4030aba30cad9ed2e2ee6fc52a2d2",
+      "export_sha256": "532c8f8e325b4cc824740eff1d8855d966e4030aba30cad9ed2e2ee6fc52a2d2"
+    },
+    "evidence/lan-margin-20261003/restoration-verified.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/restoration-verified.json",
+      "sha256": "3b9991633a8398bcfc98f3d12183576abb025b911c7fb3d6fb7f8e9668a702a1",
+      "export_sha256": "3b9991633a8398bcfc98f3d12183576abb025b911c7fb3d6fb7f8e9668a702a1"
+    },
+    "AOIP_LAN_MARGIN_VALIDATION_2026-10-03_RU.md": {
+      "source": "AOIP_LAN_MARGIN_VALIDATION_2026-10-03_RU.md",
+      "sha256": "9ee7644a44dc5d4b9b4901253841f53d59f5df43970d039b251cb53ea7667df2"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g128-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g128-cb50.json",
+      "sha256": "80afbf81e91e706bcad8643452e09c756fc3fc70c8598fcd246c89ed711b7ad3",
+      "export_sha256": "522c2c2056df2f8843ddb655e187740e1fe3fbc6108e8adc163607d4659a37c8"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g256-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g256-cb50.json",
+      "sha256": "f596884142d3066485af3bce6aab2c306c03259feb0834e316e928636eb9e8f4",
+      "export_sha256": "ad22665a38dbaad90c9e3e4f274046ebc8b78d10d4e9f3092763d5083d3dcc3e"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g384-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g384-cb50.json",
+      "sha256": "ceaad43bdc5bb5a8ce7b642cafab9b0d39bf5b4b9a30a8c3fd511275eeff07c4",
+      "export_sha256": "a00b3c501eb136ed07fdcf60c9f5525d4e69ca950ac9a595378238d7d75eba2c"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g512-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g512-cb50.json",
+      "sha256": "5a0b201691706701f5f95252286f1540092d7128d3ccaf1f0e9ca3895907b2f4",
+      "export_sha256": "d4aecb0676bba392e430a32ac68f2a58f38d1ffa61745f4b25fae04469b51dd0"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g768-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g768-cb50.json",
+      "sha256": "31165c4a7e5d8ae583fbcdf1dc1b8006ac647b8420d226b6792d953119fae3eb",
+      "export_sha256": "c4e8bb856dcf7f4ac46ebbd796c78fc9bb9de4e849219e712596850008470133"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g1024-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g1024-cb50.json",
+      "sha256": "295c439e9827944689486666e22e03cd82aaf396ff20d183409281627cffc8ee",
+      "export_sha256": "a1d0b6a1ee2a5361559eb13a5bd2ead9a9e5cd348c88e14750bb4395e7971a82"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g1536-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g1536-cb50.json",
+      "sha256": "6e290577199008c165f28d1d0d61c7801e7539409e0f04e68ae59ead931d6fac",
+      "export_sha256": "8fdf2b2ad6801b0c01bf0578c512ff6dbf9e775abdcd0c288e539d14d87309d0"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g1536-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g1536-cb50.json",
+      "sha256": "86eee6f9f85b3693d8cc4465ff54f0d584aad6ea894cf1cb20cb92540c623bd6",
+      "export_sha256": "9c8ec0236c5a53844f18e2dcb3d7a0927d3b2c63df4184035ce16d80d7cf81c1"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g1024-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g1024-cb50.json",
+      "sha256": "512e7203ba076bcae571510942c2d76a9896c6826d3822fef66e1758fe789eb8",
+      "export_sha256": "33aa7eaa05a5c4ab3a97156379c8a7a88ceaf225cc92c89f0f724123cdbc1f67"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g768-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g768-cb50.json",
+      "sha256": "d2e9fb855ab090ef05f66b3e87e99e9986b813c40606e8197e516592bec2142d",
+      "export_sha256": "1a2e770699f8d87547306642000006f603333a59a8438953826d3ca69d6b798c"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g512-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g512-cb50.json",
+      "sha256": "3b53b5f79d45995ac08c310b19c07eeb3b9e140fa69ccfe210304b5a8bf4d2bd",
+      "export_sha256": "3fd5dd0a7547d3043b85d55cbf73c7a7041790bcaf99f72c693008227e00e3bf"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g384-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g384-cb50.json",
+      "sha256": "e57ae811ba374f4e5e5bc024a5178e9127043940d7b295f37482287de9813cca",
+      "export_sha256": "45ba8fefb38000ce66b09bbcad386cab99dd4d9065a811ec4d564cff18b6e685"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g256-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g256-cb50.json",
+      "sha256": "3d32238cfec59523317cae9385bfd689339df2fe9f07ce0d55564830112171c7",
+      "export_sha256": "bad762db625a3c6b74b43ce7421f1b74140bd68505e9cb012d1617761e4e974e"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g128-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g128-cb50.json",
+      "sha256": "2ea3deb95e9947191a364e85d9c6eb97c727998945e1fe2eeafaf2db4463edaa",
+      "export_sha256": "99eb9d0a82ea8b3e3fdc8068a3f56ce31cf546f5c4e4bc13e68fac535aa0dc4a"
+    },
+    "evidence/lan-minimum-20261002T232034Z/refine-b128-g448-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/refine-b128-g448-cb50.json",
+      "sha256": "180834deb47f3c1db3bb14f2df718205272966cb954bf82df3ed3ed02e322edd",
+      "export_sha256": "d04357c46fccc9c7198edc2e96721996d1d90df9d92f801432bd58bd54e6e3b3"
+    },
+    "evidence/lan-minimum-20261002T232034Z/validation-1-b128-g448-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/validation-1-b128-g448-cb50.json",
+      "sha256": "f32b56c26be67dddc52821ee8f0cbb20e6720eeeb6b44919faee2544f6ecc2bd",
+      "export_sha256": "32f1111dcddcb25915ea54482aee281ec1bdb38227fed0ce4bf1cf844cf76563"
+    },
+    "evidence/lan-minimum-20261002T232034Z/validation-2-b256-g1536-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/validation-2-b256-g1536-cb50.json",
+      "sha256": "845abab6de7a90a994aa3ab10b4d7d0555c8603d4fc86b3b000ff49b41ae43eb",
+      "export_sha256": "77a687e3c6085c317d9c500a9ffd7ee36a4837c3e08adf170f7aeb8af425a74c"
+    },
+    "evidence/lan-minimum-boundary-20261002T235912Z/validation-3-b256-g1024-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-boundary-20261002T235912Z/validation-3-b256-g1024-cb50.json",
+      "sha256": "d19f6dbb3de385983fa1905b7ac51250f3b0025a9759f2627cdb17eb68377f6a",
+      "export_sha256": "8e12ff1a07486450c13e18690e5559623bf4e1bf60316072dadea6a9e3a91ac4"
+    },
+    "evidence/lan-minimum-boundary-20261002T235912Z/suite.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-boundary-20261002T235912Z/suite.json",
+      "sha256": "13e9a5949dc581aef85f70fac22625ba2265b71ade491256f03fe97e9521e589",
+      "export_sha256": "bbd7307ebac846aa9547f5b8f5fb2a83069456f82af63a80dc84c814df04aa33"
+    },
+    "evidence/lan-minimum-boundary-20261002T235912Z/original.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-boundary-20261002T235912Z/original.json",
+      "sha256": "1d2053a6ffddac39cea652a5fc7620d3596ec7d7f7c42b1e8c0e3b190774673a",
+      "export_sha256": "1d2053a6ffddac39cea652a5fc7620d3596ec7d7f7c42b1e8c0e3b190774673a"
+    },
+    "evidence/lan-minimum-boundary-20261002T235912Z/restored.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-boundary-20261002T235912Z/restored.json",
+      "sha256": "f893b8cd4c37a2702bb546761febdda0960f1a7f1655ad99d4161359e3631ecb",
+      "export_sha256": "f893b8cd4c37a2702bb546761febdda0960f1a7f1655ad99d4161359e3631ecb"
+    },
+    "evidence/lan-minimum-boundary-20261002T235912Z/restoration-verified.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-boundary-20261002T235912Z/restoration-verified.json",
+      "sha256": "fd84f644d696adca6194384d716eac868ceed7683b451264ddf7af8e96f50ee6",
+      "export_sha256": "fd84f644d696adca6194384d716eac868ceed7683b451264ddf7af8e96f50ee6"
+    },
+    "evidence/lan-minimum-20261002T232034Z/suite.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/suite.json",
+      "sha256": "6e81395098006f335d205ac1d6ae8732c5b01d81f050fa633cf61b405c1c46e8",
+      "export_sha256": "1c8918cffcf5ac40b990a883ccec83bc889ef643e473aa63e2b02fbc018b4fea"
+    },
+    "evidence/lan-minimum-20261002T232034Z/restoration-verified.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/restoration-verified.json",
+      "sha256": "34cad00d5e014cac34905f1feb13e3981eab1b045ad2c99fe319ec9a31d3c9ce",
+      "export_sha256": "34cad00d5e014cac34905f1feb13e3981eab1b045ad2c99fe319ec9a31d3c9ce"
+    },
+    "AOIP_LAN_MINIMUM_LATENCY_2026-10-03_RU.md": {
+      "source": "AOIP_LAN_MINIMUM_LATENCY_2026-10-03_RU.md",
+      "sha256": "8758b7e2c79db90e7c019014287d6ef46e850f2e65365d74b231f17da9f772eb"
+    },
+    "evidence/lan-margin-20261003/admin-link-cycle.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/admin-link-cycle.log",
+      "sha256": "1cbf97223e7238c065631148f621fa97b700ed3d1aa72353f55ec750120a6650",
+      "export_sha256": "1cbf97223e7238c065631148f621fa97b700ed3d1aa72353f55ec750120a6650"
+    },
+    "evidence/lan-margin-20261003/admin-link-recovery.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/admin-link-recovery.log",
+      "sha256": "1a754a5df3be02e5f14c52949040e0616bb6ceb66f8fd4391b2680a3179533a7",
+      "export_sha256": "1a754a5df3be02e5f14c52949040e0616bb6ceb66f8fd4391b2680a3179533a7"
+    },
+    "evidence/lan-margin-20261003/crash-owner-recovery.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/crash-owner-recovery.log",
+      "sha256": "d437de7b30820d434c97e1b30011249e41cc13beeaf23a8ba3013aaad98a5d50",
+      "export_sha256": "d437de7b30820d434c97e1b30011249e41cc13beeaf23a8ba3013aaad98a5d50"
+    },
+    "evidence/lan-margin-20261003/crash-owner.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/crash-owner.log",
+      "sha256": "178ef70d795f5d6a51c0738eceabaf1afd639368caaf54fa112ce20d0500ac9b",
+      "export_sha256": "178ef70d795f5d6a51c0738eceabaf1afd639368caaf54fa112ce20d0500ac9b"
+    },
+    "evidence/lan-margin-20261003/margin-b64-g1536-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/margin-b64-g1536-cb50.log",
+      "sha256": "db4be0d0c33990c4a8f69ea01a4dea99f07fd50b7b6df319cfc4f1adcc093854",
+      "export_sha256": "db4be0d0c33990c4a8f69ea01a4dea99f07fd50b7b6df319cfc4f1adcc093854"
+    },
+    "evidence/lan-margin-20261003/progress.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-margin-20261003/progress.json",
+      "sha256": "4e458232b5072851b79e5d7f5aa8150dfff6ec7e24e3fd24ba5ddd242841b8fc",
+      "export_sha256": "4e458232b5072851b79e5d7f5aa8150dfff6ec7e24e3fd24ba5ddd242841b8fc"
+    },
+    "evidence/lan-minimum-20261002T232034Z/checkpoint.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/checkpoint.json",
+      "sha256": "ae4225a64774ba7987901bbd22b2a72c44965c0079ef78b8f36e6333d58a3286",
+      "export_sha256": "a647957aaae6b70c5c6c4748969eb3a636876c0795026d4a1d03b1d7ca6e3d20"
+    },
+    "evidence/lan-minimum-20261002T232034Z/original.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/original.json",
+      "sha256": "47fba0aa29c7a92de1368f654314524b55ac01feb7cf8eb2d010e5df92dad238",
+      "export_sha256": "47fba0aa29c7a92de1368f654314524b55ac01feb7cf8eb2d010e5df92dad238"
+    },
+    "evidence/lan-minimum-20261002T232034Z/progress.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/progress.json",
+      "sha256": "2abf844422cf0d7ca7a9921a01789fc4bf7464c7d14af4aed3bafd7b746b133b",
+      "export_sha256": "2abf844422cf0d7ca7a9921a01789fc4bf7464c7d14af4aed3bafd7b746b133b"
+    },
+    "evidence/lan-minimum-20261002T232034Z/refine-b128-g448-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/refine-b128-g448-cb50.log",
+      "sha256": "9483c9c553be8ca8867f28de063e57b0e507476139876d51da7a4f73e679cb65",
+      "export_sha256": "9483c9c553be8ca8867f28de063e57b0e507476139876d51da7a4f73e679cb65"
+    },
+    "evidence/lan-minimum-20261002T232034Z/restored-between-validations.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/restored-between-validations.json",
+      "sha256": "9cc95f850ba539fe31b1aa9b8a69c2bab24c1e5d1af661b90a227edf8b3f9f34",
+      "export_sha256": "9cc95f850ba539fe31b1aa9b8a69c2bab24c1e5d1af661b90a227edf8b3f9f34"
+    },
+    "evidence/lan-minimum-20261002T232034Z/restored.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/restored.json",
+      "sha256": "f791b0ccde27cacec3a13a75203391d5500208fb69444ccab298a421f9bbd548",
+      "export_sha256": "f791b0ccde27cacec3a13a75203391d5500208fb69444ccab298a421f9bbd548"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g1024-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g1024-cb50.log",
+      "sha256": "02e4e00e73ef9b67cbe05dd0bd074649034270237387294f06b3b71d7ac4c169",
+      "export_sha256": "02e4e00e73ef9b67cbe05dd0bd074649034270237387294f06b3b71d7ac4c169"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g128-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g128-cb50.log",
+      "sha256": "580741120b9a6979d495f59bd043d199018e0d6460694e177dc06278dec4484e",
+      "export_sha256": "580741120b9a6979d495f59bd043d199018e0d6460694e177dc06278dec4484e"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g1536-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g1536-cb50.log",
+      "sha256": "e1e2f05efd7a456b0ed371b2fde6baf48020d08424bbeaef8b6e0f9003436b53",
+      "export_sha256": "e1e2f05efd7a456b0ed371b2fde6baf48020d08424bbeaef8b6e0f9003436b53"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g256-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g256-cb50.log",
+      "sha256": "278e5a8e510da8f2485578ec1f7938a47fa82265574241dc8e9543f0d83105b0",
+      "export_sha256": "278e5a8e510da8f2485578ec1f7938a47fa82265574241dc8e9543f0d83105b0"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g384-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g384-cb50.log",
+      "sha256": "5db1183c67f257e9c62c6f672f1b540374cc33c1e245d96e8b5993d4aef8f255",
+      "export_sha256": "5db1183c67f257e9c62c6f672f1b540374cc33c1e245d96e8b5993d4aef8f255"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g512-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g512-cb50.log",
+      "sha256": "b3e1bca049b0a807e514c241e482fc5ae9744135334263c519a39864800dc590",
+      "export_sha256": "b3e1bca049b0a807e514c241e482fc5ae9744135334263c519a39864800dc590"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b128-g768-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b128-g768-cb50.log",
+      "sha256": "72076af4894bb97467b2f4748ab191e6ff7efcf5af71b69f348c468c42521cd7",
+      "export_sha256": "72076af4894bb97467b2f4748ab191e6ff7efcf5af71b69f348c468c42521cd7"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g1024-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g1024-cb50.log",
+      "sha256": "094c572a72e73e40f51cd24ed533d0218a7c3076d5716bdc197602464e3ac68f",
+      "export_sha256": "094c572a72e73e40f51cd24ed533d0218a7c3076d5716bdc197602464e3ac68f"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g128-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g128-cb50.log",
+      "sha256": "ae13f336ea8fc0cb7e626a21070e95e7703973d0f1340288a5759124e6783c20",
+      "export_sha256": "ae13f336ea8fc0cb7e626a21070e95e7703973d0f1340288a5759124e6783c20"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g1536-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g1536-cb50.log",
+      "sha256": "2ee9bb6b05c58b3f66b2b69fe286d2b4dc9f2fb9c6d876575bd557425b66cd94",
+      "export_sha256": "2ee9bb6b05c58b3f66b2b69fe286d2b4dc9f2fb9c6d876575bd557425b66cd94"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g256-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g256-cb50.log",
+      "sha256": "51609c4e2aa43d94fc31b190498ff68739063af021275eb1c7e24b6ba0f94833",
+      "export_sha256": "51609c4e2aa43d94fc31b190498ff68739063af021275eb1c7e24b6ba0f94833"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g384-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g384-cb50.log",
+      "sha256": "3edd4ec924b82721ff0472a8549f85e9b4eb7a4dd0f34d9f0e5d8d4fcba4f7f6",
+      "export_sha256": "3edd4ec924b82721ff0472a8549f85e9b4eb7a4dd0f34d9f0e5d8d4fcba4f7f6"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g512-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g512-cb50.log",
+      "sha256": "30379ec7aa908cbac733229646f41f5a06a8be879bf91c6b3c9fa2dff9a15dd9",
+      "export_sha256": "30379ec7aa908cbac733229646f41f5a06a8be879bf91c6b3c9fa2dff9a15dd9"
+    },
+    "evidence/lan-minimum-20261002T232034Z/screen-b256-g768-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/screen-b256-g768-cb50.log",
+      "sha256": "27260cc9f45882a988cc7ff0b05b6fdbd24518642dd935db007d126b9a42ca50",
+      "export_sha256": "27260cc9f45882a988cc7ff0b05b6fdbd24518642dd935db007d126b9a42ca50"
+    },
+    "evidence/lan-minimum-20261002T232034Z/validation-1-b128-g448-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/validation-1-b128-g448-cb50.log",
+      "sha256": "1ab8cb855a9f2c847a6e799ec5d8034bed35ad63b7e64cba4c0074e1589d8949",
+      "export_sha256": "1ab8cb855a9f2c847a6e799ec5d8034bed35ad63b7e64cba4c0074e1589d8949"
+    },
+    "evidence/lan-minimum-20261002T232034Z/validation-2-b256-g1536-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-20261002T232034Z/validation-2-b256-g1536-cb50.log",
+      "sha256": "b413914b62db2376ad02eaca16caa9cfa73d27715e39e647f2f87f61bb5bad05",
+      "export_sha256": "b413914b62db2376ad02eaca16caa9cfa73d27715e39e647f2f87f61bb5bad05"
+    },
+    "evidence/lan-minimum-boundary-20261002T235912Z/checkpoint.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-boundary-20261002T235912Z/checkpoint.json",
+      "sha256": "211d64f48e4758f4d2874bba9e11c9280bc4eb976c0a8b09382363973dee0f2e",
+      "export_sha256": "f26478e74d71ae5a1383036a67d54fd6344a422934ee0fc7884a149147ecc31d"
+    },
+    "evidence/lan-minimum-boundary-20261002T235912Z/progress.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-boundary-20261002T235912Z/progress.json",
+      "sha256": "a8dc4c802c7273e0de4e48073ddeea42fcbf292c984caa2e52665b3a6e1bd4b0",
+      "export_sha256": "a8dc4c802c7273e0de4e48073ddeea42fcbf292c984caa2e52665b3a6e1bd4b0"
+    },
+    "evidence/lan-minimum-boundary-20261002T235912Z/validation-3-b256-g1024-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-minimum-boundary-20261002T235912Z/validation-3-b256-g1024-cb50.log",
+      "sha256": "4f8c0408fec2999dd4b02dab38bf880cd5be7c4b409411ef77fec5b8fbe2918d",
+      "export_sha256": "4f8c0408fec2999dd4b02dab38bf880cd5be7c4b409411ef77fec5b8fbe2918d"
+    },
+    "evidence/lan-qualification-20261003/manual-b64-g448-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003/manual-b64-g448-cb50.json",
+      "sha256": "8247b64736a249e3c1c16734f222314755be75a806a0b0c1dbf1c4cedf1673cc",
+      "export_sha256": "8d82bc7abe59c17454420c4256699ab53dfe89c471cdbe14bb630bbeca041688"
+    },
+    "evidence/lan-qualification-20261003/manual-b64-g448-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003/manual-b64-g448-cb50.log",
+      "sha256": "6742c13da3e1292b84892f74eeab3784cf9b90ad18cf583955f1d138f7767fc0",
+      "export_sha256": "6742c13da3e1292b84892f74eeab3784cf9b90ad18cf583955f1d138f7767fc0"
+    },
+    "evidence/lan-qualification-20261003/original.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003/original.json",
+      "sha256": "76e13f3578ec14bdef9acfd9a0e72b1f371cf4acd0f3f434797ec23ac676cdec",
+      "export_sha256": "76e13f3578ec14bdef9acfd9a0e72b1f371cf4acd0f3f434797ec23ac676cdec"
+    },
+    "evidence/lan-qualification-20261003/progress.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003/progress.json",
+      "sha256": "26f070832c2e2a4d7de9a9e27a3252909d35a9d53abc9eaf9a6497de37906a41",
+      "export_sha256": "26f070832c2e2a4d7de9a9e27a3252909d35a9d53abc9eaf9a6497de37906a41"
+    },
+    "evidence/lan-qualification-20261003/restored.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003/restored.json",
+      "sha256": "d8911f556b6955137635d2680c8bec008aad82a5ecec77f41e2571d3c5a873a8",
+      "export_sha256": "d8911f556b6955137635d2680c8bec008aad82a5ecec77f41e2571d3c5a873a8"
+    },
+    "evidence/lan-qualification-20261003/suite.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003/suite.json",
+      "sha256": "894f7fc849846ee3a34406130c880bc42c93599055db34621f03a004da9ad361",
+      "export_sha256": "894f7fc849846ee3a34406130c880bc42c93599055db34621f03a004da9ad361"
+    },
+    "evidence/lan-qualification-20261003-15min/15min-b64-g512-cb100.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/15min-b64-g512-cb100.log",
+      "sha256": "aef01dbc4457510b0559bc6ab438a3aa8438043ebd8f36e31b9e3ce86c4a7fd4",
+      "export_sha256": "aef01dbc4457510b0559bc6ab438a3aa8438043ebd8f36e31b9e3ce86c4a7fd4"
+    },
+    "evidence/lan-qualification-20261003-15min/admin-link-cycle.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/admin-link-cycle.log",
+      "sha256": "1101b9d13154a7f0c500c911ee5e0eb4a49f51e00fc3b955e8cf70f15bc18f06",
+      "export_sha256": "1101b9d13154a7f0c500c911ee5e0eb4a49f51e00fc3b955e8cf70f15bc18f06"
+    },
+    "evidence/lan-qualification-20261003-15min/admin-link-recovery.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/admin-link-recovery.log",
+      "sha256": "cfb73aff40448732e145312ac872cb8d6a1b2f0706d6d24d3b219376f5494125",
+      "export_sha256": "cfb73aff40448732e145312ac872cb8d6a1b2f0706d6d24d3b219376f5494125"
+    },
+    "evidence/lan-qualification-20261003-15min/crash-owner-recovery.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/crash-owner-recovery.log",
+      "sha256": "2a0f335a4e5211726ff55a25bc9f6adf5f6a8bdd33f9ce2526a1ad24b8e18cd1",
+      "export_sha256": "2a0f335a4e5211726ff55a25bc9f6adf5f6a8bdd33f9ce2526a1ad24b8e18cd1"
+    },
+    "evidence/lan-qualification-20261003-15min/crash-owner.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/crash-owner.log",
+      "sha256": "178ef70d795f5d6a51c0738eceabaf1afd639368caaf54fa112ce20d0500ac9b",
+      "export_sha256": "178ef70d795f5d6a51c0738eceabaf1afd639368caaf54fa112ce20d0500ac9b"
+    },
+    "evidence/lan-qualification-20261003-15min/graceful-reopen-0.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/graceful-reopen-0.log",
+      "sha256": "34533597c019b5e217d4f47e88e2c11c9628f90a72a82b513256829507bfcb0e",
+      "export_sha256": "34533597c019b5e217d4f47e88e2c11c9628f90a72a82b513256829507bfcb0e"
+    },
+    "evidence/lan-qualification-20261003-15min/graceful-reopen-1.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/graceful-reopen-1.log",
+      "sha256": "d4057595c14cd00b580052a341875c02653ad8a993ebfcfbbc45a3d0338160aa",
+      "export_sha256": "d4057595c14cd00b580052a341875c02653ad8a993ebfcfbbc45a3d0338160aa"
+    },
+    "evidence/lan-qualification-20261003-15min/graceful-reopen-2.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/graceful-reopen-2.log",
+      "sha256": "63aca19c981c5dc53374af1c76fee35346dff4512072af6e443a1d473818e1bf",
+      "export_sha256": "63aca19c981c5dc53374af1c76fee35346dff4512072af6e443a1d473818e1bf"
+    },
+    "evidence/lan-qualification-20261003-15min/progress.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-qualification-20261003-15min/progress.json",
+      "sha256": "f6be0d8c11a0a01c086f7e3a8f422637368ef6b7cf32a0a1b769cb7f634cdcad",
+      "export_sha256": "f6be0d8c11a0a01c086f7e3a8f422637368ef6b7cf32a0a1b769cb7f634cdcad"
+    },
+    "evidence/lan-startup-fix-20261003/admin-link-cycle.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/admin-link-cycle.log",
+      "sha256": "a535b9ba7fcc80aeeb30be46c047c7d46bd88a3756806945cdc03becd74d990a",
+      "export_sha256": "a535b9ba7fcc80aeeb30be46c047c7d46bd88a3756806945cdc03becd74d990a"
+    },
+    "evidence/lan-startup-fix-20261003/crash-owner-recovery.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/crash-owner-recovery.log",
+      "sha256": "8ccb82f1bfe99909313fa07ca4c79bd3e1c7d835ee8fd65bec437c4889724700",
+      "export_sha256": "8ccb82f1bfe99909313fa07ca4c79bd3e1c7d835ee8fd65bec437c4889724700"
+    },
+    "evidence/lan-startup-fix-20261003/crash-owner.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/crash-owner.log",
+      "sha256": "178ef70d795f5d6a51c0738eceabaf1afd639368caaf54fa112ce20d0500ac9b",
+      "export_sha256": "178ef70d795f5d6a51c0738eceabaf1afd639368caaf54fa112ce20d0500ac9b"
+    },
+    "evidence/lan-startup-fix-20261003/progress.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/progress.json",
+      "sha256": "348900b48e00993b1647f4aa705c85d55f1c72825e9dd87604ca65fcd752c1dd",
+      "export_sha256": "348900b48e00993b1647f4aa705c85d55f1c72825e9dd87604ca65fcd752c1dd"
+    },
+    "evidence/lan-startup-fix-20261003/startup-regression-b64-g512-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-regression-b64-g512-cb50.log",
+      "sha256": "16bcb2098cf8611323ff2d219014b8bdd271ab16cf49fc418d568e55d90a048c",
+      "export_sha256": "16bcb2098cf8611323ff2d219014b8bdd271ab16cf49fc418d568e55d90a048c"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-0.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-0.log",
+      "sha256": "33678b6fcb3c46dfe8af3b91df5642c86bd025597b464d5864f448369c71247d",
+      "export_sha256": "33678b6fcb3c46dfe8af3b91df5642c86bd025597b464d5864f448369c71247d"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-1.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-1.log",
+      "sha256": "2a350dd7bd2c81a3fb5d80517477a3a289c3a6450e3923a2a973c073e5ad6c04",
+      "export_sha256": "2a350dd7bd2c81a3fb5d80517477a3a289c3a6450e3923a2a973c073e5ad6c04"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-10.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-10.log",
+      "sha256": "59d9657e4369c2dfe99a884c83fb9a71490be15036d8358d97470d6ba60cf809",
+      "export_sha256": "59d9657e4369c2dfe99a884c83fb9a71490be15036d8358d97470d6ba60cf809"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-11.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-11.log",
+      "sha256": "43bc710bd771e5574af86270066e88fb681ff2aa44340fd725e49b6327131640",
+      "export_sha256": "43bc710bd771e5574af86270066e88fb681ff2aa44340fd725e49b6327131640"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-12.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-12.log",
+      "sha256": "6674e2678361eb7a17a6df9df6f81c702c79d2084960b69ddd9bc7170089d436",
+      "export_sha256": "6674e2678361eb7a17a6df9df6f81c702c79d2084960b69ddd9bc7170089d436"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-13.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-13.log",
+      "sha256": "d5e5e9c124dd29ff1408fe707397ed575af5685d683460e4c8a6f892b6075575",
+      "export_sha256": "d5e5e9c124dd29ff1408fe707397ed575af5685d683460e4c8a6f892b6075575"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-14.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-14.log",
+      "sha256": "9b9511f546c360b03d067d52828afb17823e8ca6a820e51d2b752ae3ae50834b",
+      "export_sha256": "9b9511f546c360b03d067d52828afb17823e8ca6a820e51d2b752ae3ae50834b"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-15.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-15.log",
+      "sha256": "15907d04ef610ffe384aff22236801d8867aa123f7e6823c7d89c88dab83b3a5",
+      "export_sha256": "15907d04ef610ffe384aff22236801d8867aa123f7e6823c7d89c88dab83b3a5"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-16.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-16.log",
+      "sha256": "6e318bb4259abde91b2e186e3076be4dad30d32896c1dbfb7a83d8acada80d35",
+      "export_sha256": "6e318bb4259abde91b2e186e3076be4dad30d32896c1dbfb7a83d8acada80d35"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-17.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-17.log",
+      "sha256": "8f23542b7039adab773f409f2f7052318e7f3ee3e957e9345ff0bad5bc27e11b",
+      "export_sha256": "8f23542b7039adab773f409f2f7052318e7f3ee3e957e9345ff0bad5bc27e11b"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-18.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-18.log",
+      "sha256": "10bdb70cb3f3881658907e839098e8e2f7341b3610ac25abc938e61b0caf57fc",
+      "export_sha256": "10bdb70cb3f3881658907e839098e8e2f7341b3610ac25abc938e61b0caf57fc"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-19.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-19.log",
+      "sha256": "aa0d64d51fbc8a196a332765d20d524f36e9fc529c6f3e3708a3ac66af485598",
+      "export_sha256": "aa0d64d51fbc8a196a332765d20d524f36e9fc529c6f3e3708a3ac66af485598"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-2.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-2.log",
+      "sha256": "60b9abf55de8ab5a940a88976ac92cfef6fb8d8407a7091803c798601ff47939",
+      "export_sha256": "60b9abf55de8ab5a940a88976ac92cfef6fb8d8407a7091803c798601ff47939"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-3.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-3.log",
+      "sha256": "4bf22b83bb48c8ad09e00532702691cd9f4763c08c8386359373fa461526ca33",
+      "export_sha256": "4bf22b83bb48c8ad09e00532702691cd9f4763c08c8386359373fa461526ca33"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-4.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-4.log",
+      "sha256": "30d07ba28d8c7c4ee10a035a0a80d577fa7f6b2ea3b5ec50617ea7b6b72dadb6",
+      "export_sha256": "30d07ba28d8c7c4ee10a035a0a80d577fa7f6b2ea3b5ec50617ea7b6b72dadb6"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-5.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-5.log",
+      "sha256": "fb4c1de641313e9a675ca03b7372014a17cfbd5ddeaed9b2ea29f4e3037dcde7",
+      "export_sha256": "fb4c1de641313e9a675ca03b7372014a17cfbd5ddeaed9b2ea29f4e3037dcde7"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-6.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-6.log",
+      "sha256": "5926938f82f5200caba3d414116caff10b491d5e8b5896396582a2fbd3dd95dc",
+      "export_sha256": "5926938f82f5200caba3d414116caff10b491d5e8b5896396582a2fbd3dd95dc"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-7.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-7.log",
+      "sha256": "e83971713e408578348055cc41178451cf7a9cb76474b59b102f4f1d68aa2f97",
+      "export_sha256": "e83971713e408578348055cc41178451cf7a9cb76474b59b102f4f1d68aa2f97"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-8.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-8.log",
+      "sha256": "bc75af93f10969a072c24e714ff356f8e76fe28bfd19ba0eab3e257efbf3d02f",
+      "export_sha256": "bc75af93f10969a072c24e714ff356f8e76fe28bfd19ba0eab3e257efbf3d02f"
+    },
+    "evidence/lan-startup-fix-20261003/startup-reopen-9.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/lan-startup-fix-20261003/startup-reopen-9.log",
+      "sha256": "8952b195744f7d860b3dc26b5db1ed72eadf6ca12d0421f5a646248f6aadf990",
+      "export_sha256": "8952b195744f7d860b3dc26b5db1ed72eadf6ca12d0421f5a646248f6aadf990"
+    },
+    "evidence/release-2.5.0-lan/original.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan/original.json",
+      "sha256": "db357d5dfd85a84fd72656399c0d1cfe1118236ad7c1242d9555af7dbe889a24",
+      "export_sha256": "db357d5dfd85a84fd72656399c0d1cfe1118236ad7c1242d9555af7dbe889a24"
+    },
+    "evidence/release-2.5.0-lan/progress.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan/progress.json",
+      "sha256": "cf1402eb26ba184a4401aa1144bb982827b87ac88ae612de5ef5089c8a5c5467",
+      "export_sha256": "cf1402eb26ba184a4401aa1144bb982827b87ac88ae612de5ef5089c8a5c5467"
+    },
+    "evidence/release-2.5.0-lan/release-b256-g1024-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan/release-b256-g1024-cb50.json",
+      "sha256": "79ce25022490a743c18cf7e472adf72f8e891026decefb0bcad9e0a628e7f983",
+      "export_sha256": "561e64e67c609821c174db25ac73e15d440575266ae9d129780ff674d534ff2b"
+    },
+    "evidence/release-2.5.0-lan/release-b256-g1024-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan/release-b256-g1024-cb50.log",
+      "sha256": "20a4ea0eb9de5e5862723dff7d155a83b343c87c0c296a7fe528a21ddfc7dde4",
+      "export_sha256": "20a4ea0eb9de5e5862723dff7d155a83b343c87c0c296a7fe528a21ddfc7dde4"
+    },
+    "evidence/release-2.5.0-lan/restoration-verified.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan/restoration-verified.json",
+      "sha256": "7f94ad9738dc8a3697bb4c39061f91c8f85e62e6c464c1eec5cb60badfce8c20",
+      "export_sha256": "7f94ad9738dc8a3697bb4c39061f91c8f85e62e6c464c1eec5cb60badfce8c20"
+    },
+    "evidence/release-2.5.0-lan/restored.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan/restored.json",
+      "sha256": "ea28499912ea7fd2978e4a33f1785d88a5f6e6e8bc923be1078a1de9a307a5a5",
+      "export_sha256": "ea28499912ea7fd2978e4a33f1785d88a5f6e6e8bc923be1078a1de9a307a5a5"
+    },
+    "evidence/release-2.5.0-lan/suite.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan/suite.json",
+      "sha256": "aaa484ef841354165101a0e2eee4bcfe4c7e58872eed8cfb7fc179712905e672",
+      "export_sha256": "9790d06366c60fabedfee674bce29ec22effccfc4851c466204ebf2a73a10c77"
+    },
+    "evidence/release-2.5.0-lan-margin-5min/original.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan-margin-5min/original.json",
+      "sha256": "8616e1c3bb76c279f06fb19fa406f2e09f91d332580f2eb9310e8b4205414624",
+      "export_sha256": "8616e1c3bb76c279f06fb19fa406f2e09f91d332580f2eb9310e8b4205414624"
+    },
+    "evidence/release-2.5.0-lan-margin-5min/progress.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan-margin-5min/progress.json",
+      "sha256": "edd912065578f885da58672adab565e3f64bc10dfdf8eae8d7e520fa4938dbd7",
+      "export_sha256": "edd912065578f885da58672adab565e3f64bc10dfdf8eae8d7e520fa4938dbd7"
+    },
+    "evidence/release-2.5.0-lan-margin-5min/release-b256-g1536-cb50.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan-margin-5min/release-b256-g1536-cb50.json",
+      "sha256": "6cf395d8b56eb5641f3294a5a573ae2bcf5ca9b805046c8e8fb6696a06e7f904",
+      "export_sha256": "ed872bd6a6ac3b7bc3889d8132cff7c50c8f697a27ccd9dd38acff3c108f536d"
+    },
+    "evidence/release-2.5.0-lan-margin-5min/release-b256-g1536-cb50.log": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan-margin-5min/release-b256-g1536-cb50.log",
+      "sha256": "833f5e67b051732fe2661de4a8da2894be72bb3369cc8e0441c20c6f7a333e7b",
+      "export_sha256": "833f5e67b051732fe2661de4a8da2894be72bb3369cc8e0441c20c6f7a333e7b"
+    },
+    "evidence/release-2.5.0-lan-margin-5min/restoration-verified.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan-margin-5min/restoration-verified.json",
+      "sha256": "56998514ba967775fb74e89da889a969e8a56d47e4d2a45a3982113f85166e96",
+      "export_sha256": "56998514ba967775fb74e89da889a969e8a56d47e4d2a45a3982113f85166e96"
+    },
+    "evidence/release-2.5.0-lan-margin-5min/restored.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan-margin-5min/restored.json",
+      "sha256": "d5580cea8c1c0d6d466dab887bc997a46db11511d9b6dcd5737d0a01d5cc6b8b",
+      "export_sha256": "d5580cea8c1c0d6d466dab887bc997a46db11511d9b6dcd5737d0a01d5cc6b8b"
+    },
+    "evidence/release-2.5.0-lan-margin-5min/suite.json": {
+      "source": "repositories/AoIP-debug-tool/build/reports/release-2.5.0-lan-margin-5min/suite.json",
+      "sha256": "6a2a74d6fca9a9b3c4b91edb8e454660967c2da183446dccf9bbeb3c0515abef",
+      "export_sha256": "757db0174ddb4ba10c72eac778251119f49f82c76794840217b29701019788f4"
+    }
+  }
+}

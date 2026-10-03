@@ -1,0 +1,3 @@
+SERVICE_READY id=00000000000000002c26e7dcd051e632 backend=synthetic mode=digital-echo rate=192000 bits=24 inputs=8 outputs=8 block=128 guard=1024 capture_frames=32 capture_pps=6000 render_pps=4500 capture_bps=42336000 render_bps=40968000
+SERVICE_STATS seconds=30.003 rx=180018 invalid=0 rx_overflow=0 late_frames=0 missing_frames=0 resync=0 callbacks=44996 deadline_misses=0 skipped_frames=0 callback_max_us=98.8 wake_max_us=944.6 rx_gap_max_us=4107.6 tx=134988 tx_overflow=0 tx_expired=0 tx_errors=0 mmcss_failures=0 host_overruns=0 expired_output_frames=0 control_failures=0 budget_yields=6 suppressed_frames=0 tx_age_max_us=149.3
+SERVICE_IO calls=180026 completions=180026 waits=178755 max_batch=8 overflows=0 errors=0 audio_percent=13.020 rx_percent=2.656 tx_percent=3.021

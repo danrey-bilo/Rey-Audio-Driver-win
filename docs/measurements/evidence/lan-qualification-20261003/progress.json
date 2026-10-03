@@ -1,0 +1,15 @@
+{
+  "tag": "manual-b64-g448-cb50",
+  "elapsed_s": 210.6,
+  "planned_s": 600,
+  "windows_final_counters": "pending",
+  "rtt_so_far": {
+    "count": 1260563,
+    "min_us": 2499,
+    "p50_us": 2682,
+    "p95_us": 2709,
+    "p99_us": 2830,
+    "max_us": 5590,
+    "active": 1
+  }
+}

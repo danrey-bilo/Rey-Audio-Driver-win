@@ -1,0 +1,24 @@
+ new Debian package, version 2.0.
+ size 53512 bytes: control archive=2276 bytes.
+      22 bytes,     1 lines      conffiles
+     726 bytes,    15 lines      control
+     751 bytes,    11 lines      md5sums
+    1483 bytes,    34 lines   *  postinst             #!/bin/sh
+    1140 bytes,    29 lines   *  postrm               #!/bin/sh
+    1475 bytes,    35 lines   *  preinst              #!/bin/sh
+     181 bytes,     7 lines   *  prerm                #!/bin/sh
+ Package: piaoip-rpi5
+ Version: 2.5.0-1
+ Architecture: arm64
+ Maintainer: danrey-bilo <80554517+danrey-bilo@users.noreply.github.com>
+ Section: sound
+ Priority: optional
+ Conflicts: piaoip-rpi4
+ Depends: libc6 (>= 2.38), libgcc-s1 (>= 3.0), libstdc++6 (>= 12), adduser, init-system-helpers, systemd, python3, ethtool
+ Homepage: https://github.com/danrey-bilo/Pi5-AoIP
+ Installed-Size: 8552
+ Description: PiAoIP audio transport for Raspberry Pi 5 PREEMPT_RT
+  Synthetic UDP PCM16/24/32 peer; fresh profile 8x8, 192 kHz PCM24.
+  Requires Pi 5 Model B, PREEMPT_RT and Debian 13 ARM64.
+  All Pi5 AoIP roles use CPU0; CPU1, CPU2 and CPU3 are available for other work.
+  Personal noncommercial use is free; commercial use requires a paid license.

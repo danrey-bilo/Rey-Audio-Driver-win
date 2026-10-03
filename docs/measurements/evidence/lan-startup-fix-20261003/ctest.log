@@ -1,0 +1,31 @@
+Test project workspace/repositories/AoIP-debug-tool/build/transport-stage6-20261003-startup
+      Start  1: core
+ 1/13 Test  #1: core .............................   Passed    0.06 sec
+      Start  2: transport
+ 2/13 Test  #2: transport ........................   Passed    0.11 sec
+      Start  3: datagram
+ 3/13 Test  #3: datagram .........................   Passed    0.05 sec
+      Start  4: control_session
+ 4/13 Test  #4: control_session ..................   Passed    0.26 sec
+      Start  5: transport_budget
+ 5/13 Test  #5: transport_budget .................   Passed    0.03 sec
+      Start  6: pcm_codec
+ 6/13 Test  #6: pcm_codec ........................   Passed    0.04 sec
+      Start  7: example_core
+ 7/13 Test  #7: example_core .....................   Passed    0.05 sec
+      Start  8: example_peer
+ 8/13 Test  #8: example_peer .....................   Passed    0.03 sec
+      Start  9: windows_config
+ 9/13 Test  #9: windows_config ...................   Passed    0.28 sec
+      Start 10: windows_iocp
+10/13 Test #10: windows_iocp .....................   Passed    0.16 sec
+      Start 11: windows_bridge_contract
+11/13 Test #11: windows_bridge_contract ..........   Passed    0.03 sec
+      Start 12: windows_session_engine
+12/13 Test #12: windows_session_engine ...........   Passed    5.16 sec
+      Start 13: windows_start_gate
+13/13 Test #13: windows_start_gate ...............   Passed    0.08 sec
+
+[0;32m100% tests passed[0;0m out of 13
+
+Total Test time (real) =   6.76 sec

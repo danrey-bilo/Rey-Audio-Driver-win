@@ -1,0 +1,447 @@
+{
+  "tag": "release-b256-g1536-cb50",
+  "seconds": 300,
+  "block": 256,
+  "guard": 1536,
+  "bits": 24,
+  "capture_frames": 32,
+  "callback_us": 50,
+  "command": [
+    "workspace\\repositories\\AoIP-debug-tool\\build\\release-2.5.0-windows\\bin\\PiAoipService.exe",
+    "--console",
+    "--echo",
+    "--seconds",
+    "300",
+    "--peer",
+    "192.168.1.2",
+    "--block",
+    "256",
+    "--guard",
+    "1536",
+    "--frames",
+    "32",
+    "--callback-us",
+    "50",
+    "--no-energy"
+  ],
+  "started_utc": "2026-10-03T01:13:29.600527+00:00",
+  "exe_sha256": "9b80dc78adc192cba79acbdfd6bb4a6ef7ba341cfe5862197782829bd1b38f63",
+  "before": {
+    "tx": 0,
+    "rx": 0,
+    "lost": 0,
+    "bad": 0,
+    "skipped_source_frames": 0,
+    "out_of_order": 0,
+    "duplicates": 0,
+    "tx_retries": 0,
+    "tx_expired": 0,
+    "max_send_late_us": 0,
+    "max_rx_gap_us": 0
+  },
+  "identity_raw": "PIAOIP_IDENTITY_V1 id=00000000000000002c26e7dcd051e632 origin=board-serial backend=synthetic",
+  "probe_start": "PIAOIP_MEASURE_STARTED_V2 channel=8",
+  "other_owner": {
+    "exit_code": 5,
+    "output": "SERVICE_START PIAOIP_BUSY_V3\n"
+  },
+  "exit_code": 0,
+  "rtt": {
+    "count": 1123192,
+    "min_us": 8233,
+    "p50_us": 8920,
+    "p95_us": 9446,
+    "p99_us": 9573,
+    "max_us": 16599,
+    "active": 0
+  },
+  "after": {
+    "tx": 1800087,
+    "rx": 1125020,
+    "lost": 0,
+    "bad": 0,
+    "skipped_source_frames": 0,
+    "out_of_order": 461,
+    "duplicates": 0,
+    "tx_retries": 0,
+    "tx_expired": 0,
+    "max_send_late_us": 9,
+    "max_rx_gap_us": 8391
+  },
+  "delta": {
+    "tx": 1800087,
+    "rx": 1125020,
+    "lost": 0,
+    "bad": 0,
+    "skipped_source_frames": 0,
+    "out_of_order": 461,
+    "duplicates": 0,
+    "tx_retries": 0,
+    "tx_expired": 0
+  },
+  "service_ready": {
+    "id": "00000000000000002c26e7dcd051e632",
+    "backend": "synthetic",
+    "mode": "digital-echo",
+    "rate": 192000,
+    "bits": 24,
+    "inputs": 8,
+    "outputs": 8,
+    "block": 256,
+    "guard": 1536,
+    "capture_frames": 32,
+    "capture_pps": 6000,
+    "render_pps": 3750,
+    "capture_bps": 42336000,
+    "render_bps": 40284000
+  },
+  "service_stats": {
+    "seconds": 300.007,
+    "rx": 1800083,
+    "invalid": 0,
+    "rx_overflow": 0,
+    "late_frames": 0,
+    "missing_frames": 0,
+    "resync": 0,
+    "callbacks": 225004,
+    "deadline_misses": 0,
+    "skipped_frames": 0,
+    "callback_max_us": 161.6,
+    "wake_max_us": 692.9,
+    "rx_gap_max_us": 7270.0,
+    "tx": 1125020,
+    "tx_overflow": 0,
+    "tx_expired": 0,
+    "tx_errors": 0,
+    "mmcss_failures": 0,
+    "host_overruns": 0,
+    "expired_output_frames": 0,
+    "control_failures": 0,
+    "budget_yields": 11,
+    "suppressed_frames": 0,
+    "tx_age_max_us": 884.0
+  },
+  "service_io": {
+    "calls": 1800091,
+    "completions": 1800091,
+    "waits": 1781153,
+    "max_batch": 8,
+    "overflows": 0,
+    "errors": 0,
+    "audio_percent": 7.521,
+    "rx_percent": 3.391,
+    "tx_percent": 1.896
+  },
+  "host_ok": true,
+  "clean": true,
+  "elapsed_s": 300.27457159999904,
+  "output": "SERVICE_READY id=00000000000000002c26e7dcd051e632 backend=synthetic mode=digital-echo rate=192000 bits=24 inputs=8 outputs=8 block=256 guard=1536 capture_frames=32 capture_pps=6000 render_pps=3750 capture_bps=42336000 render_bps=40284000\nSERVICE_STATS seconds=300.007 rx=1800083 invalid=0 rx_overflow=0 late_frames=0 missing_frames=0 resync=0 callbacks=225004 deadline_misses=0 skipped_frames=0 callback_max_us=161.6 wake_max_us=692.9 rx_gap_max_us=7270.0 tx=1125020 tx_overflow=0 tx_expired=0 tx_errors=0 mmcss_failures=0 host_overruns=0 expired_output_frames=0 control_failures=0 budget_yields=11 suppressed_frames=0 tx_age_max_us=884.0\nSERVICE_IO calls=1800091 completions=1800091 waits=1781153 max_batch=8 overflows=0 errors=0 audio_percent=7.521 rx_percent=3.391 tx_percent=1.896\n",
+  "pi_before": {
+    "monotonic_ns": 34801926726965,
+    "pid": 9351,
+    "active": "active",
+    "kernel": "6.18.50+rpt-rpi-v8-rt",
+    "isolated": "2-3",
+    "cores": {
+      "cpu0": [
+        20874,
+        12,
+        101818,
+        3121476,
+        55256,
+        0,
+        110104,
+        0,
+        0,
+        0
+      ],
+      "cpu1": [
+        2369,
+        9,
+        1517,
+        3399004,
+        75691,
+        0,
+        1179,
+        0,
+        0,
+        0
+      ],
+      "cpu2": [
+        0,
+        0,
+        0,
+        3480193,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cpu3": [
+        0,
+        0,
+        0,
+        3480193,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "threads": {
+      "9351": {
+        "name": "aoip_peer_rpi5",
+        "runtime_ns": 23402315,
+        "allowed_cpus": "0",
+        "policy": 1,
+        "priority": 70
+      },
+      "9352": {
+        "name": "aoip_peer_rpi5",
+        "runtime_ns": 31834,
+        "allowed_cpus": "0",
+        "policy": 1,
+        "priority": 70
+      },
+      "9353": {
+        "name": "aoip_peer_rpi5",
+        "runtime_ns": 396665,
+        "allowed_cpus": "0",
+        "policy": 0,
+        "priority": 0
+      },
+      "9354": {
+        "name": "aoip_peer_rpi5",
+        "runtime_ns": 36629,
+        "allowed_cpus": "0",
+        "policy": 0,
+        "priority": 0
+      }
+    },
+    "eth0": {
+      "rx_bytes": 71851544375,
+      "tx_bytes": 74407178017,
+      "rx_packets": 74412247,
+      "tx_packets": 90723226,
+      "rx_errors": 0,
+      "tx_errors": 0,
+      "rx_dropped": 0,
+      "tx_dropped": 302
+    },
+    "throttled_raw": "throttled=0x50000",
+    "temperature_raw": "temp=48.3'C",
+    "cpu0_freq_khz": "2400000",
+    "cpu0_governor": "performance",
+    "interfaces": "lo               UNKNOWN        127.0.0.1/8 ::1/128 \neth0             UP             192.168.1.2/24 fe80::6f33:46af:bade:8bff/64 \nwlan0            UP             192.168.178.48/24 fdf8:bc78:5d77:0:8aa2:9eff:fede:6c74/64 2a06:34c0:a04:e300:8aa2:9eff:fede:6c74/64 fe80::8aa2:9eff:fede:6c74/64",
+    "config_hashes": {
+      "/etc/piaoip/peer.conf": "82dd28705860b2532ec2e944af9798fb491a103d44b7364b8aeb7905d52c025c",
+      "/var/lib/piaoip/profile.txt": "98337ca18154867c4f77ed78a474092b7f712ca1009418ffbd65c3f2b1399af0",
+      "/etc/systemd/system/pi-aoip.service": null
+    },
+    "stand_units": {
+      "pi-aoip.service": {
+        "LoadState": "loaded",
+        "ActiveState": "inactive"
+      },
+      "piaoip-lan-qualification-20261003-test.service": {
+        "LoadState": "loaded",
+        "ActiveState": "active"
+      },
+      "piaoip-lan-qualification-20261003-restore.timer": {
+        "LoadState": "loaded",
+        "ActiveState": "active"
+      },
+      "piaoip-lan-qualification-20261003-link-restore.timer": {
+        "LoadState": "not-found",
+        "ActiveState": "inactive"
+      }
+    },
+    "binary_sha256": "252a146bad247a75332b6710a52b04bd0a7360c3bae1fd47163d3e380a2aad1c",
+    "command": "/home/admin/piaoip-release-2.5.0-20261003/src/AoIP-debug-tool/build/package-pi5/cmake/bin/aoip_peer_rpi5 pi 192.168.1.1 50020 50021 8 192000 24 32 0 8 "
+  },
+  "pi_after": {
+    "monotonic_ns": 35102473304653,
+    "pid": 9351,
+    "active": "active",
+    "kernel": "6.18.50+rpt-rpi-v8-rt",
+    "isolated": "2-3",
+    "cores": {
+      "cpu0": [
+        21070,
+        12,
+        103121,
+        3145155,
+        55549,
+        0,
+        111874,
+        0,
+        0,
+        0
+      ],
+      "cpu1": [
+        2380,
+        9,
+        1523,
+        3428384,
+        76339,
+        0,
+        1194,
+        0,
+        0,
+        0
+      ],
+      "cpu2": [
+        0,
+        0,
+        0,
+        3510248,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "cpu3": [
+        0,
+        0,
+        0,
+        3510248,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "threads": {
+      "9351": {
+        "name": "aoip_peer_rpi5",
+        "runtime_ns": 20543315170,
+        "allowed_cpus": "0",
+        "policy": 1,
+        "priority": 70
+      },
+      "9352": {
+        "name": "aoip_peer_rpi5",
+        "runtime_ns": 3303015544,
+        "allowed_cpus": "0",
+        "policy": 1,
+        "priority": 70
+      },
+      "9353": {
+        "name": "aoip_peer_rpi5",
+        "runtime_ns": 21043048,
+        "allowed_cpus": "0",
+        "policy": 0,
+        "priority": 0
+      },
+      "9354": {
+        "name": "aoip_peer_rpi5",
+        "runtime_ns": 6309049,
+        "allowed_cpus": "0",
+        "policy": 0,
+        "priority": 0
+      }
+    },
+    "eth0": {
+      "rx_bytes": 73319508428,
+      "tx_bytes": 75951735371,
+      "rx_packets": 75537852,
+      "tx_packets": 92523798,
+      "rx_errors": 0,
+      "tx_errors": 0,
+      "rx_dropped": 0,
+      "tx_dropped": 302
+    },
+    "throttled_raw": "throttled=0x50000",
+    "temperature_raw": "temp=48.8'C",
+    "cpu0_freq_khz": "2400000",
+    "cpu0_governor": "performance",
+    "interfaces": "lo               UNKNOWN        127.0.0.1/8 ::1/128 \neth0             UP             192.168.1.2/24 fe80::6f33:46af:bade:8bff/64 \nwlan0            UP             192.168.178.48/24 fdf8:bc78:5d77:0:8aa2:9eff:fede:6c74/64 2a06:34c0:a04:e300:8aa2:9eff:fede:6c74/64 fe80::8aa2:9eff:fede:6c74/64",
+    "config_hashes": {
+      "/etc/piaoip/peer.conf": "82dd28705860b2532ec2e944af9798fb491a103d44b7364b8aeb7905d52c025c",
+      "/var/lib/piaoip/profile.txt": "98337ca18154867c4f77ed78a474092b7f712ca1009418ffbd65c3f2b1399af0",
+      "/etc/systemd/system/pi-aoip.service": null
+    },
+    "stand_units": {
+      "pi-aoip.service": {
+        "LoadState": "loaded",
+        "ActiveState": "inactive"
+      },
+      "piaoip-lan-qualification-20261003-test.service": {
+        "LoadState": "loaded",
+        "ActiveState": "active"
+      },
+      "piaoip-lan-qualification-20261003-restore.timer": {
+        "LoadState": "loaded",
+        "ActiveState": "active"
+      },
+      "piaoip-lan-qualification-20261003-link-restore.timer": {
+        "LoadState": "not-found",
+        "ActiveState": "inactive"
+      }
+    },
+    "binary_sha256": "252a146bad247a75332b6710a52b04bd0a7360c3bae1fd47163d3e380a2aad1c",
+    "command": "/home/admin/piaoip-release-2.5.0-20261003/src/AoIP-debug-tool/build/package-pi5/cmake/bin/aoip_peer_rpi5 pi 192.168.1.1 50020 50021 8 192000 24 32 0 8 "
+  },
+  "pi_cpu": {
+    "window_s": 300.546577688,
+    "cores": {
+      "cpu0": 12.000293674975222,
+      "cpu1": 0.10645375914836992,
+      "cpu2": 0.0,
+      "cpu3": 0.0
+    },
+    "threads": {
+      "9351": {
+        "name": "aoip_peer_rpi5",
+        "cpu_percent": 6.827531696701566,
+        "allowed_cpus": "0",
+        "policy": 1,
+        "priority": 70
+      },
+      "9352": {
+        "name": "aoip_peer_rpi5",
+        "cpu_percent": 1.098992287787371,
+        "allowed_cpus": "0",
+        "policy": 1,
+        "priority": 70
+      },
+      "9353": {
+        "name": "aoip_peer_rpi5",
+        "cpu_percent": 0.006869611744983231,
+        "allowed_cpus": "0",
+        "policy": 0,
+        "priority": 0
+      },
+      "9354": {
+        "name": "aoip_peer_rpi5",
+        "cpu_percent": 0.0020870043000494427,
+        "allowed_cpus": "0",
+        "policy": 0,
+        "priority": 0
+      }
+    },
+    "process_percent": 7.93548060053397,
+    "eth0_delta": {
+      "rx_bytes": 1467964053,
+      "tx_bytes": 1544557354,
+      "rx_packets": 1125605,
+      "tx_packets": 1800572,
+      "rx_errors": 0,
+      "tx_errors": 0,
+      "rx_dropped": 0,
+      "tx_dropped": 0
+    },
+    "rx_mbps_counter": 39.07451721573503,
+    "tx_mbps_counter": 41.113290748655096
+  },
+  "pi_current_throttle_flags_clear": true,
+  "qualification_clean": true
+}

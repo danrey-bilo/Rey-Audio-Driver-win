@@ -1,0 +1,15 @@
+{
+  "tag": "validation-2-b256-g1536-cb50",
+  "elapsed_s": 870.8,
+  "planned_s": 900,
+  "windows_final_counters": "pending",
+  "rtt_so_far": {
+    "count": 3263547,
+    "min_us": 8225,
+    "p50_us": 8918,
+    "p95_us": 9420,
+    "p99_us": 9554,
+    "max_us": 13532,
+    "active": 1
+  }
+}

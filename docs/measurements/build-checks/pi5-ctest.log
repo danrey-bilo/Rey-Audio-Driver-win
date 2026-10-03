@@ -1,0 +1,24 @@
+Internal ctest changing into directory: /home/admin/piaoip-release-2.5.0-20261003/src/AoIP-debug-tool/build/package-pi5/cmake
+Test project /home/admin/piaoip-release-2.5.0-20261003/src/AoIP-debug-tool/build/package-pi5/cmake
+    Start 1: core
+1/9 Test #1: core .............................   Passed    0.05 sec
+    Start 2: transport
+2/9 Test #2: transport ........................   Passed    0.18 sec
+    Start 3: datagram
+3/9 Test #3: datagram .........................   Passed    0.03 sec
+    Start 4: control_session
+4/9 Test #4: control_session ..................   Passed    0.01 sec
+    Start 5: transport_budget
+5/9 Test #5: transport_budget .................   Passed    0.00 sec
+    Start 6: pcm_codec
+6/9 Test #6: pcm_codec ........................   Passed    0.00 sec
+    Start 7: example_core
+7/9 Test #7: example_core .....................   Passed    0.01 sec
+    Start 8: example_peer
+8/9 Test #8: example_peer .....................   Passed    0.00 sec
+    Start 9: pi5_platform_policy
+9/9 Test #9: pi5_platform_policy ..............   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 9
+
+Total Test time (real) =   0.29 sec

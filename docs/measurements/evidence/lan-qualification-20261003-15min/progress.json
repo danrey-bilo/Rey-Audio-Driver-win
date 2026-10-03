@@ -1,0 +1,15 @@
+{
+  "tag": "15min-b64-g512-cb100",
+  "elapsed_s": 870.8,
+  "planned_s": 900,
+  "windows_final_counters": "pending",
+  "rtt_so_far": {
+    "count": 5221754,
+    "min_us": 2879,
+    "p50_us": 3053,
+    "p95_us": 3093,
+    "p99_us": 3203,
+    "max_us": 4763,
+    "active": 1
+  }
+}

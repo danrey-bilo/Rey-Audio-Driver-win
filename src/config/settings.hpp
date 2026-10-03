@@ -1,6 +1,10 @@
 #pragma once
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <winsock2.h>
 #include <windows.h>
 #include <objbase.h>
@@ -21,6 +25,7 @@
 #include "aoip/protocol.hpp"
 #include "aoip/diagnostics.hpp"
 #include "aoip/channels.hpp"
+#include "aoip/transport_budget.hpp"
 #include "../platform/realtime.hpp"
 namespace piaoip {
 inline constexpr CLSID kClsid = {0xa24d50b2, 0x9111, 0x4a6b, {0x9c, 0x29, 0xa0, 0x1d, 0x61, 0x7b, 0xc8, 0x30}};
@@ -42,6 +47,7 @@ struct Config {
   // Optional logical CPUs in the thread's processor group; -1 keeps automatic placement.
   std::array<int,3> realtime_cpus{{-1,-1,-1}}; // audio, receive, transmit
   unsigned audio_spin_us=20; // upper bound; runtime also reserves time for sleeping
+  unsigned capture_frames=0; // 0: existing startup policy; nonzero: explicit packet size
 };
 
 enum class PanelPage : unsigned { audio, connection, advanced, diagnostics, count };

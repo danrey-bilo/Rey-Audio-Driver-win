@@ -1,0 +1,7 @@
+Test project workspace/repositories/AoIP-debug-tool/build/consumer-2.5.0-windows
+    Start 1: installed_sdk
+1/1 Test #1: installed_sdk ....................   Passed    0.04 sec
+
+[0;32m100% tests passed[0;0m out of 1
+
+Total Test time (real) =   0.07 sec
