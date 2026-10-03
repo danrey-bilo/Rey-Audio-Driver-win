@@ -1,5 +1,6 @@
 #include "settings.hpp"
 #include <sstream>
+#include <vector>
 namespace rey::service {
 Settings::Settings() {
   usb.block = 64;
@@ -34,7 +35,7 @@ bool valid(const Settings &s, std::string &error) {
       s.lan.safety > 8192 || s.lan.capture_frames > 256 || !s.lan.port ||
       (s.preferred != "auto" && s.preferred != "usb" && s.preferred != "lan") ||
       (s.lan.peer[0] && inet_pton(AF_INET, s.lan.peer, &ip) != 1) ||
-      (s.lan_enabled && !s.lan.peer[0])) {
+      (s.lan_enabled && !s.lan.peer[0]) || !rey::audio::valid(s.mix)) {
     error = "Invalid transport settings";
     return false;
   }
@@ -48,43 +49,58 @@ std::string select_route(const Settings &s, bool present) {
   return s.preferred != "lan" && s.usb_auto && present ? "usb" : "none";
 }
 bool load(const std::wstring &path, Settings &out, std::string &error) {
-  const auto attributes = GetFileAttributesW(path.c_str());
-  if (attributes == INVALID_FILE_ATTRIBUTES &&
-      GetLastError() == ERROR_FILE_NOT_FOUND)
-    return true;
-  if (attributes == INVALID_FILE_ATTRIBUTES ||
-      (attributes & FILE_ATTRIBUTE_REPARSE_POINT)) {
-    error = "Cannot read service configuration";
-    return false;
+  // One registry value commits both profiles atomically. The finite test
+  // harness uses the same binary representation in an isolated .dat file.
+  std::vector<BYTE> bytes(512);
+  DWORD size = DWORD(bytes.size());
+  if (path.empty()) {
+    const auto status = RegGetValueW(HKEY_LOCAL_MACHINE, L"Software\\ReyAudio",
+        L"Profiles", RRF_RT_REG_BINARY, nullptr,
+        bytes.data(), &size);
+    if (status == ERROR_FILE_NOT_FOUND) return true;
+    if (status != ERROR_SUCCESS) {
+      error = "Cannot read saved profiles: " + std::to_string(status);
+      return false;
+    }
+  } else {
+    const auto attributes = GetFileAttributesW(path.c_str());
+    if (attributes == INVALID_FILE_ATTRIBUTES && GetLastError() == ERROR_FILE_NOT_FOUND)
+      return true;
+    if (attributes == INVALID_FILE_ATTRIBUTES ||
+        (attributes & (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY))) {
+      error = "Cannot read test settings"; return false;
+    }
+    const auto file = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ,
+        nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT, nullptr);
+    if (file == INVALID_HANDLE_VALUE) { error = "Cannot open test settings"; return false; }
+    const auto length = GetFileSize(file, nullptr);
+    const bool ok = length <= bytes.size() && ReadFile(file, bytes.data(), size, &size, nullptr);
+    CloseHandle(file);
+    if (!ok || size != length) { error = "Invalid saved profile length"; return false; }
   }
-  Settings s;
-  auto number = [&](const wchar_t *section, const wchar_t *key,
-                    unsigned initial, unsigned &target, unsigned maximum) {
-    wchar_t text[32]{}, fallback[32]{};
-    std::swprintf(fallback, 32, L"%u", initial);
-    GetPrivateProfileStringW(section, key, fallback, text, 32, path.c_str());
-    std::string ascii;
-    for (const auto c : std::wstring(text))
-      ascii.push_back(c <= 127 ? char(c) : '?');
-    return parse_unsigned(ascii, target, maximum);
+  bytes.resize(size);
+  size_t cursor = 0;
+  auto number = [&](unsigned &value, unsigned maximum) {
+    if (cursor + 4 > bytes.size()) return false;
+    uint32_t n = 0;
+    for (unsigned i = 0; i < 4; ++i) n |= uint32_t(bytes[cursor++]) << (8 * i);
+    value = n; return n <= maximum;
   };
-  unsigned bits = s.usb.bits, usb_block = unsigned(s.usb.block),
+  Settings s;
+  unsigned magic = 0, version = 0, bits = s.usb.bits, usb_block = unsigned(s.usb.block),
            lan_block = unsigned(s.lan.block), port = s.lan.port, automatic = 1,
-           enabled = 0, energy = 0;
-  if (!number(L"USB", L"Rate", s.usb.rate, s.usb.rate, 192000) ||
-      !number(L"USB", L"Bits", bits, bits, 32) ||
-      !number(L"USB", L"QueueDepth", s.usb_depth, s.usb_depth, 16) ||
-      !number(L"USB", L"EndpointFrames", usb_block, usb_block, 256) ||
-      !number(L"USB", L"GuardFrames", s.usb.safety, s.usb.safety, 8192) ||
-      !number(L"USB", L"AutoConnect", 1, automatic, 1) ||
-      !number(L"AoIP", L"Enabled", 0, enabled, 1) ||
-      !number(L"AoIP", L"Port", port, port, 65535) ||
-      !number(L"AoIP", L"BlockFrames", lan_block, lan_block, 256) ||
-      !number(L"AoIP", L"GuardFrames", s.lan.safety, s.lan.safety, 8192) ||
-      !number(L"AoIP", L"PacketFrames", s.lan.capture_frames,
-              s.lan.capture_frames, 256) ||
-      !number(L"AoIP", L"EnergySaving", 0, energy, 1)) {
-    error = "Malformed service configuration";
+           enabled = 0, energy = 0, route = 0, peer_length = 0;
+  if (!number(magic, UINT32_MAX) || magic != 0x31535952 ||
+      !number(version, 2) || !version ||
+      !number(s.usb.rate, 192000) || !number(bits, 32) ||
+      !number(s.usb_depth, 16) || !number(usb_block, 256) ||
+      !number(s.usb.safety, 8192) || !number(automatic, 1) ||
+      !number(enabled, 1) || !number(port, 65535) ||
+      !number(lan_block, 256) || !number(s.lan.safety, 8192) ||
+      !number(s.lan.capture_frames, 256) || !number(energy, 1) ||
+      !number(route, 2) || !number(peer_length, 15) ||
+      cursor + peer_length > bytes.size()) {
+    error = "Malformed saved profiles";
     return false;
   }
   s.usb.bits = uint16_t(bits);
@@ -94,18 +110,24 @@ bool load(const std::wstring &path, Settings &out, std::string &error) {
   s.usb_auto = automatic != 0;
   s.lan_enabled = enabled != 0;
   s.lan.energy_saving = energy != 0;
-  wchar_t text[64]{};
-  GetPrivateProfileStringW(L"AoIP", L"Peer", L"", text, 64, path.c_str());
-  if (!WideCharToMultiByte(CP_UTF8, 0, text, -1, s.lan.peer, sizeof(s.lan.peer),
-                           nullptr, nullptr)) {
-    error = "Invalid peer address";
-    return false;
+  for (unsigned i = 0; i < peer_length; ++i) {
+    if (bytes[cursor] == 0 || bytes[cursor] >= 128) { error = "Invalid saved peer"; return false; }
+    s.lan.peer[i] = char(bytes[cursor++]);
   }
-  GetPrivateProfileStringW(L"Routing", L"Preferred", L"auto", text, 64,
-                           path.c_str());
-  s.preferred.clear();
-  for (const auto c : std::wstring(text))
-    s.preferred.push_back(c <= 127 ? char(c) : '?');
+  s.lan.peer[peer_length] = 0;
+  s.preferred = route == 0 ? "auto" : route == 1 ? "usb" : "lan";
+  if (version == 2) {
+    for (auto *group : {&s.mix.inputs, &s.mix.outputs}) for (auto &c : *group) {
+      unsigned gain = 0, flags = 0;
+      if (!number(gain, 7200) || !number(flags, 7)) { error = "Malformed mixer settings"; return false; }
+      c.gain_cdb = int(gain) - 6000; c.mute = (flags & 1) != 0;
+      c.solo = (flags & 2) != 0; c.invert = (flags & 4) != 0;
+    }
+    unsigned gain = 0, mute = 0;
+    if (!number(gain, 6600) || !number(mute, 1)) { error = "Malformed master settings"; return false; }
+    s.mix.master_cdb = int(gain) - 6000; s.mix.master_mute = mute != 0;
+  }
+  if (cursor != bytes.size()) { error = "Unexpected saved profile data"; return false; }
   if (!valid(s, error))
     return false;
   out = s;
@@ -114,20 +136,33 @@ bool load(const std::wstring &path, Settings &out, std::string &error) {
 bool save(const std::wstring &path, const Settings &s, std::string &error) {
   if (!valid(s, error))
     return false;
-  std::ostringstream text;
-  text << "; Rey Audio Driver - independent manual transport "
-          "settings\r\n[Routing]\r\nPreferred="
-       << s.preferred << "\r\n\r\n[USB]\r\nRate=" << s.usb.rate
-       << "\r\nBits=" << s.usb.bits << "\r\nQueueDepth=" << s.usb_depth
-       << "\r\nEndpointFrames=" << s.usb.block
-       << "\r\nGuardFrames=" << s.usb.safety << "\r\nAutoConnect=" << s.usb_auto
-       << "\r\n\r\n[AoIP]\r\nPeer=" << s.lan.peer
-       << "\r\nEnabled=" << s.lan_enabled << "\r\nPort=" << s.lan.port
-       << "\r\nBlockFrames=" << s.lan.block
-       << "\r\nGuardFrames=" << s.lan.safety
-       << "\r\nPacketFrames=" << s.lan.capture_frames
-       << "\r\nEnergySaving=" << s.lan.energy_saving << "\r\n";
-  const auto content = text.str();
+  std::vector<BYTE> content;
+  auto number = [&](uint32_t value) {
+    for (unsigned i = 0; i < 4; ++i) content.push_back(BYTE(value >> (8 * i)));
+  };
+  for (const auto value : {uint32_t(0x31535952), uint32_t(2), s.usb.rate,
+      uint32_t(s.usb.bits), s.usb_depth, uint32_t(s.usb.block), s.usb.safety,
+      uint32_t(s.usb_auto), uint32_t(s.lan_enabled), uint32_t(s.lan.port),
+      uint32_t(s.lan.block), s.lan.safety, s.lan.capture_frames,
+      uint32_t(s.lan.energy_saving), uint32_t(s.preferred == "auto" ? 0 : s.preferred == "usb" ? 1 : 2),
+      uint32_t(std::strlen(s.lan.peer))}) number(value);
+  content.insert(content.end(), s.lan.peer, s.lan.peer + std::strlen(s.lan.peer));
+  for (const auto *group : {&s.mix.inputs, &s.mix.outputs}) for (const auto &c : *group) {
+    number(uint32_t(c.gain_cdb + 6000)); number(unsigned(c.mute) | (unsigned(c.solo) << 1) | (unsigned(c.invert) << 2));
+  }
+  number(uint32_t(s.mix.master_cdb + 6000)); number(unsigned(s.mix.master_mute));
+  if (path.empty()) {
+    HKEY key = nullptr;
+    auto status = RegCreateKeyExW(HKEY_LOCAL_MACHINE, L"Software\\ReyAudio", 0,
+        nullptr, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE | KEY_WOW64_64KEY,
+        nullptr, &key, nullptr);
+    if (status == ERROR_SUCCESS) {
+      status = RegSetValueExW(key, L"Profiles", 0, REG_BINARY, content.data(), DWORD(content.size()));
+      RegCloseKey(key);
+    }
+    if (status != ERROR_SUCCESS) error = "Cannot save profiles: " + std::to_string(status);
+    return status == ERROR_SUCCESS;
+  }
   const auto temporary = path + L".new";
   const auto attributes = GetFileAttributesW(temporary.c_str());
   if (attributes != INVALID_FILE_ATTRIBUTES &&

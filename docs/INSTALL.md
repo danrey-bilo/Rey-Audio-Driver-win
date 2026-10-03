@@ -1,39 +1,51 @@
 **English** | [Русский](INSTALL.ru.md)
 
-# PiAoIP 2.5.0 — Windows installation
+# Install Rey Audio Driver 2.6.1 preview
 
-PiAoIP connects a 64-bit ASIO host on Windows 11 x64 to a compatible Raspberry Pi service. It does not create Windows microphone/speaker endpoints. The panel, tray, installer and installed help use English.
+Run **Rey-Audio-Setup-2.6.1-preview.1-x64.exe**. It embeds the MSI: no ZIP
+extraction, PowerShell commands or INI editing is required. A prepared PC can
+also use the MSI directly. Requires Windows 11 x64 22H2+ and .NET Framework 4.8.
 
-## Install and connect
+The own ACX kernel driver uses a **local test signature**. No purchased or
+pre-existing certificate, external signer, WDK or network access is needed on
+the installation PC. Self-signing MSI cannot override Windows kernel policy.
+[Microsoft test-signing policy](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/the-testsigning-boot-configuration-option).
 
-1. Close ASIO hosts and exit the PiAoIP tray icon.
-2. Run `PiAoIP-2.5.0-Windows11-x64.msi`. Windows requests administrator access for installation, ASIO registration and a local-subnet UDP 50021 inbound rule.
-3. Connect the PC and Pi over Gigabit Ethernet and configure reachable IPv4 addresses. Example dedicated subnet: PC `192.168.50.1/24`, Pi `192.168.50.2/24`, no Ethernet gateway/DNS. These are examples, not driver defaults.
-4. Configure the PC address on the Pi with `sudo piaoip-configure --interface eth0 --peer 192.168.50.1 --restart`.
-5. Open **PiAoIP Settings → Device → Find and connect**. Discover or connect to the Pi IPv4 address.
-6. Set **Sample rate**, **Bit depth**, **ASIO buffer** and **LAN buffer**, then **Apply**.
-7. Select **Pi AoIP** in your DAW. Reopen its audio engine after changing settings when the host does not handle the ASIO reset request.
+1. Start the EXE; it reads the active code-integrity policy.
+2. If Secure Boot is enabled, disable it in your BIOS/UEFI manually.
+3. Choose **Enable Test Mode**, review the change and approve UAC.
+4. Restart Windows yourself; setup does not restart automatically.
+5. Start EXE again, choose Install, approve UAC and complete MSI setup.
 
-## Panel menus
+An already prepared PC needs only EXE/MSI, UAC and installation. Have your own
+BitLocker recovery key available before changing boot policy. To return to the
+normal policy, uninstall the driver before explicitly disabling Test Mode and
+restoring Secure Boot. MSI changes neither BIOS nor Core Isolation.
 
-| Menu | Functions |
-|---|---|
-| Device | Find/connect, select individual input/output channels |
-| Settings | Main audio settings, traffic reduction during digital silence |
-| Diagnostics | Stream counters and digital RTT |
+Memory Integrity does not need to be disabled in advance. The SYS is embedded
+SHA-256 signed, including for test signing with HVCI; this ACX build's HVCI
+compatibility remains unqualified until loading is tested. Record an actual
+device/Code Integrity error before considering a comparison with Memory Integrity
+disabled. Current stand snapshot: Secure Boot off, HVCI on, Test Mode off.
 
-The physical channel count comes from the Pi. Select channels without changing that count. Buffers are manual; no automatic tuning helper is installed. Duration labels use `samples × 1000 / sample rate` and are not measurements of the complete audio path.
+Setup installs the own root device, automatic ReyAudioService, mixer/tray panel,
+Start menu shortcut and a service-bound Private/LocalSubnet UDP firewall rule.
+It validates SYS/INF/CAT, creates a unique certificate on that PC, signs SYS/CAT
+through built-in Windows Authenticode and verifies their signatures and catalog
+membership. Only the public certificate enters machine Root/TrustedPublisher.
+The non-exportable temporary private key is deleted. Local signing expires after
+two years; uninstall/reinstall a fresh test package to renew it. Initial MSI/EXE
+are not commercially signed, so Windows can show Unknown Publisher.
 
-Live counters belong to the running ASIO instance. Open its panel from the DAW to view them. RTT requires PCM32 and a DAW route from an enabled input to its matching output without effects; avoid an acoustic feedback loop.
+Configure everything through **Mixer**, **USB**, **AoIP / LAN**. USB discovery is
+automatic. Select a LAN device/address in its page. Independent profiles and
+mixer settings are committed as one registry value; no product INI is installed.
+Changing the local UDP port updates only the own LAN firewall rule.
 
-## Settings, upgrade and recovery
-
-The profile is `%LOCALAPPDATA%\PiAoIP\PiAoipAsio.ini`. Existing values are preserved by the upgrade. Back up the file with ASIO hosts closed if you need an exact rollback. Change buffers manually and check the real project for missing/late frames and deadline misses.
-
-Use **Installed apps → PiAoIP** to repair or uninstall. Version 2.5.0 includes embedded settings/guide icons, explicit Start menu shortcut icons and an Installed apps icon. Windows may retain an existing shortcut image briefly until Explorer refreshes it.
-
-Windows ARM64, Windows Server and 32-bit ASIO hosts are outside this package. The Pi needs its separate service and an RT kernel. The MSI does not configure NICs, CPU affinity, Windows power settings, virtual machines or the Pi OS.
-
-## Package and licenses
-
-The MSI contains `PiAoipAsio.dll`, `PiAoipControl.exe`, this guide, `PROJECT-LICENSE.txt` and `ASIO-SDK-LICENSE.txt`. It does not contain the Steinberg SDK or development test tools. Project and ASIO license terms apply separately. The package is unsigned unless its distributor signs it.
+Uninstall from Windows Installed apps. Only own service, root, autorun, firewall
+rule and own local certificate trust are removed. Settings and public diagnostic
+files remain. Driver Store staging may remain; used/foreign packages are not
+forcibly removed. Package builds, MSI ICE validation, extracted payload hashes,
+offline local signatures and tamper rejection passed. Elevated install/uninstall,
+ACX loading, WASAPI/DAW and physical audio remain unqualified.
+[Mixer and latency](MIXER.md).

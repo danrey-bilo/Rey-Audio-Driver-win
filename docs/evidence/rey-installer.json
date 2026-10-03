@@ -1,0 +1,133 @@
+{
+  "version": "2.6.1-preview.1",
+  "assembled_utc": "2026-10-03T06:53:28.262366+00:00",
+  "build": {
+    "wix": "3.14.1",
+    "ice_validation_exit_code": 0,
+    "wix_download_sha256": "6ac824e1642d6f7277d0ed7ea09411a508f6116ba6fae0aa5f2c7daa2ff43d31",
+    "setup_helper_sha256": "dc15513de30998d32ae377e1f18fb54c313001607ee180c87bfe644d08f5570d"
+  },
+  "contract_dsp_tests": {
+    "passed": 14,
+    "failed": 0
+  },
+  "inspection": {
+    "passed": true,
+    "version": "2.6.1-preview.1",
+    "inspected_utc": "2026-10-03T06:52:33.0408475Z",
+    "msi_sha256": "34f91e649907b42024273dc4b67728cbce0aee4f060bd7b1063b231146f90c4d",
+    "exe_sha256": "818c11b48a825b554aef70a69fd337eb5ada7a428fa45d467ea5e83b0872afd1",
+    "embedded_msi_verified": true,
+    "cab_payload_sha256": {
+      "ServiceExe": "8bcdc3c95437982f8f5feeb1a98ed82339e1964c7bb9ffa1350d95aec9649b0c",
+      "ControlExe": "dbaf9b615f3f98b70fa80541f0f7f098a3bc7eca48d8dd3c2b5fae3ebc9467ac",
+      "ProbeExe": "e2d62103730a6f41a3a6ddb6d21b40834ecb1109877cd26071abbf580d8166a2",
+      "SetupHelper": "dc15513de30998d32ae377e1f18fb54c313001607ee180c87bfe644d08f5570d",
+      "DriverSysFile": "3113587ea4a208232e7016395f0f3b45393ba3f64ce0a3091e4ca9a110dab65b",
+      "DriverInfFile": "5ffda7a9ba9192a2a04b2edb30027b1f2486dec80af2927afd5d15fe6789b324",
+      "DriverCatFile": "39fa3d974667fcae3fdb4d243eafe687dd8a3c1789d3d99b9b7cf829787405ca"
+    },
+    "payload_count": 7,
+    "ini_or_install_scripts": false,
+    "service": [
+      {
+        "Name": "ReyAudioService",
+        "StartType": "2",
+        "StartName": "LocalSystem",
+        "Arguments": "--service"
+      }
+    ],
+    "firewall": [
+      {
+        "Name": "Rey Audio LAN transport",
+        "RemoteAddresses": "LocalSubnet",
+        "Port": "50021",
+        "Protocol": "17",
+        "Program": "[#ServiceExe]",
+        "Profile": "2"
+      }
+    ],
+    "driver_actions": [
+      {
+        "Action": "ReyCheck",
+        "Type": "2",
+        "Source": "SetupCheck",
+        "Target": "--msi-check"
+      },
+      {
+        "Action": "ReyRollback",
+        "Type": "3410",
+        "Source": "SetupHelper",
+        "Target": "--rollback-driver"
+      },
+      {
+        "Action": "ReyDriverInstall",
+        "Type": "3090",
+        "Source": "SetupHelper",
+        "Target": "--install-driver \"[INSTALLFOLDER].\""
+      },
+      {
+        "Action": "ReyCommit",
+        "Type": "3602",
+        "Source": "SetupHelper",
+        "Target": "--commit-driver"
+      },
+      {
+        "Action": "ReyDriverRemove",
+        "Type": "3090",
+        "Source": "SetupHelper",
+        "Target": "--remove-driver"
+      }
+    ],
+    "readiness_precedes_install": true,
+    "upgrade_in_transaction": true,
+    "rollback_commit_present": true,
+    "tray_autorun_verified": true,
+    "launch_conditions_verified": true,
+    "read_only_msi_environment": {
+      "VersionNT64": "1000",
+      "NetFramework48": "#533509"
+    },
+    "machine_state_changed": false,
+    "kernel_loaded": false,
+    "elevated_install_qualified": false
+  },
+  "local_signing": {
+    "local_test_signing": true,
+    "thumbprint": "211D57DC73D09E29A10790375B8FBDA459D32F1D",
+    "source_sys_sha256": "3113587ea4a208232e7016395f0f3b45393ba3f64ce0a3091e4ca9a110dab65b",
+    "signed_sys_sha256": "ae34e8386054c87061dfdb3b9552b40f646a4c9f2582bfda95a19d940be234ec",
+    "signed_cat_sha256": "5cc636d4d6652ce5e9edc4ef94d35913f67444de252dedd53d5a11e38eff9234",
+    "catalog_members_verified": true,
+    "private_key_exported": false,
+    "private_key_deleted": true,
+    "paid_certificate_required": false,
+    "driver_loaded": false,
+    "created_utc": "2026-10-03T06:52:01.3604295Z"
+  },
+  "tamper_rejection": {
+    "passed": true,
+    "embedded_signature_tamper_rejected": true,
+    "catalog_member_tamper_rejected": true,
+    "signature_status": "80096010",
+    "catalog_status": "800B0100",
+    "machine_trust_changed": false
+  },
+  "read_only_windows_readiness": {
+    "QuerySucceeded": true,
+    "TestMode": false,
+    "Hvci": true,
+    "Administrator": false,
+    "Ready": false,
+    "SecureBoot": false,
+    "WindowsBuild": 26300,
+    "CodeIntegrityOptions": 13313,
+    "Reason": "Включите Test Mode и перезагрузите ПК. Платный сертификат не нужен."
+  },
+  "machine_certificate_trust_changed": false,
+  "boot_settings_changed": false,
+  "elevated_install_qualified": false,
+  "kernel_loaded": false,
+  "wasapi_qualified": false,
+  "physical_audio_qualified": false
+}

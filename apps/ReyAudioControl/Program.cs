@@ -19,8 +19,8 @@ using Forms = System.Windows.Forms;
 [assembly: AssemblyTitle("Rey Audio Driver")]
 [assembly: AssemblyProduct("Rey Audio Driver")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.6.0.0")]
-[assembly: AssemblyFileVersion("2.6.0.0")]
+[assembly: AssemblyVersion("2.6.1.0")]
+[assembly: AssemblyFileVersion("2.6.1.0")]
 namespace ReyAudio {
     internal sealed class Panel : IDisposable {
         private readonly Application app;
@@ -33,10 +33,18 @@ namespace ReyAudio {
         private bool initialized, polling, exiting;
         private string lastState = "";
         private Exception connectionError;
+        private readonly HashSet<MixerChannel> pendingMix = new HashSet<MixerChannel>();
+        private bool mixing;
+        private int ticks;
         public Panel(Application application, EventWaitHandle activate) {
             app = application; showEvent = activate;
             using (var source = Assembly.GetExecutingAssembly().GetManifestResourceStream("ReyAudio.MainWindow.xaml")) window = (Window)XamlReader.Load(source);
             window.DataContext = view;
+            ((RadioButton)window.FindName("NavMixer")).Checked += (s, e) => Navigate("mixer");
+            ((RadioButton)window.FindName("MixerInputs")).Checked += (s, e) => { view.MixerOutputs = false; view.Notify(); };
+            ((RadioButton)window.FindName("MixerOutputs")).Checked += (s, e) => { view.MixerOutputs = true; view.Notify(); };
+            foreach(var channel in view.AllChannels) channel.Changed = c => pendingMix.Add(c);
+            Click("ResetMixer", async () => { pendingMix.Clear(); foreach(var c in view.AllChannels) c.Dirty = false; await Command("MIX_RESET", "Микшер сброшен: каналы 0 dB, Mute/Solo выключены."); });
             ((RadioButton)window.FindName("NavUsb")).Checked += (s, e) => Navigate("usb");
             ((RadioButton)window.FindName("NavLan")).Checked += (s, e) => Navigate("lan");
             ((RadioButton)window.FindName("NavDiagnostics")).Checked += (s, e) => Navigate("diagnostics");
@@ -57,10 +65,20 @@ namespace ReyAudio {
             });
             ((ComboBox)window.FindName("UsbDepth")).SelectionChanged += (s, e) => view.Notify();
             window.Closing += (s, e) => { if (!exiting) { e.Cancel = true; window.Hide(); } };
-            timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
             timer.Tick += async (s, e) => {
                 if (showEvent != null && showEvent.WaitOne(0)) Show();
-                await Refresh();
+                if (mixing) return;
+                if (pendingMix.Count != 0 && view.Available && !view.Busy && !polling) {
+                    mixing = true; var channel = pendingMix.First(); pendingMix.Remove(channel); long revision = channel.Revision;
+                    try {
+                        var response = await service.Send(channel.Command);
+                        if (!ViewModel.Bool(response, "ok")) throw new ArgumentException(ViewModel.String(response, "error"));
+                        if(channel.Revision == revision) channel.Dirty = false;
+                        Update(response, false);
+                    } catch(Exception error) { view.Message = FriendlyError(error); view.Notify(); }
+                    finally { mixing = false; }
+                } else if ((view.Page == "mixer" && window.IsVisible) || ++ticks % 20 == 0) await Refresh();
             };
         }
         private void Click(string name, Func<Task> action) {
@@ -116,7 +134,7 @@ namespace ReyAudio {
             if (lastState != view.State) lastState = view.State;
         }
         public async Task Refresh() {
-            if (polling || view.Busy) return;
+            if (polling || view.Busy || mixing) return;
             polling = true;
             try { Update(await service.Send("STATUS"), !initialized); initialized = true; connectionError = null; }
             catch (Exception error) { connectionError = error; view.Available = false; view.Notify(); }
@@ -127,6 +145,7 @@ namespace ReyAudio {
         public void Start(bool hidden) {
             var menu = new Forms.ContextMenuStrip();
             menu.Items.Add("Открыть Rey Audio Driver", null, (s, e) => app.Dispatcher.BeginInvoke(new Action(Show)));
+            menu.Items.Add("Микшер", null, (s, e) => app.Dispatcher.BeginInvoke(new Action(() => { ((RadioButton)window.FindName("NavMixer")).IsChecked = true; Show(); })));
             menu.Items.Add("Настроить USB", null, (s, e) => app.Dispatcher.BeginInvoke(new Action(() => { ((RadioButton)window.FindName("NavUsb")).IsChecked = true; Show(); })));
             menu.Items.Add("Настроить AoIP / LAN", null, (s, e) => app.Dispatcher.BeginInvoke(new Action(() => { ((RadioButton)window.FindName("NavLan")).IsChecked = true; Show(); })));
             menu.Items.Add(new Forms.ToolStripSeparator());
@@ -143,9 +162,9 @@ namespace ReyAudio {
             Directory.CreateDirectory(directory);
             await Refresh();
             var root = (FrameworkElement)window.Content;
-            foreach (var page in new[] { "usb", "lan", "diagnostics" }) {
+            foreach (var page in new[] { "mixer", "usb", "lan", "diagnostics" }) {
                 Navigate(page);
-                ((RadioButton)window.FindName(page == "usb" ? "NavUsb" : page == "lan" ? "NavLan" : "NavDiagnostics")).IsChecked = true;
+                ((RadioButton)window.FindName(page == "mixer" ? "NavMixer" : page == "usb" ? "NavUsb" : page == "lan" ? "NavLan" : "NavDiagnostics")).IsChecked = true;
                 root.Measure(new Size(1120, 800)); root.Arrange(new Rect(0, 0, 1120, 800)); root.UpdateLayout();
                 await app.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
                 var bitmap = new RenderTargetBitmap(1120, 800, 96, 96, PixelFormats.Pbgra32); bitmap.Render(root);

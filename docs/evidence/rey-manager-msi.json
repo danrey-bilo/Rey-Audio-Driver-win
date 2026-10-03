@@ -1,0 +1,1987 @@
+{
+  "started_utc": "2026-10-03T06:17:30.125705+00:00",
+  "binary_sha256": "8bcdc3c95437982f8f5feeb1a98ed82339e1964c7bb9ffa1350d95aec9649b0c",
+  "physical_audio_qualified": false,
+  "windows_endpoints_qualified": false,
+  "cases": [
+    {
+      "name": "USB auto discovery False",
+      "status": {
+        "version": "2.6.1",
+        "ok": true,
+        "error": "",
+        "state": "driver_unavailable",
+        "detail": "Cannot open the ACX bridge: 259",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": false,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "",
+          "enabled": false,
+          "port": 50021,
+          "block": 256,
+          "guard": 1536,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 0,
+          "frames": 0,
+          "missing_frames": 0,
+          "callback_gap_max_us": 0,
+          "processing_max_us": 0,
+          "processing_average_us": 0
+        },
+        "mixer": {
+          "master_cdb": 0,
+          "master_mute": false,
+          "inputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ],
+          "outputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ]
+        },
+        "events": [
+          {
+            "utc_ms": 1791008250411,
+            "code": "driver_unavailable",
+            "detail": "Cannot open the ACX bridge: 259"
+          },
+          {
+            "utc_ms": 1791008250410,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008250199,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing driver is explicit",
+      "status": {
+        "version": "2.6.1",
+        "ok": true,
+        "error": "",
+        "state": "driver_unavailable",
+        "detail": "Cannot open the ACX bridge: 259",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": false,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "",
+          "enabled": false,
+          "port": 50021,
+          "block": 256,
+          "guard": 1536,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 0,
+          "frames": 0,
+          "missing_frames": 0,
+          "callback_gap_max_us": 0,
+          "processing_max_us": 0,
+          "processing_average_us": 0
+        },
+        "mixer": {
+          "master_cdb": 0,
+          "master_mute": false,
+          "inputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ],
+          "outputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ]
+        },
+        "events": [
+          {
+            "utc_ms": 1791008250411,
+            "code": "driver_unavailable",
+            "detail": "Cannot open the ACX bridge: 259"
+          },
+          {
+            "utc_ms": 1791008250410,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008250199,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "USB auto discovery True",
+      "status": {
+        "version": "2.6.1",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "",
+          "enabled": false,
+          "port": 50021,
+          "block": 256,
+          "guard": 1536,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 651,
+          "frames": 15624,
+          "missing_frames": 0,
+          "callback_gap_max_us": 405,
+          "processing_max_us": 9.1,
+          "processing_average_us": 1.66375
+        },
+        "mixer": {
+          "master_cdb": 0,
+          "master_mute": false,
+          "inputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ],
+          "outputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ]
+        },
+        "events": [
+          {
+            "utc_ms": 1791008270435,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008270434,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008270223,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "separate LAN profile without USB restart",
+      "status": {
+        "version": "2.6.1",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 5902,
+          "frames": 141648,
+          "missing_frames": 0,
+          "callback_gap_max_us": 405,
+          "processing_max_us": 99,
+          "processing_average_us": 1.46513
+        },
+        "mixer": {
+          "master_cdb": 0,
+          "master_mute": false,
+          "inputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ],
+          "outputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ]
+        },
+        "events": [
+          {
+            "utc_ms": 1791008270435,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008270434,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008270223,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "live mixer settings without stream restart",
+      "status": {
+        "version": "2.6.1",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 8382,
+          "frames": 201168,
+          "missing_frames": 0,
+          "callback_gap_max_us": 405,
+          "processing_max_us": 99,
+          "processing_average_us": 1.40808
+        },
+        "mixer": {
+          "master_cdb": -300,
+          "master_mute": false,
+          "inputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": -600,
+              "mute": false,
+              "solo": true,
+              "invert": true,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ],
+          "outputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ]
+        },
+        "events": [
+          {
+            "utc_ms": 1791008270435,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008270434,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008270223,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "malformed requests leave settings unchanged",
+      "passed": true
+    },
+    {
+      "name": "USB profile restart 44100/16",
+      "status": {
+        "version": "2.6.1",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 44100,
+          "bits": 16,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 44100,
+          "bits": 16,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 2051,
+          "frames": 11306,
+          "missing_frames": 0,
+          "callback_gap_max_us": 335.5,
+          "processing_max_us": 1.2,
+          "processing_average_us": 0.453509
+        },
+        "mixer": {
+          "master_cdb": 0,
+          "master_mute": false,
+          "inputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ],
+          "outputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ]
+        },
+        "events": [
+          {
+            "utc_ms": 1791008271690,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008271689,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008271660,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791008270435,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008270434,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008270223,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "USB profile restart 96000/24",
+      "status": {
+        "version": "2.6.1",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 96000,
+          "bits": 24,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 96000,
+          "bits": 24,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 1040,
+          "frames": 12480,
+          "missing_frames": 0,
+          "callback_gap_max_us": 296.5,
+          "processing_max_us": 36.3,
+          "processing_average_us": 1.12452
+        },
+        "mixer": {
+          "master_cdb": 0,
+          "master_mute": false,
+          "inputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ],
+          "outputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ]
+        },
+        "events": [
+          {
+            "utc_ms": 1791008272123,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008272122,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008272092,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791008271690,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008271689,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008271660,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791008270435,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008270434,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008270223,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "USB profile restart 192000/32",
+      "status": {
+        "version": "2.6.1",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "auto",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 1631,
+          "frames": 39144,
+          "missing_frames": 0,
+          "callback_gap_max_us": 418.1,
+          "processing_max_us": 9,
+          "processing_average_us": 1.49313
+        },
+        "mixer": {
+          "master_cdb": 0,
+          "master_mute": false,
+          "inputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ],
+          "outputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ]
+        },
+        "events": [
+          {
+            "utc_ms": 1791008272355,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008272353,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008272324,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791008272123,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008272122,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008272092,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791008271690,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008271689,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008271660,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791008270435,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008270434,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008270223,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    },
+    {
+      "name": "USB pause and reconnect",
+      "status": {
+        "version": "2.6.1",
+        "ok": true,
+        "error": "",
+        "state": "digital_test",
+        "detail": "USB digital test is running",
+        "route": "usb",
+        "preferred": "usb",
+        "driver_present": false,
+        "digital_test": true,
+        "identity": "00000000000000002c26e7dcd051e632",
+        "backend": "digital-loopback",
+        "usb": {
+          "present": 1,
+          "identity": "00000000000000002c26e7dcd051e632",
+          "rate": 192000,
+          "bits": 32,
+          "depth": 3,
+          "block": 64,
+          "guard": 0,
+          "automatic": true
+        },
+        "lan": {
+          "peer": "192.168.1.2",
+          "enabled": false,
+          "port": 50021,
+          "block": 128,
+          "guard": 2048,
+          "frames": 32,
+          "energy": false
+        },
+        "active": {
+          "rate": 192000,
+          "bits": 32,
+          "inputs": 8,
+          "outputs": 8
+        },
+        "stats": {
+          "callbacks": 1373,
+          "frames": 32952,
+          "missing_frames": 0,
+          "callback_gap_max_us": 357.2,
+          "processing_max_us": 9.5,
+          "processing_average_us": 1.62709
+        },
+        "mixer": {
+          "master_cdb": 0,
+          "master_mute": false,
+          "inputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ],
+          "outputs": [
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            },
+            {
+              "gain_cdb": 0,
+              "mute": false,
+              "solo": false,
+              "invert": false,
+              "peak": 0,
+              "clips": 0
+            }
+          ]
+        },
+        "events": [
+          {
+            "utc_ms": 1791008273005,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008273004,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008272802,
+            "code": "idle",
+            "detail": "Waiting for a device"
+          },
+          {
+            "utc_ms": 1791008272770,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791008272355,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008272353,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008272324,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791008272123,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008272122,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008272092,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791008271690,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008271689,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008271660,
+            "code": "stopping",
+            "detail": "Applying connection settings"
+          },
+          {
+            "utc_ms": 1791008270435,
+            "code": "digital_test",
+            "detail": "USB digital test is running"
+          },
+          {
+            "utc_ms": 1791008270434,
+            "code": "connecting",
+            "detail": "Opening USB device"
+          },
+          {
+            "utc_ms": 1791008270223,
+            "code": "idle",
+            "detail": "Service is ready"
+          }
+        ]
+      }
+    }
+  ],
+  "passed": true,
+  "ended_utc": "2026-10-03T06:18:45.266468+00:00"
+}

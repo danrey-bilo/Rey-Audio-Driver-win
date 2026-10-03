@@ -1,11 +1,13 @@
 #pragma once
 #include "../config/settings.hpp"
+#include "../audio/mixer.hpp"
 namespace rey::service {
 struct Settings {
   piaoip::Config usb, lan;
   unsigned usb_depth = 3;
   bool usb_auto = true, lan_enabled = false;
   std::string preferred = "auto";
+  rey::audio::Mix mix;
   Settings();
 };
 bool valid(const Settings &, std::string &error);

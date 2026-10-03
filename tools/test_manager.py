@@ -55,9 +55,9 @@ def main():
               'physical_audio_qualified': False, 'windows_endpoints_qualified': False, 'cases': []}
     try:
         for digital in (False, True):
-            config = args.out.resolve() / ('digital.ini' if digital else 'production.ini')
+            config = args.out.resolve() / ('digital.dat' if digital else 'production.dat')
             duration = 55 if digital else 20
-            command = [str(binary), '--console', '--seconds', str(duration), '--config', str(config)]
+            command = [str(binary), '--console', '--seconds', str(duration), '--test-settings', str(config)]
             if digital:
                 command += ['--digital-test']
             with (args.out / ('digital.log' if digital else 'production.log')).open('w') as log:
@@ -85,6 +85,23 @@ def main():
                         after = request('STATUS')
                         assert after['stats']['callbacks'] > count  # inactive LAN edit must not restart USB
                         report['cases'].append({'name': 'separate LAN profile without USB restart', 'status': after})
+                        count = after['stats']['callbacks']
+                        assert request('MIX 0:2 5400 0 1 1 apply')['ok']
+                        assert request('MASTER 5700 0')['ok']
+                        time.sleep(.3)
+                        after = request('STATUS')
+                        assert after['stats']['callbacks'] > count and after['route'] == 'usb'
+                        assert after['mixer']['inputs'][2]['gain_cdb'] == -600 and after['mixer']['inputs'][2]['solo']
+                        assert after['mixer']['inputs'][2]['invert'] and after['mixer']['master_cdb'] == -300
+                        for malformed in ('MIX 0:8 6000 0 0 0 apply', 'MIX 2:0 6000 0 0 0 apply', 'MASTER 6601 0'):
+                            before = request('STATUS')
+                            reply = request(malformed)
+                            assert not reply['ok']
+                            for direction in ('inputs', 'outputs'):
+                                for previous, current in zip(before['mixer'][direction],reply['mixer'][direction]):
+                                    assert all(previous[key] == current[key] for key in ('gain_cdb','mute','solo','invert'))
+                        assert request('MIX_RESET')['ok']
+                        report['cases'].append({'name': 'live mixer settings without stream restart', 'status': after})
                         for invalid in ('USB 192000 17 3 64 0 1', 'USB 192000 32 0 64 0 1',
                                         'USB -1 32 3 64 0 1', 'USE shell', 'LAN 127.0.0.1 0 64 256 32 0',
                                         'LAN_CONNECT extra', 'USB 192000 32 3 64 0 1 trailing'):

@@ -58,6 +58,29 @@ int main(int argc, char **argv) {
     std::snprintf(s.lan.peer, sizeof(s.lan.peer), "%s",
                   "192.168.1.2 && command");
     ok = ok && !rey::service::valid(s, error);
+  } else if (test == "persistence" || test == "corruption") {
+    wchar_t temporary[MAX_PATH]{}, name[MAX_PATH]{};
+    if (!GetTempPathW(MAX_PATH, temporary) || !GetTempFileNameW(temporary, L"rey", 0, name)) return 1;
+    s.usb.rate = 44100; s.usb.bits = 24; s.usb_depth = 4;
+    s.lan.safety = 512; s.lan_enabled = true; s.preferred = "lan";
+    s.mix.inputs[3].gain_cdb = -602; s.mix.inputs[3].solo = true;
+    s.mix.outputs[7].invert = true; s.mix.master_mute = true;
+    std::snprintf(s.lan.peer, sizeof(s.lan.peer), "%s", "192.168.1.2");
+    rey::service::Settings restored;
+    ok = rey::service::save(name, s, error) && rey::service::load(name, restored, error) &&
+        restored.usb.rate == 44100 && restored.usb.bits == 24 && restored.usb_depth == 4 &&
+        restored.lan.safety == 512 && restored.lan_enabled && restored.preferred == "lan" &&
+        std::string(restored.lan.peer) == "192.168.1.2" && restored.mix.inputs[3].gain_cdb == -602 &&
+        restored.mix.inputs[3].solo && restored.mix.outputs[7].invert && restored.mix.master_mute;
+    if (test == "corruption" && ok) {
+      auto file = CreateFileW(name, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+      DWORD written = 0; const BYTE bad[] = {0x52, 0x59, 0x53, 0x31};
+      ok = file != INVALID_HANDLE_VALUE && WriteFile(file, bad, sizeof(bad), &written, nullptr);
+      if (file != INVALID_HANDLE_VALUE) CloseHandle(file);
+      const auto before = restored.usb.rate;
+      ok = ok && !rey::service::load(name, restored, error) && restored.usb.rate == before;
+    }
+    DeleteFileW(name);
   }
   std::printf("REY_CONTRACT %s %s\n", argv[1], ok ? "PASS" : "FAIL");
   return ok ? 0 : 1;

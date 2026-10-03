@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="ru-ru" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="WixSchedFirewallExceptionsInstall">Настройка доступа LAN</String>
+  <String Id="WixSchedFirewallExceptionsUninstall">Удаление правила LAN</String>
+  <String Id="WixRollbackFirewallExceptionsInstall">Откат настройки LAN</String>
+  <String Id="WixExecFirewallExceptionsInstall">Добавление правила LAN</String>
+  <String Id="WixRollbackFirewallExceptionsUninstall">Откат удаления правила LAN</String>
+  <String Id="WixExecFirewallExceptionsUninstall">Удаление правила LAN</String>
+  <String Id="msierrFirewallCannotConnect">Не удалось подключиться к брандмауэру Windows. Код: [2].</String>
+</WixLocalization>

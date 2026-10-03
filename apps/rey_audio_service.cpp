@@ -87,7 +87,7 @@ int wmain(int argc, wchar_t **argv) {
       scm = true;
     else if (arg == L"--digital-test")
       digital_test = true;
-    else if (arg == L"--config" && i + 1 < argc)
+    else if (arg == L"--test-settings" && i + 1 < argc)
       configuration = argv[++i];
     else if (arg == L"--seconds" && i + 1 < argc) {
       const std::wstring text = argv[++i];
@@ -96,16 +96,16 @@ int wmain(int argc, wchar_t **argv) {
         return 1;
     } else {
       std::fprintf(stderr,
-                   "Usage: ReyAudioService --service --config absolute.ini\n"
+                   "Usage: ReyAudioService --service\n"
                    "Test: ReyAudioService --console --seconds 1..300 "
-                   "[--digital-test] --config absolute.ini\n");
+                   "[--digital-test] --test-settings absolute.dat\n");
       return 1;
     }
   }
   if (console == scm || (console && !seconds) ||
-      (scm && (seconds || digital_test)) || configuration.size() < 4 ||
-      configuration[1] != L':' ||
-      (configuration[2] != L'\\' && configuration[2] != L'/'))
+      (scm && (seconds || digital_test || !configuration.empty())) ||
+      (console && (configuration.size() < 4 || configuration[1] != L':' ||
+       (configuration[2] != L'\\' && configuration[2] != L'/'))))
     return 1;
   stop_event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
   if (!stop_event)

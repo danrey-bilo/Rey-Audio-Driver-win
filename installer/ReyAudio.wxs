@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension">
+  <Product Id="*" Name="Rey Audio Driver 2.6.1 preview" Language="1049" Version="2.6.1" Manufacturer="Rey Audio" UpgradeCode="CB56CFDA-4D07-42D8-A1E1-D53DA481D1A8">
+    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" Platform="x64"/>
+    <MajorUpgrade DowngradeErrorMessage="Установлена более новая версия Rey Audio Driver." Schedule="afterInstallInitialize"/>
+    <MediaTemplate EmbedCab="yes"/>
+    <Icon Id="ReyIcon" SourceFile="$(var.Icon)"/>
+    <Property Id="ARPPRODUCTICON" Value="ReyIcon"/>
+    <Property Id="ARPHELPLINK" Value="https://github.com/danrey-bilo/Rey-Audio-Driver-win"/>
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Открыть микшер Rey Audio"/>
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
+    <Property Id="WixShellExecTarget" Value="[#ControlExe]"/>
+    <CustomAction Id="LaunchMixer" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes"/>
+    <UI><Publish Dialog="ExitDialog" Control="Finish" Event="DoAction" Value="LaunchMixer" Order="1">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 AND NOT Installed</Publish></UI>
+    <Property Id="NETFRAMEWORK48"><RegistrySearch Id="NetFramework48" Root="HKLM" Key="SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" Name="Release" Type="raw" Win64="yes"/></Property>
+    <!-- MSI's OS version can report compatibility values. The helper checks
+         the actual Windows build; raw DWORD registry searches include '#'. -->
+    <Condition Message="Требуется Windows 11 x64 с .NET Framework 4.8.">Installed OR (VersionNT64 AND NETFRAMEWORK48 &gt;= &quot;#528040&quot;)</Condition>
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.License)"/>
+    <UIRef Id="WixUI_InstallDir"/>
+    <UIRef Id="WixUI_ErrorProgressText"/>
+    <Binary Id="SetupCheck" SourceFile="$(var.Helper)"/>
+    <CustomAction Id="ReyCheck" BinaryKey="SetupCheck" ExeCommand="--msi-check" Execute="immediate" Return="check"/>
+    <CustomAction Id="ReyRollback" FileKey="SetupHelper" ExeCommand="--rollback-driver" Execute="rollback" Impersonate="no" Return="ignore"/>
+    <CustomAction Id="ReyDriverInstall" FileKey="SetupHelper" ExeCommand="--install-driver &quot;[INSTALLFOLDER].&quot;" Execute="deferred" Impersonate="no" Return="check"/>
+    <CustomAction Id="ReyCommit" FileKey="SetupHelper" ExeCommand="--commit-driver" Execute="commit" Impersonate="no" Return="check"/>
+    <CustomAction Id="ReyDriverRemove" FileKey="SetupHelper" ExeCommand="--remove-driver" Execute="deferred" Impersonate="no" Return="check"/>
+    <InstallExecuteSequence>
+      <Custom Action="ReyCheck" Before="InstallInitialize">NOT REMOVE</Custom>
+      <Custom Action="ReyRollback" After="InstallFiles">NOT REMOVE</Custom>
+      <Custom Action="ReyDriverInstall" After="ReyRollback">NOT REMOVE</Custom>
+      <Custom Action="ReyCommit" After="ReyDriverInstall">NOT REMOVE</Custom>
+      <Custom Action="ReyDriverRemove" After="StopServices">REMOVE="ALL" AND NOT UPGRADINGPRODUCTCODE</Custom>
+    </InstallExecuteSequence>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder"><Directory Id="INSTALLFOLDER" Name="Rey Audio Driver">
+        <Component Id="Service" Guid="*" Win64="yes">
+          <File Id="ServiceExe" Source="$(var.Bin)\ReyAudioService.exe" KeyPath="yes"/>
+          <ServiceInstall Id="ServiceInstall" Name="ReyAudioService" DisplayName="Rey Audio Driver" Description="USB and AoIP transport for Rey Audio devices." Type="ownProcess" Start="auto" Account="LocalSystem" Arguments="--service" ErrorControl="normal" Vital="yes"/>
+          <ServiceControl Id="ServiceControl" Name="ReyAudioService" Start="install" Stop="both" Remove="uninstall" Wait="yes"/>
+          <util:ServiceConfig ServiceName="ReyAudioService" FirstFailureActionType="restart" SecondFailureActionType="restart" ThirdFailureActionType="restart" RestartServiceDelayInSeconds="3" ResetPeriodInDays="1"/>
+          <fire:FirewallException Id="ReyFirewall" Name="Rey Audio LAN transport" Program="[#ServiceExe]" Port="50021" Protocol="udp" Scope="localSubnet" Profile="private"/>
+        </Component>
+        <Component Id="Control" Guid="*" Win64="yes">
+          <File Id="ControlExe" Source="$(var.Bin)\ReyAudioControl.exe" KeyPath="yes"><Shortcut Id="ControlShortcut" Directory="ProgramMenuFolder" Name="Rey Audio Driver" WorkingDirectory="INSTALLFOLDER" Advertise="yes"/></File>
+          <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run" Name="ReyAudioControl" Type="string" Value="&quot;[#ControlExe]&quot; --tray"/>
+        </Component>
+        <Component Id="Setup" Guid="*" Win64="yes"><File Id="SetupHelper" Name="ReyAudioSetup.Helper.exe" Source="$(var.Helper)" KeyPath="yes"/></Component>
+        <Component Id="Probe" Guid="*" Win64="yes"><File Id="ProbeExe" Source="$(var.Bin)\ReyAudioProbe.exe" KeyPath="yes"/></Component>
+        <Component Id="KeepProfiles" Guid="797BFCA8-1D55-443D-80DD-E38F7A028599" Win64="yes" Permanent="yes"><RegistryValue Root="HKLM" Key="Software\ReyAudio" Name="ProfilesSchema" Type="integer" Value="2" KeyPath="yes"/></Component>
+        <Directory Id="DRIVERFOLDER" Name="driver">
+          <Component Id="DriverSys" Guid="*" Win64="yes"><File Id="DriverSysFile" Source="$(var.Driver)\ReyAudioAcx.sys" KeyPath="yes"/></Component>
+          <Component Id="DriverInf" Guid="*" Win64="yes"><File Id="DriverInfFile" Source="$(var.Driver)\ReyAudioAcx.inf" KeyPath="yes"/></Component>
+          <Component Id="DriverCat" Guid="*" Win64="yes"><File Id="DriverCatFile" Source="$(var.Driver)\reyaudioacx.cat" KeyPath="yes"/></Component>
+        </Directory>
+      </Directory></Directory>
+      <Directory Id="ProgramMenuFolder"/>
+    </Directory>
+    <Feature Id="ReyAudio" Title="Rey Audio Driver" Level="1">
+      <ComponentRef Id="Service"/><ComponentRef Id="Control"/><ComponentRef Id="Setup"/><ComponentRef Id="Probe"/><ComponentRef Id="KeepProfiles"/>
+      <ComponentRef Id="DriverSys"/><ComponentRef Id="DriverInf"/><ComponentRef Id="DriverCat"/>
+    </Feature>
+  </Product>
+</Wix>

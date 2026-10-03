@@ -2,6 +2,7 @@
 #include "../bridge/driver_bridge.hpp"
 #include "../engine/session_engine.hpp"
 #include "../platform/device_names.hpp"
+#include "../platform/firewall.hpp"
 #ifdef PIAOIP_ENABLE_USB
 #include "../engine/usb_session.hpp"
 #endif
@@ -34,6 +35,11 @@ Manager::~Manager() { stop_worker(); }
 bool Manager::initialize(std::string &error) {
   if (!load(path_, settings_, error))
     return false;
+  mixer_.publish(settings_.mix);
+  if (path_.empty()) {
+    std::string firewall_error;
+    if (!rey::update_lan_firewall(settings_.lan.port, firewall_error)) state("firewall_warning", firewall_error);
+  }
   WSADATA data{};
   if (WSAStartup(MAKEWORD(2, 2), &data)) {
     error = "Winsock initialization failed";
@@ -57,6 +63,7 @@ void Manager::stop_worker() {
     SetEvent(worker_stop_);
   if (worker_.joinable())
     worker_.join();
+  mixer_.reset();
   if (worker_stop_)
     CloseHandle(worker_stop_);
   worker_stop_ = nullptr;
@@ -72,6 +79,7 @@ void Manager::start_worker(const std::string &route, Settings s,
     return;
   }
   callbacks_ = frames_ = missing_ = gap_max_ = 0;
+  processing_sum_ = processing_max_ = 0;
   worker_done_ = false;
   {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -98,15 +106,20 @@ bool Manager::process(void *opaque, const piaoip::engine::AudioBlock &b) {
   m.frames_.fetch_add(b.frames, std::memory_order_relaxed);
   if (b.missing)
     m.missing_.fetch_add(b.frames, std::memory_order_relaxed);
+  piaoip::engine::AudioBlock adjusted;
+  if (!m.mixer_.capture(b, adjusted)) return false;
+  bool ok = true;
   if (context.echo) {
     for (unsigned f = 0; f < b.frames; ++f)
       for (unsigned ch = 0; ch < b.outputs; ++ch)
         b.render[size_t(f) * b.outputs + ch] =
-            ch < b.inputs ? b.capture[size_t(f) * b.inputs + ch] : 0;
-    return true;
-  }
-  return static_cast<piaoip::bridge::DriverBridge *>(context.bridge)
-      ->process(b);
+            ch < b.inputs ? adjusted.capture[size_t(f) * b.inputs + ch] : 0;
+  } else ok = static_cast<piaoip::bridge::DriverBridge *>(context.bridge)->process(adjusted);
+  m.mixer_.render(adjusted);
+  const auto elapsed = piaoip::now_ns() - now;
+  m.processing_sum_.fetch_add(elapsed, std::memory_order_relaxed);
+  if (elapsed > m.processing_max_.load(std::memory_order_relaxed)) m.processing_max_.store(elapsed, std::memory_order_relaxed);
+  return ok;
 }
 void Manager::worker(const std::string &route, Settings settings,
                      const std::string &expected) {
@@ -258,7 +271,7 @@ void Manager::run(HANDLE stop) {
 std::string Manager::status_locked(const std::string &error) const {
   const auto &s = settings_;
   std::ostringstream out;
-  out << "{\"version\":\"2.6.0\",\"ok\":" << (error.empty() ? "true" : "false")
+  out << "{\"version\":\"2.6.1\",\"ok\":" << (error.empty() ? "true" : "false")
       << ",\"error\":" << json_string(error)
       << ",\"state\":" << json_string(state_)
       << ",\"detail\":" << json_string(detail_)
@@ -286,7 +299,22 @@ std::string Manager::status_locked(const std::string &error) const {
       << ",\"frames\":" << frames_.load()
       << ",\"missing_frames\":" << missing_.load()
       << ",\"callback_gap_max_us\":" << gap_max_.load() / 1000.0
-      << "},\"events\":[";
+      << ",\"processing_max_us\":" << processing_max_.load() / 1000.0
+      << ",\"processing_average_us\":" << (callbacks_.load() ? double(processing_sum_.load()) / callbacks_.load() / 1000.0 : 0)
+      << "},\"mixer\":{\"master_cdb\":" << s.mix.master_cdb << ",\"master_mute\":" << (s.mix.master_mute ? "true" : "false");
+  const std::array<rey::audio::Channel, 8> *groups[] = {&s.mix.inputs, &s.mix.outputs};
+  for (unsigned d = 0; d < 2; ++d) {
+    out << (d == 0 ? ",\"inputs\":[" : ",\"outputs\":[");
+    for (unsigned ch = 0; ch < 8; ++ch) {
+      if (ch) out << ',';
+      const auto &c = (*groups[d])[ch];
+      out << "{\"gain_cdb\":" << c.gain_cdb << ",\"mute\":" << (c.mute ? "true" : "false")
+          << ",\"solo\":" << (c.solo ? "true" : "false") << ",\"invert\":" << (c.invert ? "true" : "false")
+          << ",\"peak\":" << mixer_.peak(d, ch) << ",\"clips\":" << mixer_.clips(d, ch) << '}';
+    }
+    out << ']';
+  }
+  out << "},\"events\":[";
   bool comma = false;
   for (auto i = events_.rbegin(); i != events_.rend(); ++i) {
     if (comma)
@@ -324,7 +352,23 @@ std::string Manager::request(const std::string &command) {
   Settings next = settings_;
   std::string error;
   bool accepted = false;
-  if (fields.size() == 7 && fields[0] == "USB") {
+  if (fields.size() == 7 && fields[0] == "MIX") {
+    unsigned direction = 0, channel = 0, biased_gain = 0, mute = 0, solo = 0, phase = 0;
+    const auto split = fields[1].find(':');
+    accepted = split != std::string::npos && parse_unsigned(fields[1].substr(0, split), direction, 1) &&
+      parse_unsigned(fields[1].substr(split + 1), channel, 7) && parse_unsigned(fields[2], biased_gain, 7200) &&
+      parse_unsigned(fields[3], mute, 1) && parse_unsigned(fields[4], solo, 1) && parse_unsigned(fields[5], phase, 1) && fields[6] == "apply";
+    if (accepted) {
+      auto &c = direction == 0 ? next.mix.inputs[channel] : next.mix.outputs[channel];
+      c.gain_cdb = int(biased_gain) - 6000; c.mute = mute != 0; c.solo = solo != 0; c.invert = phase != 0;
+    }
+  } else if (fields.size() == 3 && fields[0] == "MASTER") {
+    unsigned gain = 0, mute = 0;
+    accepted = parse_unsigned(fields[1], gain, 6600) && parse_unsigned(fields[2], mute, 1);
+    next.mix.master_cdb = int(gain) - 6000; next.mix.master_mute = mute != 0;
+  } else if (command == "MIX_RESET") {
+    next.mix = rey::audio::Mix{}; accepted = true;
+  } else if (fields.size() == 7 && fields[0] == "USB") {
     unsigned rate = 0, bits = 0, depth = 0, block = 0, guard = 0, automatic = 0;
     accepted = parse_unsigned(fields[1], rate, 192000) &&
                parse_unsigned(fields[2], bits, 32) &&
@@ -369,9 +413,15 @@ std::string Manager::request(const std::string &command) {
   }
   if (!accepted)
     return status_locked("Unknown or malformed command");
-  if (!valid(next, error) || !save(path_, next, error))
+  if (!valid(next, error)) return status_locked(error);
+  const bool changed_port = path_.empty() && next.lan.port != settings_.lan.port;
+  if (changed_port && !rey::update_lan_firewall(next.lan.port, error)) return status_locked(error);
+  if (!save(path_, next, error)) {
+    if (changed_port) { std::string ignored; rey::update_lan_firewall(settings_.lan.port, ignored); }
     return status_locked(error);
+  }
   settings_ = next;
+  mixer_.publish(next.mix);
   ++revision_;
   return status_locked();
 }

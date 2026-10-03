@@ -26,7 +26,16 @@ namespace ReyAudio {
         public Choice[] Bits { get; private set; }
         public Choice[] Depths { get; private set; }
         public Choice[] Blocks { get; private set; }
-        public string Page = "usb";
+        public string Page = "mixer";
+        public bool MixerOutputs;
+        public MixerChannel[] Inputs { get; private set; }
+        public MixerChannel[] Outputs { get; private set; }
+        public MixerChannel Master { get; private set; }
+        public MixerChannel[] VisibleChannels { get { return MixerOutputs ? Outputs : Inputs; } }
+        public IEnumerable<MixerChannel> AllChannels { get { foreach(var c in Inputs) yield return c; foreach(var c in Outputs) yield return c; yield return Master; } }
+        public Visibility MixerVisibility { get { return Page == "mixer" ? Visibility.Visible : Visibility.Collapsed; } }
+        public string MixerSourceLabel { get { return MixerOutputs ? "Воспроизведение · Windows → Pi" : "Захват · Pi → Windows"; } }
+        public string MixerFormat { get { return ActiveRate > 0 ? (ActiveRate / 1000.0).ToString("0.#") + " кГц · PCM" + ActiveBits + " · " + RouteLabel : "8 входов / 8 выходов"; } }
         public bool Available, Busy, UsbPresent, DriverPresent, DigitalTest, LanEnabled;
         public string State = "offline", Route = "none", Preferred = "auto", Identity = "", Backend = "";
         public string LastJson = "", Detail = "";
@@ -47,6 +56,8 @@ namespace ReyAudio {
         public double Gap;
         public int ActiveRate, ActiveBits;
         public ViewModel() {
+            Inputs = new MixerChannel[8]; Outputs = new MixerChannel[8]; Master = new MixerChannel(2, 0);
+            for(int i = 0; i < 8; ++i) { Inputs[i] = new MixerChannel(0, i); Outputs[i] = new MixerChannel(1, i); }
             Rates = new[] { new Choice(44100, "44,1 кГц"), new Choice(48000, "48 кГц"), new Choice(88200, "88,2 кГц"), new Choice(96000, "96 кГц"), new Choice(176400, "176,4 кГц"), new Choice(192000, "192 кГц") };
             Bits = new[] { new Choice(16, "16 бит"), new Choice(24, "24 бит"), new Choice(32, "32 бит") };
             Depths = new[] { new Choice(1, "1 пакет"), new Choice(2, "2 пакета"), new Choice(3, "3 пакета"), new Choice(4, "4 пакета"), new Choice(6, "6 пакетов"), new Choice(8, "8 пакетов"), new Choice(12, "12 пакетов"), new Choice(16, "16 пакетов") };
@@ -57,8 +68,8 @@ namespace ReyAudio {
         public Visibility UsbVisibility { get { return Page == "usb" ? Visibility.Visible : Visibility.Collapsed; } }
         public Visibility LanVisibility { get { return Page == "lan" ? Visibility.Visible : Visibility.Collapsed; } }
         public Visibility DiagnosticsVisibility { get { return Page == "diagnostics" ? Visibility.Visible : Visibility.Collapsed; } }
-        public string PageTitle { get { return Page == "usb" ? "USB" : Page == "lan" ? "AoIP / LAN" : "Диагностика"; } }
-        public string PageSubtitle { get { return Page == "usb" ? "Прямое подключение Raspberry Pi 5 к компьютеру" : Page == "lan" ? "Аудио через встроенный Ethernet-порт" : "Состояние службы, подключения и события"; } }
+        public string PageTitle { get { return Page == "mixer" ? "Микшер" : Page == "usb" ? "USB" : Page == "lan" ? "AoIP / LAN" : "Диагностика"; } }
+        public string PageSubtitle { get { return Page == "mixer" ? "Уровни и управление восемью каналами в каждом направлении" : Page == "usb" ? "Прямое подключение Raspberry Pi 5 к компьютеру" : Page == "lan" ? "Аудио через встроенный Ethernet-порт" : "Состояние службы, подключения и события"; } }
         public string ServiceLabel { get { return Available ? "Служба работает" : "Служба недоступна"; } }
         public string ServiceColor { get { return Available ? "#72DEBD" : "#AAB4C4"; } }
         public bool CanApply { get { return Available && !Busy; } }
@@ -81,7 +92,7 @@ namespace ReyAudio {
         public string StatusBody {
             get {
                 if (!Available) return "Установите и запустите Rey Audio Service. После установки она запускается вместе с Windows.";
-                if (!DriverPresent && !DigitalTest) return "USB обнаруживается и настройки доступны. Для входов и выходов в Windows нужен подписанный драйвер Rey Audio.";
+                if (!DriverPresent && !DigitalTest) return "Установите Rey Audio Driver через MSI/EXE. Настройки и микшер доступны здесь; уровни появятся при работающем аудиопотоке.";
                 if (DigitalTest) return "Стенд проверяет цифровой транспорт. Системные аудиовходы и выходы в этом режиме не создаются.";
                 if (State == "streaming") return "Устройство доступно аудиоприложениям Windows. Смена транспорта перезапускает подключение.";
                 if (State == "idle") return "USB подключается автоматически. Для LAN укажите адрес устройства и нажмите «Подключить».";
@@ -120,6 +131,13 @@ namespace ReyAudio {
             var active = (Dictionary<string, object>)data["active"]; ActiveRate = Int(active, "rate"); ActiveBits = Int(active, "bits");
             var stats = (Dictionary<string, object>)data["stats"];
             Callbacks = Convert.ToInt64(stats["callbacks"]); Frames = Convert.ToInt64(stats["frames"]); Missing = Convert.ToInt64(stats["missing_frames"]); Gap = Convert.ToDouble(stats["callback_gap_max_us"], CultureInfo.InvariantCulture);
+            if (data.ContainsKey("mixer")) {
+                var mixer = (Dictionary<string, object>)data["mixer"]; int i = 0;
+                bool meters = State == "streaming" || State == "digital_test";
+                foreach(Dictionary<string, object> row in (IEnumerable)mixer["inputs"]) { if (i < 8) Inputs[i++].Update(row, meters); }
+                i = 0; foreach(Dictionary<string, object> row in (IEnumerable)mixer["outputs"]) { if (i < 8) Outputs[i++].Update(row, meters); }
+                Master.Update(new Dictionary<string, object> { {"gain_cdb", mixer["master_cdb"]}, {"mute", mixer["master_mute"]} }, false);
+            }
             Log.Clear();
             foreach (Dictionary<string, object> row in (IEnumerable)data["events"]) {
                 var stamp = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(Convert.ToDouble(row["utc_ms"])).ToLocalTime();

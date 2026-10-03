@@ -30,6 +30,7 @@ private:
   unsigned usb_present_ = 0;
   bool bridge_present_ = false;
   piaoip::Config active_;
+  rey::audio::Mixer mixer_;
   struct Event {
     uint64_t utc_ms;
     std::string code, detail;
@@ -39,6 +40,7 @@ private:
   HANDLE worker_stop_ = nullptr;
   std::atomic<bool> worker_done_{true};
   std::atomic<uint64_t> callbacks_{0}, frames_{0}, missing_{0}, gap_max_{0};
+  std::atomic<uint64_t> processing_sum_{0}, processing_max_{0};
   struct CallbackContext {
     Manager *manager;
     void *bridge;
