@@ -7,7 +7,7 @@ Rey Audio Driver 2.8.1 is the USB-ASIO preview for one Raspberry Pi 5 and
 
 | I want to… | Guide |
 |---|---|
-| Download the Windows installer | [USB preview release](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.1) |
+| Download the Windows installer | [USB preview release](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.2) |
 | Install and select the driver in Ableton | [USB-ASIO](USB-ASIO.md) |
 | Set block size, render reserve and USB queue | [Buffer guide](BUFFER-GUIDE.md) |
 | Control channels and meters | [Mixer](MIXER.md) |
@@ -25,3 +25,5 @@ loopback, with no physical ADC/DAC qualification. Keep these boundaries when
 comparing reported buffer latency and measured roundtrip.
 
 [Back to the project](../README.md)
+
+[Interface update and Pi cleanup](USB-PREVIEW2-20261004.md)

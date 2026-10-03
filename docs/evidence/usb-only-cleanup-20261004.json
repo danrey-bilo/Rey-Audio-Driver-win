@@ -1,0 +1,334 @@
+{
+  "local_date": "2026-10-04",
+  "release": "2.8.1-usb-preview.2",
+  "pi": {
+    "kernel": "Linux pi5 6.18.50+rpt-rpi-v8-rt #1 SMP PREEMPT_RT Debian 1:6.18.50-1+rpt1 (2026-09-11) aarch64 GNU/Linux",
+    "ausb_runtime": "0.1.1",
+    "ausb_pid_before": 11663,
+    "ausb_pid_after": 11663,
+    "ausb_sha256": "0554785534301fba710834590434f75c149f6eb30c399a02ea6d8bbef7d25ecc",
+    "boot_files_unchanged": true,
+    "removed_packages": [
+      "piaoip-rpi5",
+      "piaoip-rpi5-sdk"
+    ],
+    "removed_builds": [
+      "/home/admin/piaoip-release-2.5.0-20261003",
+      "/home/admin/piaoip-single-20261002",
+      "/home/admin/piaoip-single-stage5-20261002",
+      "/home/admin/piaoip-transport-20261002"
+    ],
+    "removed_units": [
+      "pi-aoip.service",
+      "pi-aoip-lan.service"
+    ],
+    "removed_profile": "Pi5-AoIP-LAN",
+    "removed_account": "piaoip",
+    "aoip_file_scan": {
+      "code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "aoip_process": {
+      "code": 1,
+      "stdout": "",
+      "stderr": ""
+    },
+    "aoip_account": {
+      "code": 2,
+      "stdout": "",
+      "stderr": ""
+    },
+    "usb_controller": {
+      "1000480000.usb": "configured"
+    },
+    "runtime_status": [
+      "VmLck:\t    5596 kB",
+      "Cpus_allowed_list:\t0"
+    ],
+    "reboot_performed": false,
+    "configuration_backup_on_pc": true
+  },
+  "audio": {
+    "192": {
+      "metrics": {
+        "seconds": "30.007",
+        "callbacks": "90010",
+        "frames": "5760640",
+        "pulses": "89859",
+        "received": "89855",
+        "missing": "0",
+        "invalid": "0",
+        "duplicates": "0",
+        "rtt_p50_us": "1361.800",
+        "rtt_p95_us": "1411.700",
+        "rtt_p99_us": "1442.100",
+        "rtt_max_us": "1755.100",
+        "capture_dropped": "0",
+        "render_late_frames": "0",
+        "render_missing_frames": "0",
+        "render_overflow": "0",
+        "callback_gap_max_us": "680.400",
+        "processing_max_us": "27.200",
+        "capture_age_max_us": "646.800",
+        "service_gap_max_us": "469.000",
+        "positions_backwards": "0",
+        "mmcss_failures": "0",
+        "cadence_seconds": "30.006127700",
+        "cadence_frames": "5760576",
+        "dense_markers": "1",
+        "okay": "1",
+        "physical_audio": "0",
+        "ableton_host": "0"
+      },
+      "host_cpu_percent_of_one_core": 0.2082847335621688,
+      "nominal_rate_ratio": 0.9998957646241038,
+      "duration_s": 30.032,
+      "okay": true,
+      "low_latency_candidate_qualified": true,
+      "physical_audio": false,
+      "actual_ableton_host": false,
+      "service_sha256": "09593dbb95ea48ccecbecb8697297da7743d7f1f80380881fbec61412f90008c",
+      "driver_sha256": "d459e5b0a1abd045f5c5fbe31446e34d8b826d49fc88ef9aba7d690fcc6f8392",
+      "probe_sha256": "d1474d83c8e7ddf7bfa523d7d5a3d496453d86d865cc0f55690e73c95cd94925",
+      "profile_unchanged": true,
+      "saved_preferences_changed": false
+    },
+    "96": {
+      "metrics": {
+        "seconds": "30.012",
+        "callbacks": "90031",
+        "frames": "2880992",
+        "pulses": "89880",
+        "received": "89876",
+        "missing": "0",
+        "invalid": "0",
+        "duplicates": "0",
+        "rtt_p50_us": "1367.700",
+        "rtt_p95_us": "1419.500",
+        "rtt_p99_us": "1437.200",
+        "rtt_max_us": "2070.900",
+        "capture_dropped": "0",
+        "render_late_frames": "0",
+        "render_missing_frames": "0",
+        "render_overflow": "0",
+        "callback_gap_max_us": "749.200",
+        "processing_max_us": "16.700",
+        "capture_age_max_us": "746.900",
+        "service_gap_max_us": "474.900",
+        "positions_backwards": "0",
+        "mmcss_failures": "0",
+        "cadence_seconds": "30.011333100",
+        "cadence_frames": "2880960",
+        "dense_markers": "1",
+        "okay": "1",
+        "physical_audio": "0",
+        "ableton_host": "0"
+      },
+      "host_cpu_percent_of_one_core": 0.10412501666000266,
+      "nominal_rate_ratio": 0.9999555801138337,
+      "duration_s": 30.469,
+      "okay": true,
+      "low_latency_candidate_qualified": true,
+      "physical_audio": false,
+      "actual_ableton_host": false,
+      "service_sha256": "09593dbb95ea48ccecbecb8697297da7743d7f1f80380881fbec61412f90008c",
+      "driver_sha256": "d459e5b0a1abd045f5c5fbe31446e34d8b826d49fc88ef9aba7d690fcc6f8392",
+      "probe_sha256": "d1474d83c8e7ddf7bfa523d7d5a3d496453d86d865cc0f55690e73c95cd94925",
+      "profile_unchanged": true,
+      "saved_preferences_changed": false
+    }
+  },
+  "ui": {
+    "final-idle": {
+      "layout-check": {
+        "usb_apply_enabled": true,
+        "service_available": true,
+        "viewmodel_can_apply": true,
+        "device_label": "Rey Audio · Pi5",
+        "device_limit": 1,
+        "page_count": 3,
+        "lan_navigation_absent": true,
+        "card_selector_absent": true,
+        "tray_button_absent": true,
+        "windows_sound_button_absent": true,
+        "all_channel_controls_visible": true,
+        "asio_controls_visible": true,
+        "asio_apply_hint": "",
+        "asio_latency_label": "—",
+        "width": 1120,
+        "height": 800,
+        "fixture": false
+      },
+      "tray-lifecycle": {
+        "cases": [
+          {
+            "service": false,
+            "usb": false,
+            "icon": false,
+            "window": false
+          },
+          {
+            "service": true,
+            "usb": false,
+            "icon": false,
+            "window": false
+          },
+          {
+            "service": true,
+            "usb": true,
+            "icon": true,
+            "window": false
+          },
+          {
+            "service": false,
+            "usb": true,
+            "icon": false,
+            "window": false
+          },
+          {
+            "service": true,
+            "usb": true,
+            "icon": true,
+            "window": false
+          },
+          {
+            "service": true,
+            "usb": false,
+            "icon": false,
+            "window": false
+          }
+        ],
+        "close_keeps_tray": true,
+        "minimize_keeps_tray": true,
+        "minimum_window": [
+          {
+            "page": "mixer",
+            "width": 1085.6,
+            "height": 662.4,
+            "core_controls_visible": true
+          },
+          {
+            "page": "usb",
+            "width": 1085.6,
+            "height": 662.4,
+            "core_controls_visible": true
+          },
+          {
+            "page": "diagnostics",
+            "width": 1085.6,
+            "height": 662.4,
+            "core_controls_visible": true
+          }
+        ],
+        "hidden_window_wake_ms": 250,
+        "hidden_status_poll_ms": 1000
+      }
+    },
+    "final-disconnected": {
+      "layout-check": {
+        "usb_apply_enabled": true,
+        "service_available": true,
+        "viewmodel_can_apply": true,
+        "device_label": "Rey Audio · Pi5",
+        "device_limit": 1,
+        "page_count": 3,
+        "lan_navigation_absent": true,
+        "card_selector_absent": true,
+        "tray_button_absent": true,
+        "windows_sound_button_absent": true,
+        "all_channel_controls_visible": true,
+        "asio_controls_visible": true,
+        "asio_apply_hint": "",
+        "asio_latency_label": "—",
+        "width": 1120,
+        "height": 800,
+        "fixture": true
+      },
+      "tray-lifecycle": {
+        "cases": [
+          {
+            "service": false,
+            "usb": false,
+            "icon": false,
+            "window": false
+          },
+          {
+            "service": true,
+            "usb": false,
+            "icon": false,
+            "window": false
+          },
+          {
+            "service": true,
+            "usb": true,
+            "icon": true,
+            "window": false
+          },
+          {
+            "service": false,
+            "usb": true,
+            "icon": false,
+            "window": false
+          },
+          {
+            "service": true,
+            "usb": true,
+            "icon": true,
+            "window": false
+          },
+          {
+            "service": true,
+            "usb": false,
+            "icon": false,
+            "window": false
+          }
+        ],
+        "close_keeps_tray": true,
+        "minimize_keeps_tray": true,
+        "minimum_window": [
+          {
+            "page": "mixer",
+            "width": 1085.6,
+            "height": 662.4,
+            "core_controls_visible": true
+          },
+          {
+            "page": "usb",
+            "width": 1085.6,
+            "height": 662.4,
+            "core_controls_visible": true
+          },
+          {
+            "page": "diagnostics",
+            "width": 1085.6,
+            "height": 662.4,
+            "core_controls_visible": true
+          }
+        ],
+        "hidden_window_wake_ms": 250,
+        "hidden_status_poll_ms": 1000
+      }
+    }
+  },
+  "installer": {
+    "version": "2.8.1-usb-preview.2",
+    "purpose": "One USB device, 8x8 USB-ASIO",
+    "device_limit": 1,
+    "transport": "USB",
+    "kernel_driver": false,
+    "files": {
+      "ReyAudioService.exe": "09593dbb95ea48ccecbecb8697297da7743d7f1f80380881fbec61412f90008c",
+      "ReyAsioProbe.exe": "d1474d83c8e7ddf7bfa523d7d5a3d496453d86d865cc0f55690e73c95cd94925",
+      "ReyAudioControl.exe": "b2222a863627e586143bf94043bd8604ad962201916bbaa86298e596ba21f7bc",
+      "ReyAudioAsio.dll": "d459e5b0a1abd045f5c5fbe31446e34d8b826d49fc88ef9aba7d690fcc6f8392"
+    },
+    "setup_sha256": "f3298e21c44f6a1e5dcdae5f52804416e5a093c08a1ae87e59f5d4ed56e715f7"
+  },
+  "limits": [
+    "30-second native digital smoke checks only",
+    "No new Ableton load qualification",
+    "No physical ADC/DAC measurement",
+    "Tray disconnect cases are injected UI states, not physical hotplug"
+  ]
+}

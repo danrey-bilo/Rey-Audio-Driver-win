@@ -9,7 +9,7 @@ Eight inputs and eight outputs, integer PCM16/24/32 and six sample rates from
 44.1 to 192 kHz. The service connects the board automatically and keeps running
 when the mixer window closes.
 
-**[Download 2.8.1 USB preview](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.1)**
+**[Download 2.8.1 USB preview 2](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.2)**
 · [Install & Ableton](docs/USB-ASIO.md)
 · [Documentation](docs/README.md)
 · [Pi5-AUSB transport](https://github.com/danrey-bilo/Pi5-AUSB)
@@ -21,24 +21,24 @@ when the mixer window closes.
 
 ## Mixer
 
-![Mixer for one USB audio card](docs/assets/rey-usb-only-mixer.png)
+![Mixer for one USB audio card](docs/assets/rey-usb-preview2-mixer.png)
 
 Control eight input or eight output channels with gain, Mute, Solo and polarity.
 Output Master controls playback. Meters show real PCM levels. The panel has
-three pages: **Mixer**, **USB** and **Diagnostics**, with access from the tray.
+three pages: **Mixer**, **Settings** and **Diagnostics**, with access from the tray.
 
 <details>
 <summary><strong>USB settings and diagnostics</strong></summary>
 
-![USB settings](docs/assets/rey-usb-only-usb.png)
+![USB settings](docs/assets/rey-usb-preview2-usb.png)
 
-![USB diagnostics](docs/assets/rey-usb-only-diagnostics.png)
+![USB diagnostics](docs/assets/rey-usb-preview2-diagnostics.png)
 
 </details>
 
 ## Start in Ableton
 
-1. Download **Rey-Audio-USB-ASIO-2.8.1-preview.1-x64.exe** from the release and
+1. Download **Rey-Audio-USB-ASIO-2.8.1-preview.2-x64.exe** from the release and
    run it. Accept UAC; the installer adds the ASIO driver, automatic service
    and mixer/tray panel.
 2. Connect one configured Pi5-AUSB board over USB. Open **Rey Audio Driver**.
@@ -98,7 +98,7 @@ included. [Build instructions](docs/BUILD.md).
 | [Architecture](docs/ARCHITECTURE.md) | Service ownership, USB, shared PCM rings and module boundaries |
 | [Control API](docs/API.md) | USB profile, mixer and status commands |
 | [Mixer](docs/MIXER.md) | Channel controls, routing direction and meters |
-| [Release notes](docs/RELEASE-2.8.1.md) | What changed and what is included |
+| [Release notes](docs/USB-PREVIEW2-20261004.md) | Interface, tray startup and Pi cleanup |
 | [Validation report](docs/USB-LATENCY-2.8.1.md) | Exact binary hashes, passed/failed tests and remaining work |
 | [Windows endpoints](docs/ENDPOINTS.md) | Separate system-audio backend status |
 
@@ -108,3 +108,5 @@ in [the archive](archive/aoip/README.md), outside the active build. Separate
 AoIP repositories and old release assets are unchanged.
 
 [License](LICENSE) · [External ASIO SDK](docs/ASIO-SDK.md)
+
+**[Interface update and Pi cleanup](docs/USB-PREVIEW2-20261004.md)**

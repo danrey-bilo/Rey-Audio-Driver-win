@@ -3,14 +3,14 @@
 # Install Rey Audio USB ASIO 2.8.1
 
 One USB board, eight inputs and eight outputs, PCM16/24/32, 44.1–192 kHz.
-Run **Rey-Audio-USB-ASIO-2.8.1-preview.1-x64.exe** and accept UAC. It installs
+Run **Rey-Audio-USB-ASIO-2.8.1-preview.2-x64.exe** and accept UAC. It installs
 the x64 user-mode ASIO DLL, automatic service and mixer/tray panel under
 `%ProgramFiles%\ReyAudio\USBASIO`. Microsoft WinUSB handles the USB interface.
 No custom SYS, test certificate, Test Mode, INI or boot/security change is needed.
 System microphones/speakers for Chrome/Telegram are a [separate stage](ENDPOINTS.md).
 
 Connect one configured Pi5-AUSB board; USB detection is automatic. Open
-**Rey Audio Driver → USB**. The Pi needs runtime 0.1.1 for the documented tests.
+**Rey Audio Driver → Settings (Настройки)**. The Pi needs runtime 0.1.1 for the documented tests.
 The package allows one ASIO host at a time and retains saved manual settings.
 
 ## Ableton settings
@@ -21,7 +21,7 @@ The package allows one ASIO host at a time and retains saved manual settings.
 | Audio Device | Rey Audio USB ASIO |
 | In/Out Sample Rate | 192000 Hz or 96000 Hz |
 | Buffer Size | 64 Samples at 192 kHz; 32 at 96 kHz |
-| Hardware Setup | Rey → USB → ASIO settings |
+| Hardware Setup | Rey → Settings → ASIO |
 | ASIO render reserve | 3 blocks; test the intended project |
 | USB format | PCM32, queue4 |
 
@@ -30,7 +30,7 @@ before treating a small block as stable. Increase reserve manually if deadline
 counters rise. USB depth and ASIO block/reserve are separate controls.
 
 1. Select **No Device** in Ableton before changing USB rate/bits/depth.
-2. Apply the USB format in Rey. Select ASIO block/reserve and **Save ASIO**.
+2. Apply the USB format in Rey. Select ASIO block/reserve and **Save** on the ASIO card.
 3. Select **Rey Audio USB ASIO** again. Verify the displayed rate and Buffer Size.
 
 The panel shows live settings and selected settings separately. Saving changes
@@ -57,5 +57,9 @@ errors. It migrates previous USB/mixer settings without activating network trans
 Uninstall is available in Installed apps; preferences are retained. Installation/
 upgrade passed locally, while uninstall and physical hotplug are not yet qualified.
 
-[Release](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.1)
+[Release](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.2)
 · [Exact-build report](USB-LATENCY-2.8.1.md) · [2.8.0 history](USB-ONLY-2.8.md).
+
+The panel starts automatically after installation and at login, with its window
+hidden. Its icon appears when the service detects the board; Windows may place
+it in the notification-area overflow. [Preview 2 changes](USB-PREVIEW2-20261004.md).

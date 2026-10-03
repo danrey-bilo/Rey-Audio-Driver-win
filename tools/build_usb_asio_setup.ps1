@@ -11,7 +11,7 @@ $source = Join-Path $project 'installer/UsbAsioSetup'
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
 $payload = @('ReyAudioService.exe','ReyAudioAsio.dll','ReyAudioControl.exe','ReyAsioProbe.exe')
 $hashCode = 'namespace ReyAudio.UsbAsioSetup { internal static class Payload { public static readonly System.Collections.Generic.Dictionary<string,string> Hashes = new System.Collections.Generic.Dictionary<string,string> {'
-$manifest = [ordered]@{version='2.8.1-usb-preview'; purpose='One USB device, 8x8 USB-ASIO'; device_limit=1; transport='USB'; kernel_driver=$false; files=@{}}
+$manifest = [ordered]@{version='2.8.1-usb-preview.2'; purpose='One USB device, 8x8 USB-ASIO'; device_limit=1; transport='USB'; kernel_driver=$false; files=@{}}
 foreach ($name in $payload) {
     $digest = (Get-FileHash -LiteralPath (Join-Path $binary $name) -Algorithm SHA256).Hash.ToLowerInvariant()
     $hashCode += '{"'+$name+'","'+$digest+'"},'

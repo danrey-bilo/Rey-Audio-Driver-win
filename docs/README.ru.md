@@ -7,7 +7,7 @@ Pi 5 и аудио 8×8. Начните с установки, затем нас
 
 | Задача | Документ |
 |---|---|
-| Скачать установщик Windows | [Релиз USB preview](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.1) |
+| Скачать установщик Windows | [Релиз USB preview](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.2) |
 | Установить и выбрать драйвер в Ableton | [USB-ASIO](USB-ASIO.ru.md) |
 | Настроить блок, запас ASIO и очередь USB | [Буферы](BUFFER-GUIDE.ru.md) |
 | Управлять каналами и индикаторами | [Микшер](MIXER.ru.md) |
@@ -25,3 +25,5 @@ ASIO-пакет устанавливается без Test Mode и нового 
 и измеренного roundtrip.
 
 [Вернуться к проекту](../README.ru.md)
+
+[Обновление интерфейса и очистка Pi](USB-PREVIEW2-20261004.ru.md)

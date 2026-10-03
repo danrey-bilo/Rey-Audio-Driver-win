@@ -23,9 +23,11 @@ rates. Earlier short 16/32 successes did not prove sustained stability; longer
 runs on the earlier build had errors. [2.8.0 history](USB-ONLY-2.8.md) is retained
 separately from the new measurements.
 
-USB → Save ASIO, then reopen the driver in Ableton. Apply USB rate/bits/depth
+Settings → ASIO → Save, then reopen the driver in Ableton. Apply USB rate/bits/depth
 separately after stopping ASIO. Test the intended project, drops/late/overflow,
 frame continuity and RTT; use 175 seconds, finishing within three minutes. A good median with
 missing frames is not stable. Check generation and connection_id when comparing
 counters. Earlier depth2 slowed the digital bench despite zero PCM errors, so
 zero counters alone are insufficient.
+
+ASIO reserve and USB queue are under **Advanced** on their respective cards.

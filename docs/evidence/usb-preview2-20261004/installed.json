@@ -1,0 +1,30 @@
+{
+  "release": "2.8.1-usb-preview.2",
+  "installed_files_match": true,
+  "setup_match": true,
+  "run_key": "\"C:\\Program Files\\ReyAudio\\USBASIO\\ReyAudioControl.exe\" --tray",
+  "panel_pid": 26028,
+  "panel_elevated": false,
+  "main_window_handle": 0,
+  "full_setup_exit": 0,
+  "panel_update_exit": 0,
+  "service_running": true,
+  "audio_core_unchanged": true,
+  "final_full_setup_exit": 0,
+  "final_installed_manifest": {
+    "version": "2.8.1-usb-preview.2",
+    "purpose": "One USB device, 8x8 USB-ASIO",
+    "device_limit": 1,
+    "transport": "USB",
+    "kernel_driver": false,
+    "files": {
+      "ReyAudioService.exe": "09593dbb95ea48ccecbecb8697297da7743d7f1f80380881fbec61412f90008c",
+      "ReyAsioProbe.exe": "d1474d83c8e7ddf7bfa523d7d5a3d496453d86d865cc0f55690e73c95cd94925",
+      "ReyAudioControl.exe": "b2222a863627e586143bf94043bd8604ad962201916bbaa86298e596ba21f7bc",
+      "ReyAudioAsio.dll": "d459e5b0a1abd045f5c5fbe31446e34d8b826d49fc88ef9aba7d690fcc6f8392"
+    },
+    "setup_sha256": "f3298e21c44f6a1e5dcdae5f52804416e5a093c08a1ae87e59f5d4ed56e715f7"
+  },
+  "duplicate_background_start_exit": 0,
+  "duplicate_background_start_keeps_window_hidden": true
+}

@@ -10,10 +10,10 @@ using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Win32;
 [assembly: AssemblyTitle("Rey Audio USB ASIO Setup")]
-[assembly: AssemblyProduct("Rey Audio USB ASIO local preview")]
+[assembly: AssemblyProduct("Rey Audio Driver USB ASIO")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.1.0")]
-[assembly: AssemblyFileVersion("2.8.1.0")]
+[assembly: AssemblyVersion("2.8.1.2")]
+[assembly: AssemblyFileVersion("2.8.1.2")]
 namespace ReyAudio.UsbAsioSetup {
     internal static class Program {
         private const string OwnerKey = @"Software\ReyAudio\USBASIOSetup";
@@ -76,7 +76,7 @@ namespace ReyAudio.UsbAsioSetup {
         private static void WriteMetadata() {
             using (var key = Registry.LocalMachine.CreateSubKey(OwnerKey)) key.SetValue("InstallLocation", Target);
             using (var key = Registry.LocalMachine.CreateSubKey(UninstallKey)) {
-                key.SetValue("DisplayName", "Rey Audio USB ASIO (local preview)"); key.SetValue("DisplayVersion", "2.8.1-usb-preview");
+                key.SetValue("DisplayName", "Rey Audio USB ASIO"); key.SetValue("DisplayVersion", "2.8.1-usb-preview.2");
                 key.SetValue("Publisher", "Rey Audio"); key.SetValue("InstallLocation", Target);
                 key.SetValue("DisplayIcon", Path.Combine(Target, "ReyAudioControl.exe"));
                 key.SetValue("UninstallString", Quote(Path.Combine(Target, "USBASIOSetup.exe")) + " --uninstall");
@@ -165,14 +165,20 @@ namespace ReyAudio.UsbAsioSetup {
             CloseOwnPanel(); File.WriteAllBytes(Path.Combine(Target, "ReyAudioControl.exe"), bytes);
             string self = Assembly.GetExecutingAssembly().Location, installedSetup = Path.Combine(Target, "USBASIOSetup.exe");
             if (!string.Equals(Path.GetFullPath(self), installedSetup, StringComparison.OrdinalIgnoreCase)) File.Copy(self, installedSetup, true);
+            WriteMetadata();
             Record("PANEL_UPDATE_OK: own panel replaced; service and ASIO DLL unchanged.");
         }
         [STAThread]
         public static int Main(string[] args) {
             bool quiet = Array.IndexOf(args, "--quiet") >= 0, remove = Array.IndexOf(args, "--uninstall") >= 0;
             bool panel = Array.IndexOf(args, "--panel-only") >= 0;
+            bool elevated = Array.IndexOf(args, "--elevated") >= 0;
             if (remove && panel) return 2;
-            foreach (var arg in args) if (arg != "--quiet" && arg != "--uninstall" && arg != "--panel-only") return 2;
+            foreach (var arg in args) if (arg != "--quiet" && arg != "--uninstall" && arg != "--panel-only" && arg != "--elevated") return 2;
+            if (!InteractiveStartup.IsAdministrator) {
+                if (elevated) return 1;
+                return InteractiveStartup.Elevate(args, quiet, remove, Target);
+            }
             bool created;
             using (var mutex = new Mutex(true, @"Global\ReyAudio.UsbAsioSetup", out created)) {
                 if (!created) return 3;
@@ -181,7 +187,8 @@ namespace ReyAudio.UsbAsioSetup {
                     if (!Environment.Is64BitOperatingSystem || !Environment.Is64BitProcess) throw new InvalidOperationException("Требуется Windows x64.");
                     Record(remove ? "UNINSTALL_BEGIN" : panel ? "PANEL_UPDATE_BEGIN" : "INSTALL_BEGIN");
                     if (remove) Uninstall(); else if (panel) UpdatePanel(); else Install();
-                    if (!quiet) MessageBox.Show(remove ? "USB-ASIO удалён." : "USB-ASIO установлен.\n\nВ Ableton: ASIO → Rey Audio USB ASIO.\nНастройки: " + Path.Combine(Target, "ReyAudioControl.exe"), "Rey Audio USB ASIO", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (!quiet) MessageBox.Show(remove ? "Rey Audio Driver удалён." : "Rey Audio Driver установлен.", "Rey Audio Driver", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (!remove && !elevated) InteractiveStartup.StartPanel(Target);
                 } catch (Exception error) {
                     result = 1; Record("ERROR: " + error);
                     if (!quiet) MessageBox.Show(error.Message, "Rey Audio USB ASIO", MessageBoxButtons.OK, MessageBoxIcon.Error);

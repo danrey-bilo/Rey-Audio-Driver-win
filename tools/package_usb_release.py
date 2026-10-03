@@ -21,7 +21,7 @@ def main():
     parser.add_argument('--setup', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--asio-notice', type=Path, required=True)
-    parser.add_argument('--version', default='2.8.1-preview.1')
+    parser.add_argument('--version', default='2.8.1-preview.2')
     parser.add_argument('--ref', default='HEAD')
     args = parser.parse_args()
     if not args.version or any(c not in '0123456789abcdefghijklmnopqrstuvwxyz.-' for c in args.version):

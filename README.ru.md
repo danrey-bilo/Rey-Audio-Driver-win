@@ -9,7 +9,7 @@
 от 44,1 до 192 кГц. Служба подключает плату автоматически и продолжает работать
 после закрытия окна микшера.
 
-**[Скачать USB-версию 2.8.1 preview](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.1)**
+**[Скачать USB-версию 2.8.1 preview 2](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.2)**
 · [Установка и Ableton](docs/USB-ASIO.ru.md)
 · [Документация](docs/README.ru.md)
 · [Транспорт Pi5-AUSB](https://github.com/danrey-bilo/Pi5-AUSB)
@@ -21,24 +21,24 @@
 
 ## Микшер
 
-![Микшер одной USB-карты](docs/assets/rey-usb-only-mixer.png)
+![Микшер одной USB-карты](docs/assets/rey-usb-preview2-mixer.png)
 
 Восемь входных или восемь выходных каналов: уровень, Mute, Solo и полярность.
 Master управляет воспроизведением. Индикаторы показывают реальные уровни PCM.
-В панели три страницы — **Микшер**, **USB**, **Диагностика** — и доступ из трея.
+В панели три страницы — **Микшер**, **Настройки**, **Диагностика** — и доступ из трея.
 
 <details>
 <summary><strong>Настройки USB и диагностика</strong></summary>
 
-![Настройки USB](docs/assets/rey-usb-only-usb.png)
+![Настройки USB](docs/assets/rey-usb-preview2-usb.png)
 
-![Диагностика USB](docs/assets/rey-usb-only-diagnostics.png)
+![Диагностика USB](docs/assets/rey-usb-preview2-diagnostics.png)
 
 </details>
 
 ## Запуск в Ableton
 
-1. Скачайте из релиза **Rey-Audio-USB-ASIO-2.8.1-preview.1-x64.exe** и запустите.
+1. Скачайте из релиза **Rey-Audio-USB-ASIO-2.8.1-preview.2-x64.exe** и запустите.
    Подтвердите UAC: установятся ASIO-драйвер, автоматическая служба и панель/трей.
 2. Подключите одну настроенную плату Pi5-AUSB по USB. Откройте **Rey Audio Driver**.
 3. В Ableton **Settings → Audio** выберите **Driver Type: ASIO** и
@@ -99,7 +99,7 @@ ASIO сообщает расчёт буферов **1,5052 / 1,5104 мс** дл�
 | [Архитектура](docs/ARCHITECTURE.ru.md) | Владение USB, PCM-кольца и границы модулей |
 | [API управления](docs/API.ru.md) | USB-профиль, микшер и диагностика |
 | [Микшер](docs/MIXER.ru.md) | Управление каналами, направления и уровни |
-| [Описание релиза](docs/RELEASE-2.8.1.ru.md) | Изменения и состав пакета |
+| [Описание релиза](docs/USB-PREVIEW2-20261004.ru.md) | Интерфейс, запуск трея и очистка Pi |
 | [Отчёт проверки](docs/USB-LATENCY-2.8.1.ru.md) | Hashes, успешные/неуспешные тесты, оставшиеся проверки |
 | [Системные устройства Windows](docs/ENDPOINTS.ru.md) | Статус отдельного backend для обычных программ |
 
@@ -109,3 +109,5 @@ AoIP/LAN и управление несколькими картами выве�
 Отдельные репозитории AoIP и прежние release assets не изменены.
 
 [Лицензия](LICENSE) · [Внешний ASIO SDK](docs/ASIO-SDK.ru.md)
+
+**[Обновление интерфейса и очистка Pi](docs/USB-PREVIEW2-20261004.ru.md)**
