@@ -18,7 +18,7 @@ Rey Audio Driver 2.8.1 is the USB-ASIO preview for one Raspberry Pi 5 and
 | Understand the audio path | [Architecture](ARCHITECTURE.md) · [USB transport](USB-TRANSPORT.md) |
 | Integrate USB/mixer control | [Control API](API.md) |
 | Check ordinary Windows audio | [Windows endpoints](ENDPOINTS.md) · [Earlier TAG experiment](GATEWAY.md) |
-| Inspect retired work | [AoIP archive](../archive/aoip/README.md) · [Old installer](../archive/windows-endpoints-2.7/README.md) |
+| Inspect retired work | [AoIP archive](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/18e6353fa767dcbcde1cef15dabab339848e62d1/archive/aoip/README.md) · [Old installer](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/18e6353fa767dcbcde1cef15dabab339848e62d1/archive/windows-endpoints-2.7/README.md) |
 
 The ASIO package installs without Test Mode or a new kernel driver. It does
 not create ordinary Windows microphones/speakers. Current tests use a digital

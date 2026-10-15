@@ -18,7 +18,7 @@ Pi 5 и аудио 8×8. Начните с установки, затем нас
 | Разобраться в аудиотракте | [Архитектура](ARCHITECTURE.ru.md) · [Транспорт USB](USB-TRANSPORT.md) |
 | Управлять USB и микшером через API | [API](API.ru.md) |
 | Проверить обычный звук Windows | [Системные устройства](ENDPOINTS.ru.md) · [Прежний TAG](GATEWAY.ru.md) |
-| Посмотреть прежнюю работу | [Архив AoIP](../archive/aoip/README.md) · [Старый установщик](../archive/windows-endpoints-2.7/README.md) |
+| Посмотреть прежнюю работу | [Архив AoIP](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/18e6353fa767dcbcde1cef15dabab339848e62d1/archive/aoip/README.md) · [Старый установщик](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/18e6353fa767dcbcde1cef15dabab339848e62d1/archive/windows-endpoints-2.7/README.md) |
 
 ASIO-пакет устанавливается без Test Mode и нового драйвера ядра. Системные
 микрофоны/динамики Windows он не создаёт. Текущие тесты используют цифровую

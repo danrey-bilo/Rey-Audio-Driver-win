@@ -109,7 +109,7 @@ included. [Build instructions](docs/BUILD.md).
 
 From **2.8.0**, development is USB-only and supports one board. AoIP/LAN and
 multiple-card management are retired; their sources and reports are preserved
-in [the archive](archive/aoip/README.md), outside the active build. Separate
+in [Git history](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/18e6353fa767dcbcde1cef15dabab339848e62d1/archive/aoip/README.md). The retired archive is removed from the current tree. Separate
 AoIP repositories and old release assets are unchanged.
 
 [License](LICENSE) · [External ASIO SDK](docs/ASIO-SDK.md)

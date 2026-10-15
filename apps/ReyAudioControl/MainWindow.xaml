@@ -132,13 +132,10 @@
             </StackPanel></Border>
             <Border x:Name="BoardModeCard" Style="{StaticResource Card}"><StackPanel>
               <TextBlock Text="Режим платы" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,14"/>
-              <TextBlock Text="При подключении главным является ПК. Без USB плата автоматически работает как процессор эффектов; после подключения восстанавливает прежние настройки." Style="{StaticResource Caption}" Margin="0,0,0,14"/>
               <ComboBox x:Name="BoardMode" ItemsSource="{Binding BoardModes}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding BoardMode}" IsEnabled="{Binding CanApplyBoard}" AutomationProperties.Name="Board operating mode"/>
               <TextBlock Text="{Binding BoardStatus}" Style="{StaticResource Caption}" Margin="0,12,0,12"/>
-              <TextBlock Text="Комбинированный: 44,1–96 кГц. Аудиокарта: весь диапазон USB-транспорта (сейчас до 192 кГц), эффекты выключены. 384 кГц по USB этим транспортом пока не поддерживаются." Style="{StaticResource Caption}" Margin="0,0,0,12"/>
-              <Expander x:Name="BoardRoutesSection" Header="Маршруты восьми каналов" Margin="0,0,0,14">
+              <Expander x:Name="BoardRoutesSection" Header="Маршруты каналов" Margin="0,0,0,14" ToolTip="Возврат через эффекты заменяет вход АЦП соответствующего канала. Отправка до эффектов берётся с АЦП.">
                 <StackPanel>
-                  <TextBlock Text="Возврат через эффекты заменяет вход АЦП соответствующего канала. Отправка «до эффектов» всегда берётся с АЦП." Style="{StaticResource Caption}" Margin="0,12,0,12"/>
                   <ItemsControl x:Name="BoardRoutes" ItemsSource="{Binding BoardRoutes}" IsEnabled="{Binding CanEditBoardRoutes}">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate><DataTemplate><Border BorderBrush="#E1E7EF" BorderThickness="1" CornerRadius="8" Padding="10" Margin="3"><StackPanel>
@@ -151,7 +148,7 @@
                   </ItemsControl>
                 </StackPanel>
               </Expander>
-              <Button x:Name="SaveBoard" Content="Применить режим и маршруты" Style="{StaticResource Primary}" IsEnabled="{Binding CanApplyBoard}" HorizontalAlignment="Right"/>
+              <Button x:Name="SaveBoard" Content="Применить" Style="{StaticResource Primary}" IsEnabled="{Binding CanApplyBoard}" HorizontalAlignment="Right"/>
             </StackPanel></Border>
           </StackPanel>
           <StackPanel Visibility="{Binding DiagnosticsVisibility}">
