@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using Microsoft.Win32;
@@ -19,6 +20,13 @@ namespace ReyAudio.UsbAsioSetup {
             string binary, string group, IntPtr tag, string dependencies, string account, string password, string display);
         [DllImport("advapi32.dll", SetLastError = true)] private static extern bool DeleteService(IntPtr service);
         [DllImport("advapi32.dll")] private static extern bool CloseServiceHandle(IntPtr handle);
+        [StructLayout(LayoutKind.Sequential)]
+        private struct ServiceProcessStatus {
+            public uint type, state, accepted, win32Exit, serviceExit, checkpoint, waitHint, processId, flags;
+        }
+        [DllImport("advapi32.dll", SetLastError = true)]
+        private static extern bool QueryServiceStatusEx(IntPtr service, int level,
+            out ServiceProcessStatus status, int bytes, out int needed);
         public static string ImagePath {
             get {
                 using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\" + Name))
@@ -31,8 +39,24 @@ namespace ReyAudio.UsbAsioSetup {
             using (var service = new ServiceController(Name)) {
                 service.Refresh();
                 if (service.Status == ServiceControllerStatus.Stopped) return;
-                if (service.Status != ServiceControllerStatus.StopPending) service.Stop();
-                service.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(20));
+                ServiceProcessStatus status; int needed;
+                using (var handle = service.ServiceHandle)
+                    if (!QueryServiceStatusEx(handle.DangerousGetHandle(), 0, out status,
+                        Marshal.SizeOf(typeof(ServiceProcessStatus)), out needed))
+                        throw new Win32Exception(Marshal.GetLastWin32Error());
+                Process process = null;
+                try {
+                    // Capture the SCM-owned process before STOP: reporting Stopped
+                    // can precede its exit and release of the executable image.
+                    if (status.processId != 0) {
+                        try { process = Process.GetProcessById((int)status.processId); }
+                        catch (ArgumentException) { } // It already exited.
+                    }
+                    if (service.Status != ServiceControllerStatus.StopPending) service.Stop();
+                    service.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(20));
+                    if (process != null && !process.WaitForExit(20000))
+                        throw new System.TimeoutException("Служба остановлена, но её процесс ещё не завершился. Файлы не заменены.");
+                } finally { if (process != null) process.Dispose(); }
             }
         }
         public static void Start() {

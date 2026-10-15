@@ -7,6 +7,10 @@ Development build identifier: `2.8.2-akm-dev.1` (not the published 2.8.1 preview
 The third runtime state, standalone Effects processor, is automatic on USB
 disconnect. It is not a selectable PC mode and there is no Pi web mode selector.
 
+![Board mode and eight channel routes](assets/rey-akm-modes-fixture.png)
+
+The image is a WPF rendering fixture, not a physical USB connection report.
+
 | PC selection | Rates in this ASIO transport | Effects |
 | --- | --- | --- |
 | Audio interface | 44.1 / 48 / 88.2 / 96 / 176.4 / 192 kHz | Unloaded on the Pi; ADC → PC, PC → DAC |
@@ -75,7 +79,7 @@ The ASIO shared-memory ABI remains version 1.
 * **21 C# contracts passed** for two choices, rate ranges, eight ordered routes,
   revision fields and invalid command rejection.
 * Real WPF binding/render fixture checked two modes and eight channel rows;
-  it did not change the installed service or enumerate a physical USB board.
+  it did not enumerate a physical USB board.
 * The Pi's actual CDC dispatcher passed eight requests through a test-owned PTY.
   The PTY is simulated transport; it does not qualify Windows serial/USB hardware.
 
@@ -88,6 +92,22 @@ ctest --test-dir build/usb --output-on-failure
 
 The new Windows workflow compiles/tests the WPF control code without downloading
 the external ASIO SDK. Full native checks above were run separately with the SDK.
-No production installer/release or upgrade of the installed Windows service is
-claimed by this source change. See the companion Linux report for meter and
+The development installer was then applied to the existing idle Windows
+installation; service startup, all four payload hashes, ASIO registration and
+preserved USB/mixer settings were verified. Live service commands rejected
+`processor`, clamped Combined to 96 kHz and rejected 192 kHz in Combined;
+the original Audio interface / 192 kHz profile was restored. Saved settings now
+use format 4. The old files and format-3 profile were backed up before updating.
+
+The first installation attempt exposed a pre-existing stop/replace race and
+rolled back successfully. The installer now captures the SCM-owned process
+before STOP and waits for its normal exit, in addition to the Stopped service
+state, before replacing files. It uses a bounded wait and never kills the
+service to release its executable. The subsequent installation passed.
+The workflow also compiles the installer API without creating/running a payload.
+
+This is an installed **development build**, not a production release or a
+physical USB audio pass. See the companion Linux report for meter and
 mode-transaction measurements.
+Installed payload hashes and local-service results are recorded in
+[the evidence file](evidence/akm-operating-modes-20261015.json).

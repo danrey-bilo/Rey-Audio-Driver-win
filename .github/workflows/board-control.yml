@@ -19,5 +19,8 @@ jobs:
       - name: Check modes, rates and eight-channel command payload
         shell: powershell
         run: ./tools/check_board_control.ps1
+      - name: Compile installer API without packaging or running an installer
+        shell: powershell
+        run: ./tools/check_installer_compile.ps1
       # Native service/ASIO validation uses the separately supplied ASIO SDK.
       # This job does not claim native or physical USB qualification.
