@@ -10,7 +10,7 @@ No custom SYS, test certificate, Test Mode, INI or boot/security change is neede
 System microphones/speakers for Chrome/Telegram are a [separate stage](ENDPOINTS.md).
 
 Connect one configured Pi5-AUSB board; USB detection is automatic. Open
-**Rey Audio Driver → Settings (Настройки)**. The Pi needs runtime 0.1.1 for the documented tests.
+**Rey Audio Driver → Device (Устройство)**. The Pi needs runtime 0.1.1 for the documented tests.
 The package allows one ASIO host at a time and retains saved manual settings.
 
 ## Ableton settings
@@ -21,7 +21,7 @@ The package allows one ASIO host at a time and retains saved manual settings.
 | Audio Device | Rey Audio USB ASIO |
 | In/Out Sample Rate | 192000 Hz or 96000 Hz |
 | Buffer Size | 64 Samples at 192 kHz; 32 at 96 kHz |
-| Hardware Setup | Rey → Settings → ASIO |
+| Hardware Setup | Rey → Device → ASIO |
 | ASIO render reserve | 3 blocks; test the intended project |
 | USB format | PCM32, queue4 |
 

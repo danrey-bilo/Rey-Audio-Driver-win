@@ -99,7 +99,8 @@ namespace ReyAudio {
         }
         public Visibility UsbVisibility { get { return Page == "usb" ? Visibility.Visible : Visibility.Collapsed; } }
         public Visibility DiagnosticsVisibility { get { return Page == "diagnostics" ? Visibility.Visible : Visibility.Collapsed; } }
-        public string PageTitle { get { return Page == "mixer" ? "Микшер" : Page == "usb" ? "Настройки" : "Диагностика"; } }
+        public string PageTitle { get { return Page == "mixer" ? "Микшер" : Page == "usb" ? "Устройство" : "Диагностика"; } }
+        public string BoardSummary { get { return BoardBusy ? "Применение…" : BoardAvailable ? "" : "USB-управление платой недоступно"; } }
         public string ServiceLabel { get { return Available ? "Служба работает" : "Служба недоступна"; } }
         public bool CanApply { get { return Available && !Busy; } }
         public string ShortIdentity { get { return Identity.Length >= 8 ? Identity.Substring(Identity.Length - 8).ToUpperInvariant() : "—"; } }
@@ -109,14 +110,14 @@ namespace ReyAudio {
                 if (DeviceWarning.Length != 0) return "Проверьте подключение";
                 if (State == "connecting") return "Подключение…";
                 if (State == "stopping") return "Применение…";
-                return UsbPresent ? "Подключено" : "Не подключено";
+                return UsbPresent ? "Аудио подключено" : BoardAvailable ? "Управление подключено" : "USB не обнаружен";
             }
         }
         public string StatusBody {
             get {
                 if (DeviceWarning.Length != 0) return DeviceWarning;
                 if (!Available) return "Служба Rey Audio недоступна.";
-                return UsbPresent ? "" : "Подключите аудиокарту по USB.";
+                return UsbPresent ? "" : BoardAvailable ? "Управление платой доступно. Аудиопоток USB недоступен." : "Аудиоустройство Rey Audio не обнаружено.";
             }
         }
         public Visibility StatusBodyVisibility { get { return StatusBody.Length == 0 ? Visibility.Collapsed : Visibility.Visible; } }

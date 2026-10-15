@@ -2,7 +2,7 @@
 
 [Русский](AKM-OPERATING-MODES.ru.md) · [Documentation](README.md)
 
-The PC selects **two modes** in **Rey Audio Driver → Settings → Board mode**.
+The PC selects **two modes** in **Rey Audio Driver → Device → Board mode**.
 Development build identifier: `2.8.2-akm-dev.1` (not the published 2.8.1 preview).
 The third runtime state, standalone Effects processor, is automatic on USB
 disconnect. It is not a selectable PC mode and there is no Pi web mode selector.

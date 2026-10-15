@@ -10,7 +10,7 @@
 Системные микрофоны/динамики Chrome/Telegram — [отдельный этап](ENDPOINTS.ru.md).
 
 Подключите одну настроенную Pi5-AUSB; USB определяется автоматически. Откройте
-**Rey Audio Driver → Настройки**. Для описанных проверок на Pi нужен runtime 0.1.1.
+**Rey Audio Driver → Устройство**. Для описанных проверок на Pi нужен runtime 0.1.1.
 Карту обслуживает один ASIO-host. Сохранённые ручные параметры сохраняются.
 
 ## Настройки Ableton
@@ -21,7 +21,7 @@
 | Audio Device | Rey Audio USB ASIO |
 | In/Out Sample Rate | 192000 Hz или 96000 Hz |
 | Buffer Size | 64 Samples на 192 кГц; 32 на 96 кГц |
-| Hardware Setup | Rey → Настройки → ASIO |
+| Hardware Setup | Rey → Устройство → ASIO |
 | Запас отправки ASIO | 3 блока; проверяйте свой проект |
 | Формат USB | PCM32, очередь4 |
 

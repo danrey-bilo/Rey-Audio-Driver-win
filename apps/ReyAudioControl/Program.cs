@@ -19,8 +19,8 @@ using Forms = System.Windows.Forms;
 [assembly: AssemblyTitle("Rey Audio Driver")]
 [assembly: AssemblyProduct("Rey Audio Driver")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.2.1")]
-[assembly: AssemblyFileVersion("2.8.2.1")]
+[assembly: AssemblyVersion("2.8.2.2")]
+[assembly: AssemblyFileVersion("2.8.2.2")]
 namespace ReyAudio {
     internal sealed class Panel : IDisposable {
         private readonly Application app;
@@ -67,8 +67,8 @@ namespace ReyAudio {
             ((ComboBox)window.FindName("AsioLead")).SelectionChanged += (s, e) => view.Notify();
             window.Closing += (s, e) => { if (!exiting) { e.Cancel = true; window.Hide(); } };
             window.StateChanged += (s, e) => { if (window.WindowState == WindowState.Minimized && tray != null && tray.Visible) window.Hide(); };
-            timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
-            window.IsVisibleChanged += (s, e) => { timer.Interval = TimeSpan.FromMilliseconds(window.IsVisible ? 50 : 250); };
+            timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+            window.IsVisibleChanged += (s, e) => { timer.Interval = TimeSpan.FromMilliseconds(window.IsVisible ? 100 : 250); };
             timer.Tick += async (s, e) => {
                 if (showEvent != null && showEvent.WaitOne(0)) Show();
                 if (mixing) return;
@@ -84,7 +84,7 @@ namespace ReyAudio {
                 } else if ((view.Page == "mixer" && window.IsVisible) || clock.ElapsedMilliseconds >= nextRefresh) {
                     await Refresh(); nextRefresh = clock.ElapsedMilliseconds + 1000;
                 }
-                if (window.IsVisible && view.Page == "usb" && !view.Busy && !boardPolling && clock.ElapsedMilliseconds >= nextBoardRefresh)
+                if (!view.Busy && !boardPolling && clock.ElapsedMilliseconds >= nextBoardRefresh)
                     RefreshBoard();
             };
         }
@@ -136,7 +136,7 @@ namespace ReyAudio {
                 }
             } catch (Exception error) {
                 view.BoardAvailable = false; view.BoardStatus = error.Message; view.Notify();
-            } finally { boardPolling = false; nextBoardRefresh = clock.ElapsedMilliseconds + 1500; }
+            } finally { UpdateTray(); boardPolling = false; nextBoardRefresh = clock.ElapsedMilliseconds + 2000; }
         }
         private async Task Command(string command, string message) {
             var response = await service.Send(command);
@@ -149,11 +149,12 @@ namespace ReyAudio {
             UpdateTray();
         }
         private void UpdateTray() {
-            if (tray == null) return;
-            bool detected = view.Available && view.UsbPresent;
+            if (tray == null || exiting) return;
             string text = "Rey Audio · " + view.StatusTitle;
             if (tray.Text != text) tray.Text = text;
-            if (tray.Visible != detected) tray.Visible = detected;
+            // Keep the entry point available through device loss and service recovery.
+            // USB state belongs in the status, not in the icon's lifetime.
+            if (!tray.Visible) tray.Visible = true;
         }
         public async Task Refresh() {
             if (polling || view.Busy || mixing) return;
@@ -168,17 +169,17 @@ namespace ReyAudio {
             var menu = new Forms.ContextMenuStrip();
             menu.Items.Add("Открыть Rey Audio Driver", null, (s, e) => app.Dispatcher.BeginInvoke(new Action(Show)));
             menu.Items.Add("Микшер", null, (s, e) => app.Dispatcher.BeginInvoke(new Action(() => { ((RadioButton)window.FindName("NavMixer")).IsChecked = true; Show(); })));
-            menu.Items.Add("Настройки", null, (s, e) => app.Dispatcher.BeginInvoke(new Action(() => { ((RadioButton)window.FindName("NavUsb")).IsChecked = true; Show(); })));
+            menu.Items.Add("Устройство", null, (s, e) => app.Dispatcher.BeginInvoke(new Action(() => { ((RadioButton)window.FindName("NavUsb")).IsChecked = true; Show(); })));
             menu.Items.Add(new Forms.ToolStripSeparator());
             menu.Items.Add("Выход из панели", null, (s, e) => app.Dispatcher.BeginInvoke(new Action(() => { exiting = true; app.Shutdown(); })));
             using (var icon = Assembly.GetExecutingAssembly().GetManifestResourceStream("ReyAudio.ico")) {
-                tray = new Forms.NotifyIcon { Icon = new System.Drawing.Icon(icon), Text = "Rey Audio Driver", Visible = false, ContextMenuStrip = menu };
+                tray = new Forms.NotifyIcon { Icon = new System.Drawing.Icon(icon), Text = "Rey Audio Driver", Visible = true, ContextMenuStrip = menu };
             }
-            tray.DoubleClick += (s, e) => app.Dispatcher.BeginInvoke(new Action(Show));
+            tray.MouseClick += (s, e) => { if (e.Button == Forms.MouseButtons.Left) app.Dispatcher.BeginInvoke(new Action(Show)); };
         }
         public void Start(bool hidden) {
             CreateTray();
-            timer.Interval = TimeSpan.FromMilliseconds(hidden ? 250 : 50);
+            timer.Interval = TimeSpan.FromMilliseconds(hidden ? 250 : 100);
             timer.Start();
             if (!hidden) Show();
             app.Dispatcher.BeginInvoke(new Action(async () => await Refresh()));
@@ -188,7 +189,7 @@ namespace ReyAudio {
             if (fixture == null) await Refresh();
             else Update(new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(File.ReadAllText(fixture)), true);
             var root = (FrameworkElement)window.Content;
-            double mixerBottom = 0, asioBottom = 0;
+            double mixerBottom = 0;
             foreach (var page in new[] { "mixer", "usb", "diagnostics" }) {
                 Navigate(page);
                 ((RadioButton)window.FindName(page == "mixer" ? "NavMixer" : page == "usb" ? "NavUsb" : "NavDiagnostics")).IsChecked = true;
@@ -197,10 +198,6 @@ namespace ReyAudio {
                 if (page == "mixer") {
                     var strips = (FrameworkElement)window.FindName("MixerStrips");
                     mixerBottom = strips.TransformToAncestor(root).TransformBounds(new Rect(0, 0, strips.ActualWidth, strips.ActualHeight)).Bottom;
-                }
-                if (page == "usb") {
-                    var save = (FrameworkElement)window.FindName("SaveAsio");
-                    asioBottom = save.TransformToAncestor(root).TransformBounds(new Rect(0, 0, save.ActualWidth, save.ActualHeight)).Bottom;
                 }
                 var bitmap = new RenderTargetBitmap(1120, 800, 96, 96, PixelFormats.Pbgra32); bitmap.Render(root);
                 var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap));
@@ -217,12 +214,37 @@ namespace ReyAudio {
                 tray_button_absent = window.FindName("ToTray") == null,
                 windows_sound_button_absent = window.FindName("WindowsSound") == null,
                 all_channel_controls_visible = mixerBottom <= root.ActualHeight - 22,
-                asio_controls_visible = asioBottom <= root.ActualHeight - 22,
+                asio_collapsed_by_default = !((Expander)window.FindName("AsioOptions")).IsExpanded,
                 asio_apply_hint = view.AsioApplyHint, asio_latency_label = view.AsioLatencyLabel,
                 width = root.ActualWidth, height = root.ActualHeight, fixture = fixture != null
             }));
             VerifyTrayLifecycle(directory);
+            VerifyAsioPanel(directory);
             VerifyBoardPanel(directory);
+        }
+        private void VerifyAsioPanel(string directory) {
+            // ASIO is an explicit disclosure; verify its controls after opening it.
+            window.WindowState = WindowState.Normal;
+            Show();
+            Navigate("usb");
+            ((RadioButton)window.FindName("NavUsb")).IsChecked = true;
+            var options = (Expander)window.FindName("AsioOptions");
+            options.IsExpanded = true;
+            window.UpdateLayout();
+            ((FrameworkElement)window.FindName("SaveAsio")).BringIntoView();
+            window.UpdateLayout();
+            var root = (FrameworkElement)window.Content;
+            var first = (FrameworkElement)window.FindName("AsioBlock");
+            var save = (FrameworkElement)window.FindName("SaveAsio");
+            var bounds = save.TransformToAncestor(root).TransformBounds(new Rect(0, 0, save.ActualWidth, save.ActualHeight));
+            bool accessible = first.IsVisible && save.IsVisible && bounds.Top >= 0 && bounds.Bottom <= root.ActualHeight - 8;
+            if (!accessible) throw new InvalidOperationException("Expanded ASIO controls are inaccessible");
+            var bitmap = new RenderTargetBitmap((int)Math.Ceiling(root.ActualWidth), (int)Math.Ceiling(root.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(root); var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap));
+            using (var output = File.Create(Path.Combine(directory, "rey-asio-expanded.png"))) png.Save(output);
+            File.WriteAllText(Path.Combine(directory, "asio-disclosure-check.json"), new JavaScriptSerializer().Serialize(new { controls_accessible_after_expand = accessible }));
+            options.IsExpanded = false;
+            window.Hide();
         }
         private void VerifyBoardPanel(string directory) {
             // Finite WPF rendering fixture; no USB/service mutation or PCM.
@@ -263,8 +285,7 @@ namespace ReyAudio {
             var cases = new List<object>();
             foreach (var state in new[] { new[] { false, false }, new[] { true, false }, new[] { true, true }, new[] { false, true }, new[] { true, true }, new[] { true, false } }) {
                 view.Available = state[0]; view.UsbPresent = state[1]; UpdateTray();
-                bool expected = state[0] && state[1];
-                if (tray.Visible != expected || window.IsVisible) throw new InvalidOperationException("Tray detection lifecycle failed");
+                if (!tray.Visible || window.IsVisible) throw new InvalidOperationException("Tray must remain available during USB/service loss");
                 cases.Add(new { service = state[0], usb = state[1], icon = tray.Visible, window = window.IsVisible });
             }
             view.Available = true; view.UsbPresent = true; UpdateTray();
@@ -278,7 +299,7 @@ namespace ReyAudio {
                 Navigate(page);
                 ((RadioButton)window.FindName(page == "mixer" ? "NavMixer" : page == "usb" ? "NavUsb" : "NavDiagnostics")).IsChecked = true;
                 window.UpdateLayout();
-                string name = page == "mixer" ? "ResetMixer" : page == "usb" ? "SaveUsb" : "CopyReport";
+                string name = page == "mixer" ? "MixerStrips" : page == "usb" ? "SaveUsb" : "CopyReport";
                 var control = (FrameworkElement)window.FindName(name);
                 double bottom = control.TransformToAncestor(root).TransformBounds(new Rect(0, 0, control.ActualWidth, control.ActualHeight)).Bottom;
                 bool visible = bottom <= root.ActualHeight - 8;
@@ -293,9 +314,14 @@ namespace ReyAudio {
             Show(); window.WindowState = WindowState.Minimized;
             bool minimizeKeepsTray = !window.IsVisible && tray.Visible && !exiting;
             if (!closeKeepsTray || !minimizeKeepsTray) throw new InvalidOperationException("Window/tray lifecycle failed");
+            exiting = true; tray.Visible = false; UpdateTray();
+            bool exitKeepsIconHidden = !tray.Visible;
+            if (!exitKeepsIconHidden) throw new InvalidOperationException("Exit must not recreate the tray icon");
+            exiting = false;
             view.Available = available; view.UsbPresent = present; UpdateTray();
             File.WriteAllText(Path.Combine(directory, "tray-lifecycle.json"), new JavaScriptSerializer().Serialize(new {
                 cases = cases, close_keeps_tray = closeKeepsTray, minimize_keeps_tray = minimizeKeepsTray,
+                exit_keeps_icon_hidden = exitKeepsIconHidden,
                 minimum_window = layouts,
                 hidden_window_wake_ms = 250, hidden_status_poll_ms = 1000
             }));

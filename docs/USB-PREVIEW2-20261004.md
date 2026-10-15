@@ -1,5 +1,7 @@
 **English** · [Русский](USB-PREVIEW2-20261004.ru.md)
 
+> Historical preview 2 UI. The current development panel keeps its tray icon visible even without USB or service connectivity; see [Mixer](MIXER.md).
+
 # USB preview 2: clean Pi and simplified mixer
 
 **2.8.1-usb-preview.2**, 4 October 2026. One Rey Audio USB board, 8 inputs and
