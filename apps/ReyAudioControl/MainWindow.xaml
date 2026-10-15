@@ -130,6 +130,29 @@
               <Expander Header="Дополнительно" Margin="0,14,0,10" IsEnabled="{Binding CanApplyUsb}"><StackPanel Margin="0,14,0,0"><TextBlock Text="Очередь USB" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="UsbDepth" ItemsSource="{Binding Depths}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbDepth}" AutomationProperties.Name="USB queue depth" ToolTip="{Binding QueueHint}"/></StackPanel></Expander>
               <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Формат задаёт аудиоприложение." Visibility="{Binding UsbBusyHintVisibility}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,16,0"/><Button x:Name="SaveUsb" Grid.Column="1" Content="Применить" Style="{StaticResource Primary}" IsEnabled="{Binding CanApplyUsb}" ToolTip="Применить формат и перезапустить USB-подключение"/></Grid>
             </StackPanel></Border>
+            <Border x:Name="BoardModeCard" Style="{StaticResource Card}"><StackPanel>
+              <TextBlock Text="Режим платы" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,14"/>
+              <TextBlock Text="При подключении главным является ПК. Без USB плата автоматически работает как процессор эффектов; после подключения восстанавливает прежние настройки." Style="{StaticResource Caption}" Margin="0,0,0,14"/>
+              <ComboBox x:Name="BoardMode" ItemsSource="{Binding BoardModes}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding BoardMode}" IsEnabled="{Binding CanApplyBoard}" AutomationProperties.Name="Board operating mode"/>
+              <TextBlock Text="{Binding BoardStatus}" Style="{StaticResource Caption}" Margin="0,12,0,12"/>
+              <TextBlock Text="Комбинированный: 44,1–96 кГц. Аудиокарта: весь диапазон USB-транспорта (сейчас до 192 кГц), эффекты выключены. 384 кГц по USB этим транспортом пока не поддерживаются." Style="{StaticResource Caption}" Margin="0,0,0,12"/>
+              <Expander x:Name="BoardRoutesSection" Header="Маршруты восьми каналов" Margin="0,0,0,14">
+                <StackPanel>
+                  <TextBlock Text="Возврат через эффекты заменяет вход АЦП соответствующего канала. Отправка «до эффектов» всегда берётся с АЦП." Style="{StaticResource Caption}" Margin="0,12,0,12"/>
+                  <ItemsControl x:Name="BoardRoutes" ItemsSource="{Binding BoardRoutes}" IsEnabled="{Binding CanEditBoardRoutes}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><Border BorderBrush="#E1E7EF" BorderThickness="1" CornerRadius="8" Padding="10" Margin="3"><StackPanel>
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                      <TextBlock Text="На ПК" Style="{StaticResource Caption}"/>
+                      <ComboBox ItemsSource="{Binding DataContext.CaptureRoutes, RelativeSource={RelativeSource AncestorType=Window}}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Capture}" AutomationProperties.Name="Capture before or after effects"/>
+                      <TextBlock Text="С ПК" Style="{StaticResource Caption}" Margin="0,8,0,0"/>
+                      <ComboBox ItemsSource="{Binding DataContext.PlaybackRoutes, RelativeSource={RelativeSource AncestorType=Window}}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Playback}" AutomationProperties.Name="Playback direct or through effects"/>
+                    </StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </Expander>
+              <Button x:Name="SaveBoard" Content="Применить режим и маршруты" Style="{StaticResource Primary}" IsEnabled="{Binding CanApplyBoard}" HorizontalAlignment="Right"/>
+            </StackPanel></Border>
           </StackPanel>
           <StackPanel Visibility="{Binding DiagnosticsVisibility}">
             <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Состояние системы" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,17"/>

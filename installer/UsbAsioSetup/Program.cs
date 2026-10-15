@@ -12,8 +12,8 @@ using Microsoft.Win32;
 [assembly: AssemblyTitle("Rey Audio USB ASIO Setup")]
 [assembly: AssemblyProduct("Rey Audio Driver USB ASIO")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.1.2")]
-[assembly: AssemblyFileVersion("2.8.1.2")]
+[assembly: AssemblyVersion("2.8.2.1")]
+[assembly: AssemblyFileVersion("2.8.2.1")]
 namespace ReyAudio.UsbAsioSetup {
     internal static class Program {
         private const string OwnerKey = @"Software\ReyAudio\USBASIOSetup";
@@ -76,7 +76,7 @@ namespace ReyAudio.UsbAsioSetup {
         private static void WriteMetadata() {
             using (var key = Registry.LocalMachine.CreateSubKey(OwnerKey)) key.SetValue("InstallLocation", Target);
             using (var key = Registry.LocalMachine.CreateSubKey(UninstallKey)) {
-                key.SetValue("DisplayName", "Rey Audio USB ASIO"); key.SetValue("DisplayVersion", "2.8.1-usb-preview.2");
+                key.SetValue("DisplayName", "Rey Audio USB ASIO"); key.SetValue("DisplayVersion", Payload.Version);
                 key.SetValue("Publisher", "Rey Audio"); key.SetValue("InstallLocation", Target);
                 key.SetValue("DisplayIcon", Path.Combine(Target, "ReyAudioControl.exe"));
                 key.SetValue("UninstallString", Quote(Path.Combine(Target, "USBASIOSetup.exe")) + " --uninstall");

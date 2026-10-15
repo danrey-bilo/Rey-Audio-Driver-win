@@ -45,17 +45,34 @@ int main(int argc, char **argv) {
     Settings next;
     ok = command_settings(s, "USB 44100 24 4 64 0 1", next, error) && next.usb.rate == 44100 && next.usb.bits == 24;
     ok &= command_settings(next, "MIX 0:7 5800 1 0 1 apply", s, error) && s.mix.inputs[7].gain_cdb == -200 && s.mix.inputs[7].mute;
+    ok &= command_settings(s, "BOARD_MODE combined", next, error) && next.board_effects && next.usb.rate <= 96000;
+    ok &= !command_settings(next, "USB 192000 32 4 64 0 1", s, error);
+    ok &= !command_settings(next, "BOARD_MODE processor", s, error);
+    ok &= command_settings(next, "BOARD_MODE soundcard", s, error) && !s.board_effects;
     const auto before = s.usb.rate;
     for (const auto command : {"USB -1 32 3 64 0 1", "USB 192000 17 3 64 0 1", "USB 192000 32 3 64 0 1 extra",
                               "MIX 0:8 6000 0 0 0 apply", "MASTER 6601 0"}) ok &= !command_settings(s, command, next, error);
     ok &= s.usb.rate == before;
-  } else if (test == "persistence" || test == "corruption" || test == "legacy_v1" || test == "legacy_v2") {
+  } else if (test == "persistence" || test == "corruption" || test == "legacy_v1" || test == "legacy_v2" || test == "legacy_v3") {
     wchar_t temporary[MAX_PATH]{}, name[MAX_PATH]{};
     if (!GetTempPathW(MAX_PATH, temporary) || !GetTempFileNameW(temporary, L"rey", 0, name)) return 1;
-    s.usb.rate = 44100; s.usb.bits = 24; s.usb_depth = 4; s.usb.safety = 96; s.usb_auto = false;
+    s.board_effects = true; s.usb.rate = 44100; s.usb.bits = 24; s.usb_depth = 4; s.usb.safety = 96; s.usb_auto = false;
     s.mix.inputs[3].gain_cdb = -602; s.mix.inputs[3].solo = true;
     s.mix.outputs[7].invert = true; s.mix.master_mute = true;
-    if (test == "legacy_v1" || test == "legacy_v2") {
+    if (test == "legacy_v3") {
+      // The installed USB preview uses v3: the same mixer, no board-mode flag.
+      ok = save(name, s, error);
+      std::vector<BYTE> legacy(168); DWORD read = 0;
+      const auto file = CreateFileW(name, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
+      ok &= file != INVALID_HANDLE_VALUE && ReadFile(file, legacy.data(), DWORD(legacy.size()), &read, nullptr) && read == legacy.size();
+      if (file != INVALID_HANDLE_VALUE) CloseHandle(file);
+      legacy[4] = 3;
+      Settings restored; unsigned format = 0;
+      ok &= write(name, legacy) && load(name, restored, error, L"unused", &format) && format == 3 && !restored.board_effects &&
+          restored.usb.rate == 44100 && restored.mix.inputs[3].gain_cdb == -602 && restored.mix.inputs[3].solo &&
+          restored.mix.outputs[7].invert && restored.mix.master_mute;
+      ok &= save(name, restored, error) && load(name, restored, error, L"unused", &format) && format == 4 && !restored.board_effects;
+    } else if (test == "legacy_v1" || test == "legacy_v2") {
       std::vector<BYTE> legacy; auto number = [&](uint32_t n) { for (unsigned i = 0; i < 4; ++i) legacy.push_back(BYTE(n >> (8 * i))); };
       const unsigned version = test == "legacy_v1" ? 1 : 2;
       const std::string retired_address = "192.0.2.1";
@@ -72,13 +89,13 @@ int main(int argc, char **argv) {
            restored.usb.rate == 44100 && restored.usb.bits == 24 && restored.usb_depth == 4 && restored.usb.safety == 96 && !restored.usb_auto;
       ok &= version == 1 ? restored.mix.inputs[3].gain_cdb == 0 && !restored.mix.master_mute :
           restored.mix.inputs[3].gain_cdb == -602 && restored.mix.inputs[3].solo && restored.mix.outputs[7].invert && restored.mix.master_mute;
-      ok &= save(name, restored, error) && load(name, restored, error, L"unused", &format) && format == 3;
+      ok &= save(name, restored, error) && load(name, restored, error, L"unused", &format) && format == 4;
       const auto f = CreateFileW(name, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
-      ok &= f != INVALID_HANDLE_VALUE && GetFileSize(f, nullptr) == 168;
+      ok &= f != INVALID_HANDLE_VALUE && GetFileSize(f, nullptr) == 172;
       if (f != INVALID_HANDLE_VALUE) CloseHandle(f);
     } else {
       Settings restored; unsigned format = 0;
-      ok = save(name, s, error) && load(name, restored, error, L"unused", &format) && format == 3 &&
+      ok = save(name, s, error) && load(name, restored, error, L"unused", &format) && format == 4 && restored.board_effects &&
           restored.usb.rate == 44100 && restored.usb.bits == 24 && restored.usb_depth == 4 &&
           restored.mix.inputs[3].gain_cdb == -602 && restored.mix.inputs[3].solo && restored.mix.outputs[7].invert && restored.mix.master_mute;
       if (test == "corruption" && ok) {

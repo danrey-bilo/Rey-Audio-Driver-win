@@ -6,9 +6,11 @@ struct Settings {
   engine::UsbProfile usb;
   unsigned usb_depth = 4;
   bool usb_auto = true;
+  bool board_effects = false; // PC modes: false=soundcard, true=combined.
   audio::Mix mix;
 };
 bool valid(const Settings &, std::string &error);
+// Format 4 adds the board-mode rate guard. Formats 1/2/3 remain readable.
 // Format 3 contains USB and mixer only. The reader accepts formats 1/2 solely
 // for migration; their retired fields never enter Settings or start a transport.
 bool load(const std::wstring &path, Settings &, std::string &error,

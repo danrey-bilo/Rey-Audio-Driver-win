@@ -111,6 +111,10 @@ bool Server::info(Info &out) {
   if (!available_) return false;
   out = info_; return true;
 }
+bool Server::running() const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  return owned_ && owned_->shared && load(owned_->shared->running) == 1;
+}
 std::string Server::status() const {
   std::lock_guard<std::mutex> lock(mutex_);
   std::ostringstream out;

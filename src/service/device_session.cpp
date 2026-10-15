@@ -172,7 +172,7 @@ bool DeviceSession::update(const Settings &next, std::string &error) {
 std::string DeviceSession::status_locked(const std::string &error) const {
   const auto &s = settings_;
   std::ostringstream out;
-  out << "{\"version\":\"2.8.1\",\"ok\":" << (error.empty() ? "true" : "false")
+  out << "{\"version\":\"2.8.2-akm-dev.1\",\"ok\":" << (error.empty() ? "true" : "false")
       << ",\"error\":" << json_string(error)
       << ",\"state\":" << json_string(state_)
       << ",\"detail\":" << json_string(detail_)
@@ -181,6 +181,7 @@ std::string DeviceSession::status_locked(const std::string &error) const {
       << ",\"asio_only\":" << (asio_only_ ? "true" : "false")
       << ",\"digital_test\":" << (digital_test_ ? "true" : "false")
       << ",\"identity\":" << json_string(identity_)
+      << ",\"board_mode\":" << json_string(s.board_effects ? "combined" : "soundcard")
       << ",\"backend\":" << json_string(backend_)
       << ",\"usb\":{\"present\":" << usb_present_
       << ",\"identity\":" << json_string(usb_id_) << ",\"rate\":" << s.usb.rate

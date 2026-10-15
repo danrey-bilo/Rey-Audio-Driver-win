@@ -119,7 +119,10 @@ public:
   }
   ASIOError canSampleRate(ASIOSampleRate rate) override {
     if (!std::isfinite(rate) || rate < 44100 || rate > 192000) return ASE_NoClock;
-    return valid_rate(unsigned(rate)) && rate == unsigned(rate) ? ASE_OK : ASE_NoClock;
+    if (!valid_rate(unsigned(rate)) || rate != unsigned(rate) || !initialized_) return ASE_NoClock;
+    std::string reply, error;
+    return command("ASIO CAN_RATE " + info_.id + " " + std::to_string(unsigned(rate)), reply, error) && reply == "REY_ASIO_OK"
+        ? ASE_OK : ASE_NoClock;
   }
   ASIOError getSampleRate(ASIOSampleRate *rate) override {
     if (!rate || !initialized_) return ASE_InvalidParameter;

@@ -19,14 +19,17 @@ using Forms = System.Windows.Forms;
 [assembly: AssemblyTitle("Rey Audio Driver")]
 [assembly: AssemblyProduct("Rey Audio Driver")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.1.2")]
-[assembly: AssemblyFileVersion("2.8.1.2")]
+[assembly: AssemblyVersion("2.8.2.1")]
+[assembly: AssemblyFileVersion("2.8.2.1")]
 namespace ReyAudio {
     internal sealed class Panel : IDisposable {
         private readonly Application app;
         private readonly Window window;
         private readonly ViewModel view = new ViewModel();
         private readonly ServiceClient service = new ServiceClient();
+        private readonly BoardControl board = new BoardControl();
+        private bool boardPolling;
+        private long nextBoardRefresh;
         private readonly DispatcherTimer timer;
         private readonly EventWaitHandle showEvent;
         private Forms.NotifyIcon tray;
@@ -48,6 +51,7 @@ namespace ReyAudio {
             ((RadioButton)window.FindName("NavUsb")).Checked += (s, e) => Navigate("usb");
             ((RadioButton)window.FindName("NavDiagnostics")).Checked += (s, e) => Navigate("diagnostics");
             Click("SaveUsb", SaveUsb);
+            Click("SaveBoard", SaveBoard);
             Click("SaveAsio", () => {
                 AsioPreferences.Save(view.AsioBlock, view.AsioLead);
                 view.Message = "Сохранено.";
@@ -80,6 +84,8 @@ namespace ReyAudio {
                 } else if ((view.Page == "mixer" && window.IsVisible) || clock.ElapsedMilliseconds >= nextRefresh) {
                     await Refresh(); nextRefresh = clock.ElapsedMilliseconds + 1000;
                 }
+                if (window.IsVisible && view.Page == "usb" && !view.Busy && !boardPolling && clock.ElapsedMilliseconds >= nextBoardRefresh)
+                    RefreshBoard();
             };
         }
         private void Click(string name, Func<Task> action) {
@@ -104,7 +110,33 @@ namespace ReyAudio {
         }
         private async Task SaveUsb() {
             int guard = Number(view.UsbGuard, 0, 8192, "Запас USB");
+            if (view.BoardAvailable) {
+                view.UpdateBoard(await board.Apply(view.BoardMode, view.UsbRate, view.UsbBlock, view.BoardRoutes));
+                await Command("BOARD_MODE " + (view.BoardMode == 0 ? "soundcard" : "combined"), "");
+            }
             await Command(string.Format(CultureInfo.InvariantCulture, "USB {0} {1} {2} {3} {4} 1", view.UsbRate, view.UsbBits, view.UsbDepth, view.UsbBlock, guard), "Сохранено.");
+        }
+        private async Task SaveBoard() {
+            if (view.AsioRunning) throw new ArgumentException("Остановите аудиодвижок ASIO перед сменой режима.");
+            view.BoardBusy = true; view.Notify();
+            try {
+                view.UpdateBoard(await board.Apply(view.BoardMode, view.UsbRate, view.UsbBlock, view.BoardRoutes));
+                await Command("BOARD_MODE " + (view.BoardMode == 0 ? "soundcard" : "combined"), "Режим и восемь маршрутов подтверждены платой.");
+            } finally { view.BoardBusy = false; view.Notify(); }
+        }
+        private async void RefreshBoard() {
+            boardPolling = true;
+            try {
+                view.UpdateBoard(await board.State());
+                string mode = view.BoardMode == 0 ? "soundcard" : "combined";
+                if (!view.BoardDirty && mode != view.ServiceBoardMode && view.Available && !view.AsioRunning)
+                    await Command("BOARD_MODE " + mode, "");
+                else if (mode != view.ServiceBoardMode && view.AsioRunning) {
+                    view.BoardStatus = "Остановите ASIO для согласования режима платы со службой ПК."; view.Notify();
+                }
+            } catch (Exception error) {
+                view.BoardAvailable = false; view.BoardStatus = error.Message; view.Notify();
+            } finally { boardPolling = false; nextBoardRefresh = clock.ElapsedMilliseconds + 1500; }
         }
         private async Task Command(string command, string message) {
             var response = await service.Send(command);
@@ -190,6 +222,38 @@ namespace ReyAudio {
                 width = root.ActualWidth, height = root.ActualHeight, fixture = fixture != null
             }));
             VerifyTrayLifecycle(directory);
+            VerifyBoardPanel(directory);
+        }
+        private void VerifyBoardPanel(string directory) {
+            // Finite WPF rendering fixture; no USB/service mutation or PCM.
+            view.Available=true;view.BoardAvailable=true;view.BoardMode=1;
+            view.BoardStatus="Проверка интерфейса с тестовым состоянием. Физическое USB-подключение не проверяется.";
+            view.Notify();Navigate("usb");
+            ((RadioButton)window.FindName("NavUsb")).IsChecked=true;
+            ((Expander)window.FindName("BoardRoutesSection")).IsExpanded=true;
+            var root=(FrameworkElement)window.Content;
+            root.Measure(new Size(1120,1100));root.Arrange(new Rect(0,0,1120,1100));root.UpdateLayout();
+            ((FrameworkElement)window.FindName("BoardModeCard")).BringIntoView();root.UpdateLayout();
+            var modes=(ComboBox)window.FindName("BoardMode");
+            var routes=(ItemsControl)window.FindName("BoardRoutes");
+            if(modes.Items.Count!=2 || routes.Items.Count!=8 || view.Rates.Any(r=>r.Value>96000))
+                throw new InvalidOperationException("Board mode/route bindings failed");
+            // Render the complete card outside its scrolled viewport. Keeping
+            // its old parent clips the route rows and retains the layout offset.
+            var card=(FrameworkElement)window.FindName("BoardModeCard");
+            ((System.Windows.Controls.Panel)card.Parent).Children.Remove(card);
+            card.Margin=new Thickness(0);window.Content=card;
+            window.WindowState=WindowState.Normal;window.Width=1120;window.Height=1100;
+            window.ShowActivated=false;window.Show();window.UpdateLayout();
+            card.Measure(new Size(1080,double.PositiveInfinity));
+            card.Arrange(new Rect(0,0,1080,card.DesiredSize.Height));
+            var bitmap=new RenderTargetBitmap((int)Math.Ceiling(card.ActualWidth),(int)Math.Ceiling(card.ActualHeight),96,96,PixelFormats.Pbgra32);bitmap.Render(card);
+            var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bitmap));
+            using(var output=File.Create(Path.Combine(directory,"rey-board-modes.png")))png.Save(output);
+            File.WriteAllText(Path.Combine(directory,"board-panel-check.json"),new JavaScriptSerializer().Serialize(new {
+                scope="real WPF bindings with fixture state; no physical USB",pc_modes=modes.Items.Count,
+                channels=routes.Items.Count,effect_rate_max=view.Rates.Max(r=>r.Value),web_mode_selector=false
+            }));
         }
         private void VerifyTrayLifecycle(string directory) {
             // Finite UI integration check: real NotifyIcon and WPF lifecycle,
@@ -236,7 +300,7 @@ namespace ReyAudio {
                 hidden_window_wake_ms = 250, hidden_status_poll_ms = 1000
             }));
         }
-        public void Dispose() { timer.Stop(); if (tray != null) { tray.Visible = false; tray.Dispose(); } }
+        public void Dispose() { timer.Stop(); board.Dispose(); if (tray != null) { tray.Visible = false; tray.Dispose(); } }
     }
     internal static class Program {
         [STAThread]

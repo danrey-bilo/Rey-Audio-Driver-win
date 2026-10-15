@@ -1,0 +1,23 @@
+name: Windows board control
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  panel:
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          submodules: false
+      - name: Compile WPF panel
+        shell: powershell
+        run: ./tools/build_control.ps1
+      - name: Check modes, rates and eight-channel command payload
+        shell: powershell
+        run: ./tools/check_board_control.ps1
+      # Native service/ASIO validation uses the separately supplied ASIO SDK.
+      # This job does not claim native or physical USB qualification.

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 namespace ReyAudio {
     internal sealed class Choice {
@@ -17,7 +18,7 @@ namespace ReyAudio {
         public string Title { get; set; }
         public string Detail { get; set; }
     }
-    internal sealed class ViewModel : INotifyPropertyChanged {
+    internal sealed partial class ViewModel : INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
         public void Notify() { if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("")); }
         public readonly ObservableCollection<LogRow> Log = new ObservableCollection<LogRow>();
@@ -26,7 +27,8 @@ namespace ReyAudio {
         public string DeviceLabel { get { return "Rey Audio · Pi5"; } }
         public string DeviceWarning = "";
         public ObservableCollection<LogRow> Events { get { return Log; } }
-        public Choice[] Rates { get; private set; }
+        private Choice[] allRates, effectRates;
+        public Choice[] Rates { get { return BoardMode == 1 ? effectRates : allRates; } private set { allRates=value; effectRates=value.Where(r=>r.Value<=96000).ToArray(); } }
         public Choice[] Bits { get; private set; }
         public Choice[] Depths { get; private set; }
         public Choice[] Blocks { get; private set; }
@@ -153,6 +155,8 @@ namespace ReyAudio {
                 AsioCountersLabel = Bool(asio, "connected") ? "Пропуски входа: " + String(asio, "capture_dropped") + " · опоздания выхода: " + String(asio, "render_late_frames") + " · пропуски выхода: " + String(asio, "render_missing_frames") + " · переполнение: " + String(asio, "render_overflow") : "—";
             }
             Identity = String(data, "identity"); Backend = String(data, "backend");
+            ServiceBoardMode = data.ContainsKey("board_mode") ? String(data,"board_mode") : "soundcard";
+            if (!BoardAvailable) BoardMode = ServiceBoardMode=="combined" ? 1 : 0;
             var usb = (Dictionary<string, object>)data["usb"];
             activeUsbDepth = Int(usb, "depth");
             UsbPresent = Int(usb, "present") == 1;

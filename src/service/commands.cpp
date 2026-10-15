@@ -22,6 +22,10 @@ bool command_settings(const Settings &current, const std::string &command, Setti
     unsigned gain = 0, mute = 0;
     accepted = parse_unsigned(fields[1], gain, 6600) && parse_unsigned(fields[2], mute, 1);
     next.mix.master_cdb = int(gain) - 6000; next.mix.master_mute = mute != 0;
+  } else if (fields.size() == 2 && fields[0] == "BOARD_MODE") {
+    accepted = fields[1] == "soundcard" || fields[1] == "combined";
+    next.board_effects = fields[1] == "combined";
+    if (next.board_effects && next.usb.rate > 96000) next.usb.rate = 96000;
   } else if (command == "MIX_RESET") {
     next.mix = rey::audio::Mix{}; accepted = true;
   } else if (fields.size() == 7 && fields[0] == "USB") {

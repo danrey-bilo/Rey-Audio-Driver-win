@@ -16,6 +16,7 @@ public:
   void offline();
   bool info(Info &);
   std::string status() const;
+  bool running() const;
   bool connect(DWORD pid, uint64_t mapping, uint64_t event, unsigned block,
                unsigned lead_blocks, std::string &error);
   bool disconnect(DWORD pid);

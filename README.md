@@ -9,6 +9,11 @@ Eight inputs and eight outputs, integer PCM16/24/32 and six sample rates from
 44.1 to 192 kHz. The service connects the board automatically and keeps running
 when the mixer window closes.
 
+**Development:** [AKM board modes](docs/AKM-OPERATING-MODES.md) adds two choices
+in the ASIO panel: Audio interface and Combined, with automatic standalone
+effects on disconnect. Combined is limited to 96 kHz; the existing USB transport
+remains limited to 192 kHz. AKM USB PCM integration is still pending.
+
 **[Download 2.8.1 USB preview 2](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.2)**
 · [Install & Ableton](docs/USB-ASIO.md)
 · [Documentation](docs/README.md)

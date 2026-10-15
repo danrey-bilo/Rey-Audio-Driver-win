@@ -76,6 +76,8 @@ std::string Manager::request(const std::string &command, DWORD sender_pid) {
   if (command.compare(0, 5, "ASIO ") == 0) return asio_request(command, sender_pid);
   std::lock_guard<std::mutex> lock(mutex_);
   if (command == "STATUS") return status_locked();
+  if (command.compare(0, 11, "BOARD_MODE ") == 0 && session_->asio().running())
+    return status_locked("Stop the ASIO audio engine before changing board mode");
   Settings next; std::string error;
   if (!command_settings(session_->settings(), command, next, error) || !persist(next, error)) return status_locked(error);
   return status_locked();

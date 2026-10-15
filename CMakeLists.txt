@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(ReyAudioDriver VERSION 2.8.1 LANGUAGES CXX)
+project(ReyAudioDriver VERSION 2.8.2 LANGUAGES CXX)
 if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(FATAL_ERROR "Use Windows x64 (AMD64) and a 64-bit toolchain")
 endif()
@@ -92,6 +92,7 @@ if(REY_BUILD_CONTROL)
       apps/ReyAudioControl/Program.cs apps/ReyAudioControl/ViewModel.cs
       apps/ReyAudioControl/ServiceClient.cs apps/ReyAudioControl/app.manifest
       apps/ReyAudioControl/MixerChannel.cs apps/ReyAudioControl/AsioPreferences.cs
+      apps/ReyAudioControl/BoardControl.cs apps/ReyAudioControl/BoardViewModel.cs
       apps/ReyAudioControl/ReyAudio.ico VERBATIM)
   add_custom_target(ReyAudioControl ALL DEPENDS "${REY_CONTROL_OUTPUT}")
 endif()
@@ -116,7 +117,7 @@ if(REY_BUILD_TESTS)
   foreach(case invalid ownership capture render overflow)
     add_test(NAME rey_asio_ipc_${case} COMMAND ReyAsioIpcTests ${case})
   endforeach()
-  foreach(case defaults numbers profile json persistence corruption legacy_v1 legacy_v2 commands alignment)
+  foreach(case defaults numbers profile json persistence corruption legacy_v1 legacy_v2 legacy_v3 commands alignment)
     add_test(NAME rey_service_${case} COMMAND ReyServiceContractTests ${case})
   endforeach()
   foreach(case unity solo_mute gain_clip ramp bounds)

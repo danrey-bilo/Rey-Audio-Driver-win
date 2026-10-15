@@ -18,6 +18,9 @@ bool parse_unsigned(const std::string &text, unsigned &value,
   return true;
 }
 bool valid(const Settings &s, std::string &error) {
+  if (s.board_effects && s.usb.rate > 96000) {
+    error = "Combined mode supports 44.1 to 96 kHz only"; return false;
+  }
   const auto rate = s.usb.rate;
   if ((rate != 44100 && rate != 48000 && rate != 88200 && rate != 96000 && rate != 176400 && rate != 192000) ||
       (s.usb.bits != 16 && s.usb.bits != 24 && s.usb.bits != 32) ||
@@ -82,7 +85,7 @@ bool load(const std::wstring &path, Settings &out, std::string &error, const std
   };
   Settings s;
   unsigned magic = 0, version = 0, bits = s.usb.bits, block = s.usb.block, automatic = 1;
-  if (!number(magic, UINT32_MAX) || magic != 0x31535952 || !number(version, 3) || !version ||
+  if (!number(magic, UINT32_MAX) || magic != 0x31535952 || !number(version, 4) || !version ||
       !number(s.usb.rate, 192000) || !number(bits, 32) || !number(s.usb_depth, 16) ||
       !number(block, 256) || !number(s.usb.safety, 8192) || !number(automatic, 1)) {
     error = "Malformed saved USB profile"; return false;
@@ -113,6 +116,11 @@ bool load(const std::wstring &path, Settings &out, std::string &error, const std
     if (!number(gain, 6600) || !number(mute, 1)) { error = "Malformed master settings"; return false; }
     s.mix.master_cdb = int(gain) - 6000; s.mix.master_mute = mute != 0;
   }
+  if (version >= 4) {
+    unsigned effects = 0;
+    if (!number(effects, 1)) { error = "Malformed board mode"; return false; }
+    s.board_effects = effects != 0;
+  }
   if (cursor != bytes.size()) { error = "Unexpected saved profile data"; return false; }
   if (!valid(s, error))
     return false;
@@ -127,12 +135,13 @@ bool save(const std::wstring &path, const Settings &s, std::string &error, const
   auto number = [&](uint32_t value) {
     for (unsigned i = 0; i < 4; ++i) content.push_back(BYTE(value >> (8 * i)));
   };
-  for (const auto value : {uint32_t(0x31535952), uint32_t(3), s.usb.rate,
+  for (const auto value : {uint32_t(0x31535952), uint32_t(4), s.usb.rate,
       uint32_t(s.usb.bits), s.usb_depth, s.usb.block, s.usb.safety, uint32_t(s.usb_auto)}) number(value);
   for (const auto *group : {&s.mix.inputs, &s.mix.outputs}) for (const auto &c : *group) {
     number(uint32_t(c.gain_cdb + 6000)); number(unsigned(c.mute) | (unsigned(c.solo) << 1) | (unsigned(c.invert) << 2));
   }
   number(uint32_t(s.mix.master_cdb + 6000)); number(unsigned(s.mix.master_mute));
+  number(unsigned(s.board_effects));
   if (path.empty()) {
     HKEY key = nullptr;
     auto status = RegCreateKeyExW(HKEY_LOCAL_MACHINE, registry_key.c_str(), 0,

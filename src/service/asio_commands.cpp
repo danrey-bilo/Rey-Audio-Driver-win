@@ -21,6 +21,12 @@ std::string Manager::asio_request(const std::string &command, DWORD sender_pid) 
         << info.block << ' ' << info.depth << ' ' << info.generation;
     return out.str();
   }
+  if (action == "CAN_RATE") {
+    unsigned rate = 0;
+    if (!(in >> rate) || (in >> extra) || !rey::asio::valid_rate(rate) ||
+        (session->settings().board_effects && rate > 96000)) return fail("Rate unavailable in the selected board mode");
+    return "REY_ASIO_OK";
+  }
   if (!sender_pid) return fail("Unauthenticated client");
   if (action == "OPEN") {
     uint64_t pid = 0, mapping = 0, event = 0;
