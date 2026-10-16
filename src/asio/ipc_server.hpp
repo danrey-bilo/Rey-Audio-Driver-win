@@ -13,6 +13,7 @@ public:
   Server();
   ~Server();
   void configure(const REY_BRIDGE_PROFILE &, unsigned depth, uint64_t generation);
+  void transport_buffers(unsigned capture, unsigned render, unsigned delay);
   void offline();
   bool info(Info &);
   std::string status() const;

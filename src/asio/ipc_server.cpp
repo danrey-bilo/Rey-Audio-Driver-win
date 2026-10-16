@@ -30,16 +30,19 @@ struct Server::Connection {
       store(shared->ready, 0); return;
     }
     if (!running) { running = true; accumulated = 0; rendered = false; previous_ns = 0; }
-    store(shared->clock_position, audio.frame_position + audio.frames);
+    const auto end = audio.frame_position + audio.frames;
+    store(shared->clock_position, end > audio.render_delay_frames ? end-audio.render_delay_frames : 0);
     if (previous_ns && now - previous_ns > load(shared->capture_gap_max_ns))
       store(shared->capture_gap_max_ns, now - previous_ns);
     previous_ns = now;
     const int64_t full = int64_t(1) << (bits - 1);
     // Playback is scheduled against transport sample indices, never queue age.
     for (unsigned f = 0; f < audio.frames; ++f) {
-      const uint64_t wanted = audio.frame_position + f;
+      const uint64_t capture_position = audio.frame_position + f;
+      const bool render_due = capture_position >= audio.render_delay_frames;
+      const uint64_t wanted = render_due ? capture_position - audio.render_delay_frames : 0;
       bool supplied = false;
-      for (unsigned attempt = 0; attempt < slots; ++attempt) {
+      for (unsigned attempt = 0; render_due && attempt < slots; ++attempt) {
         auto read = load(shared->render.read);
         const auto written = load(shared->render.written);
         if (written < read || written - read > slots) { store(shared->ready, 0); return; }
@@ -66,10 +69,10 @@ struct Server::Connection {
         if (offset + 1 == block) store(shared->render.read, read + 1);
         break;
       }
-      if (rendered && !supplied) add(shared->render_missing);
-      if (!accumulated) { first_frame = wanted; first_ns = now; }
-      if (wanted != first_frame + accumulated) {
-        accumulated = 0; first_frame = wanted; first_ns = now; add(shared->capture_dropped);
+      if (render_due && rendered && !supplied) add(shared->render_missing);
+      if (!accumulated) { first_frame = capture_position; first_ns = now; }
+      if (capture_position != first_frame + accumulated) {
+        accumulated = 0; first_frame = capture_position; first_ns = now; add(shared->capture_dropped);
       }
       std::copy_n(audio.capture + size_t(f) * channels, channels,
                   capture.data() + size_t(accumulated++) * channels);
@@ -90,6 +93,10 @@ struct Server::Connection {
   }
 };
 Server::Server() = default;
+void Server::transport_buffers(unsigned capture, unsigned render, unsigned delay) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  info_.capture_buffer = capture; info_.render_buffer = render; info_.render_delay = delay;
+}
 Server::~Server() { offline(); }
 void Server::close_locked() {
   active_.store(nullptr, std::memory_order_seq_cst);
@@ -113,7 +120,8 @@ bool Server::info(Info &out) {
 }
 bool Server::running() const {
   std::lock_guard<std::mutex> lock(mutex_);
-  return owned_ && owned_->shared && load(owned_->shared->running) == 1;
+  return owned_ && owned_->shared && load(owned_->shared->ready) == 1 &&
+      load(owned_->shared->running) == 1 && WaitForSingleObject(owned_->process, 0) == WAIT_TIMEOUT;
 }
 std::string Server::status() const {
   std::lock_guard<std::mutex> lock(mutex_);

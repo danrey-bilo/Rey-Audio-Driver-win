@@ -58,6 +58,7 @@ void DeviceSession::start_worker(Settings s,
   }
   callbacks_ = frames_ = missing_ = gap_max_ = 0;
   processing_sum_ = processing_max_ = 0;
+  uac2_stats_.reset();
   worker_done_ = false;
   generation_.fetch_add(1, std::memory_order_relaxed);
   {
@@ -110,11 +111,14 @@ void DeviceSession::worker(Settings settings,
   struct AsioLifetime { rey::asio::Server &server; ~AsioLifetime() { server.offline(); } } asio_lifetime{asio_};
   std::string error;
   rey::engine::UsbSession session;
-  if (!session.open(settings.usb, expected, path, error)) {
+  rey::engine::Uac2Session audio;
+  const bool uac2 = rey::engine::uac2_path(path);
+  if (uac2 && digital_test_) { state("device_unavailable", "Digital echo test is not available for physical USB Audio"); return; }
+  if (!(uac2 ? audio.open(settings.usb, path, expected, error) : session.open(settings.usb, expected, path, error))) {
     state("device_unavailable", error);
     return;
   }
-  const auto id = session.identity();
+  const auto id = uac2 ? audio.identity() : session.identity();
   REY_BRIDGE_PROFILE profile{sizeof(profile),
                                 REY_BRIDGE_VERSION,
                                 settings.usb.rate,
@@ -129,7 +133,7 @@ void DeviceSession::worker(Settings settings,
     std::lock_guard<std::mutex> lock(mutex_);
     usb_id_ = id;
     active_ = settings.usb;
-    backend_ = "digital-loopback";
+    backend_ = uac2 ? "usb-audio2-akm" : "digital-loopback";
   }
   if (!digital_test_ && !asio_only_ && !bridge.attach(profile, error)) {
     state("driver_unavailable", error);
@@ -137,16 +141,32 @@ void DeviceSession::worker(Settings settings,
   }
   context.windows = !digital_test_ && !asio_only_;
   if (!digital_test_) asio_.configure(profile, settings.usb_depth, generation_.load());
-  state(digital_test_ ? "digital_test" : "streaming",
-        digital_test_ ? "USB digital test is running"
-                      : asio_only_ ? "USB ASIO service is ready" : "USB audio endpoints are attached");
-  if (!session.run(process, &context, worker_stop_, 0, settings.usb_depth,
-                   error))
-    state("stream_error",
-          error.empty() ? "USB stream stopped with errors" : error);
+  const auto ready = [](void *opaque, unsigned capture, unsigned render) {
+    auto &ctx = *static_cast<CallbackContext *>(opaque);
+    ctx.manager->asio_.transport_buffers(capture, render, capture);
+    if (ctx.manager->stream_requested_.load())
+      ctx.manager->state("streaming", "USB ASIO stream is running");
+  };
+  if (uac2 && asio_only_) {
+    do {
+      context.previous = 0;
+      error.clear();
+      const bool okay = audio.run(process, &context, worker_stop_, uac2_stats_, error, ready, &stream_requested_);
+      if (!okay && stream_requested_.load()) { state("stream_error", error); return; }
+      mixer_.reset();
+      state("ready", okay ? "USB ASIO service is ready" : "USB audio is in use by Windows; stop playback before starting ASIO");
+      while (WaitForSingleObject(worker_stop_, 20) == WAIT_TIMEOUT && !stream_requested_.load(std::memory_order_acquire)) {}
+    } while (WaitForSingleObject(worker_stop_, 0) != WAIT_OBJECT_0);
+  } else {
+    state(digital_test_ ? "digital_test" : "streaming", digital_test_ ? "USB digital test is running" : "USB audio endpoints are attached");
+    const bool okay = uac2 ? audio.run(process, &context, worker_stop_, uac2_stats_, error, ready)
+        : session.run(process, &context, worker_stop_, 0, settings.usb_depth, error);
+    if (!okay) state("stream_error", error.empty() ? "USB stream stopped with errors" : error);
+  }
 
 }
 void DeviceSession::poll(uint64_t now, const std::wstring &path, bool bridge) {
+  stream_requested_.store(asio_.running(), std::memory_order_release);
   Settings s;
   { std::lock_guard<std::mutex> lock(mutex_); s = settings_; bridge_present_ = bridge;
     usb_present_ = path.empty() ? 0 : 1; usb_id_ = path.empty() ? "" : identity_; }
@@ -172,7 +192,7 @@ bool DeviceSession::update(const Settings &next, std::string &error) {
 std::string DeviceSession::status_locked(const std::string &error) const {
   const auto &s = settings_;
   std::ostringstream out;
-  out << "{\"version\":\"2.8.2-akm-dev.1\",\"ok\":" << (error.empty() ? "true" : "false")
+  out << "{\"version\":\"2.8.2-akm-dev.2\",\"ok\":" << (error.empty() ? "true" : "false")
       << ",\"error\":" << json_string(error)
       << ",\"state\":" << json_string(state_)
       << ",\"detail\":" << json_string(detail_)
@@ -198,6 +218,12 @@ std::string DeviceSession::status_locked(const std::string &error) const {
       << ",\"callback_gap_max_us\":" << gap_max_.load() / 1000.0
       << ",\"processing_max_us\":" << processing_max_.load() / 1000.0
       << ",\"processing_average_us\":" << (callbacks_.load() ? double(processing_sum_.load()) / callbacks_.load() / 1000.0 : 0)
+      << "},\"uac2\":{\"capture_buffer_frames\":" << uac2_stats_.capture_buffer.load()
+      << ",\"render_buffer_frames\":" << uac2_stats_.render_buffer.load()
+      << ",\"startup_silence_frames\":" << uac2_stats_.startup_silence_frames.load()
+      << ",\"capture_discontinuities\":" << uac2_stats_.discontinuities.load()
+      << ",\"render_underrun_frames\":" << uac2_stats_.underrun_frames.load()
+      << ",\"render_overflow_frames\":" << uac2_stats_.overflow_frames.load()
       << "},\"asio\":" << asio_.status()
       << ",\"mixer\":{\"master_cdb\":" << s.mix.master_cdb << ",\"master_mute\":" << (s.mix.master_mute ? "true" : "false");
   const std::array<rey::audio::Channel, 8> *groups[] = {&s.mix.inputs, &s.mix.outputs};

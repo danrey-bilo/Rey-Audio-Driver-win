@@ -38,6 +38,7 @@ namespace ReyAudio {
         public string AsioStateLabel { get; private set; }
         public string AsioCountersLabel { get; private set; }
         private int liveAsioBlock, liveAsioLead, activeUsbDepth;
+        private int uacCaptureBuffer, uacRenderBuffer;
         private bool asioRunning;
         public bool AsioRunning { get { return asioRunning && Available; } }
         private bool asioDeadlineErrors;
@@ -48,8 +49,8 @@ namespace ReyAudio {
                 return (AsioInputLatency + AsioOutputLatency).ToString("0.00") + " мс";
             }
         }
-        private double AsioInputLatency { get { return (liveAsioBlock + activeUsbDepth * ((ActiveRate + 7999) / 8000)) * 1000.0 / ActiveRate; } }
-        private double AsioOutputLatency { get { return ((liveAsioLead - 1) * liveAsioBlock + 1) * 1000.0 / ActiveRate; } }
+        private double AsioInputLatency { get { return (liveAsioBlock + (uacCaptureBuffer>0 ? uacCaptureBuffer : activeUsbDepth * ((ActiveRate + 7999) / 8000))) * 1000.0 / ActiveRate; } }
+        private double AsioOutputLatency { get { return ((liveAsioLead - 1) * liveAsioBlock + 1 + uacCaptureBuffer + uacRenderBuffer) * 1000.0 / ActiveRate; } }
         public string AsioLatencyDetail { get { return AsioLatencyLabel == "—" ? "Нет активного ASIO-потока" : "Вход " + AsioInputLatency.ToString("0.00") + " мс · выход " + AsioOutputLatency.ToString("0.00") + " мс. Расчёт буферов; физическая задержка не измеряется."; } }
         public string AsioApplyHint {
             get {
@@ -110,6 +111,7 @@ namespace ReyAudio {
                 if (DeviceWarning.Length != 0) return "Проверьте подключение";
                 if (State == "connecting") return "Подключение…";
                 if (State == "stopping") return "Применение…";
+                if (State == "stream_error" || State == "device_unavailable") return "Аудиопоток недоступен";
                 return UsbPresent ? "Аудио подключено" : BoardAvailable ? "Управление подключено" : "USB не обнаружен";
             }
         }
@@ -117,6 +119,7 @@ namespace ReyAudio {
             get {
                 if (DeviceWarning.Length != 0) return DeviceWarning;
                 if (!Available) return "Служба Rey Audio недоступна.";
+                if (State == "stream_error" || State == "device_unavailable") return Detail;
                 return UsbPresent ? "" : BoardAvailable ? "Управление платой доступно. Аудиопоток USB недоступен." : "Аудиоустройство Rey Audio не обнаружено.";
             }
         }
@@ -129,12 +132,15 @@ namespace ReyAudio {
         public string FrameLabel { get { return Frames.ToString("N0"); } }
         public string MissingLabel { get { return Missing.ToString("N0"); } }
         public string GapLabel { get { return Gap.ToString("0.0", CultureInfo.CurrentCulture) + " мкс"; } }
-        public string QueueHint { get { return "Запас очереди " + (UsbDepth * 0.125).ToString("0.###") + " мс; не сквозная задержка."; } }
+        public string QueueHint { get { return Backend=="usb-audio2-akm" ? "Буферы USB Audio: " + uacCaptureBuffer + " / " + uacRenderBuffer + " сэмплов." : "Запас очереди " + (UsbDepth * 0.125).ToString("0.###") + " мс; не сквозная задержка."; } }
         public Visibility MessageVisibility { get { return string.IsNullOrEmpty(Message) ? Visibility.Collapsed : Visibility.Visible; } }
         public static string String(Dictionary<string, object> d, string key) { return d.ContainsKey(key) && d[key] != null ? Convert.ToString(d[key], CultureInfo.InvariantCulture) : ""; }
         public static int Int(Dictionary<string, object> d, string key) { int v; return int.TryParse(String(d, key), out v) ? v : 0; }
         public static bool Bool(Dictionary<string, object> d, string key) { return d.ContainsKey(key) && d[key] is bool && (bool)d[key]; }
         public void Update(Dictionary<string, object> data, bool loadFields) {
+            var uac = data.ContainsKey("uac2") ? data["uac2"] as Dictionary<string,object> : null;
+            uacCaptureBuffer = uac==null ? 0 : Int(uac,"capture_buffer_frames");
+            uacRenderBuffer = uac==null ? 0 : Int(uac,"render_buffer_frames");
             string identity = String(data, "identity");
             if (identity != Identity) {
                 loadFields = true;

@@ -46,10 +46,14 @@ bool query_info(const std::string &id, Info &info, std::string &error) {
   std::string reply, prefix, extra;
   if (!command("ASIO INFO " + id, reply, error)) return false;
   std::istringstream in(reply);
+  info.capture_buffer = info.render_buffer = info.render_delay = 0;
   if (!(in >> prefix >> info.id >> info.rate >> info.bits >> info.block >> info.depth >> info.generation) ||
-      (in >> extra) || prefix != "REY_ASIO_INFO" || info.id.size() != 32 || !valid_rate(info.rate) ||
+      prefix != "REY_ASIO_INFO" || info.id.size() != 32 || !valid_rate(info.rate) ||
       (info.bits != 16 && info.bits != 24 && info.bits != 32) || !valid_block(info.block) ||
       !info.depth || info.depth > 16) { error = reply; return false; }
+  in >> std::ws;
+  if (!in.eof() && (!(in >> info.capture_buffer >> info.render_buffer >> info.render_delay) || (in >> extra) ||
+      info.capture_buffer > 8192 || info.render_buffer > 8192 || info.render_delay > 8192)) { error = "Invalid USB Audio buffer metadata"; return false; }
   for (const auto c : info.id) if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) {
     error = "Invalid service DeviceId"; return false;
   }

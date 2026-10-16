@@ -18,7 +18,8 @@ std::string Manager::asio_request(const std::string &command, DWORD sender_pid) 
     if (in >> extra) return fail("Malformed INFO");
     std::ostringstream out;
     out << "REY_ASIO_INFO " << info.id << ' ' << info.rate << ' ' << info.bits << ' '
-        << info.block << ' ' << info.depth << ' ' << info.generation;
+        << info.block << ' ' << info.depth << ' ' << info.generation << ' '
+        << info.capture_buffer << ' ' << info.render_buffer << ' ' << info.render_delay;
     return out.str();
   }
   if (action == "CAN_RATE") {

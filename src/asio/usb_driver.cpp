@@ -73,7 +73,7 @@ public:
     set_error(error); initialized_ = false; return ASIOFalse;
   }
   void getDriverName(char *name) override { if (name) std::strcpy(name, "Rey Audio USB ASIO"); }
-  long getDriverVersion() override { return 281; }
+  long getDriverVersion() override { return 282; }
   void getErrorMessage(char *text) override {
     if (text) std::strcpy(text, stream_lost_.load() ? "USB stream ended; reopen Rey USB ASIO" : error_.data());
   }
@@ -108,9 +108,12 @@ public:
   }
   ASIOError getLatencies(long *input, long *output) override {
     if (!input || !output || !initialized_) return ASE_InvalidParameter;
+    Info current; std::string error;
+    if (query_info(info_.id, current, error) && current.rate == info_.rate && current.bits == info_.bits)
+      info_ = current;
     const auto packet_frames = (info_.rate + 7999) / 8000;
-    *input = long(block_ + info_.depth * packet_frames);
-    *output = long((lead_ - 1) * block_ + 1); // USB layout's rational-cadence phase frame
+    *input = long(block_ + (info_.capture_buffer ? info_.capture_buffer : info_.depth * packet_frames));
+    *output = long((lead_ - 1) * block_ + 1 + info_.render_buffer + info_.render_delay);
     return ASE_OK;
   }
   ASIOError getBufferSize(long *minimum, long *maximum, long *preferred, long *granularity) override {

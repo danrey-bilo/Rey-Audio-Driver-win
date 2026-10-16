@@ -3,6 +3,7 @@
 #include "../bridge/driver_bridge.hpp"
 #include "../platform/device_names.hpp"
 #include "pi5ausb/windows.hpp"
+#include "../engine/uac2_session.hpp"
 namespace rey::service {
 Manager::Manager(std::wstring path, bool test, bool asio_only)
     : path_(std::move(path)), digital_test_(test), asio_only_(asio_only) {}
@@ -39,20 +40,29 @@ bool Manager::persist(const Settings &next, std::string &error) {
 }
 void Manager::scan_usb() {
   std::string error;
-  const auto paths = pi5ausb::WindowsDevice::interface_paths(error);
+  auto paths = pi5ausb::WindowsDevice::interface_paths(error);
   if (!error.empty()) { device_warning_ = error; return; }
+  const auto audio = rey::engine::uac2_devices(error);
+  if (!error.empty()) { device_warning_ = error; return; }
+  for (const auto &device : audio) paths.push_back(device.path());
   const auto selection = select_usb(paths, usb_path_);
   device_warning_ = selection.warning;
   if (selection.path != usb_path_) {
     session_->poll(GetTickCount64(), L"", bridge_present_);
     usb_path_.clear();
     if (!selection.path.empty()) {
-      pi5ausb::WindowsDevice usb;
-      if (!usb.open(selection.path, error)) { device_warning_ = error; return; }
-      const std::string id(usb.device().hello.id.data(), 32);
+      std::string id;
+      if (rey::engine::uac2_path(selection.path)) {
+        const auto serial = selection.path.substr(5);
+        id.assign(serial.begin(), serial.end());
+      } else {
+        pi5ausb::WindowsDevice usb;
+        if (!usb.open(selection.path, error)) { device_warning_ = error; return; }
+        id.assign(usb.device().hello.id.data(), 32);
+      }
       if (identity_ != id && !activate(id, error)) { device_warning_ = error; return; }
       usb_path_ = selection.path;
-      normalize_usb_name(usb_path_);
+      if (!rey::engine::uac2_path(usb_path_)) normalize_usb_name(usb_path_);
     }
   }
   bridge_present_ = !asio_only_ && bridge::DriverBridge::available();

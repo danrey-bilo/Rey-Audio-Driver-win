@@ -12,8 +12,8 @@ using Microsoft.Win32;
 [assembly: AssemblyTitle("Rey Audio USB ASIO Setup")]
 [assembly: AssemblyProduct("Rey Audio Driver USB ASIO")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.2.1")]
-[assembly: AssemblyFileVersion("2.8.2.1")]
+[assembly: AssemblyVersion("2.8.2.2")]
+[assembly: AssemblyFileVersion("2.8.2.2")]
 namespace ReyAudio.UsbAsioSetup {
     internal static class Program {
         private const string OwnerKey = @"Software\ReyAudio\USBASIOSetup";

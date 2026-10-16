@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory=$true)][string]$Bin,
     [string]$Output = 'build/usb-asio-setup',
     [ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$')]
-    [string]$Version = '2.8.2-akm-dev.1'
+    [string]$Version = '2.8.2-akm-dev.2'
 )
 $ErrorActionPreference = 'Stop'
 $project = Split-Path $PSScriptRoot -Parent

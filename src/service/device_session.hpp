@@ -1,5 +1,6 @@
 #pragma once
 #include "../engine/audio_block.hpp"
+#include "../engine/uac2_session.hpp"
 #include "settings.hpp"
 #include "../asio/ipc_server.hpp"
 #include <deque>
@@ -39,6 +40,7 @@ private:
   bool bridge_present_ = false;
   rey::engine::UsbProfile active_;
   rey::audio::Mixer mixer_;
+  rey::engine::Uac2Stats uac2_stats_;
   struct Event {
     uint64_t utc_ms;
     std::string code, detail;
@@ -47,6 +49,7 @@ private:
   std::thread worker_;
   HANDLE worker_stop_ = nullptr;
   std::atomic<bool> worker_done_{true};
+  std::atomic<bool> stream_requested_{false};
   std::atomic<uint64_t> callbacks_{0}, frames_{0}, missing_{0}, gap_max_{0};
   std::atomic<uint64_t> processing_sum_{0}, processing_max_{0};
   struct CallbackContext {
