@@ -12,8 +12,9 @@ from the same build. The installer verifies their hashes and preserves preferenc
 
 The Pi must run the coordinated Rey Effects native USB integration. The pinned
 Pi5-AUSB 0.3 dependency supplies WinUSB/FunctionFS, not an analog converter driver.
-Ordinary Windows playback/recording uses the composite device's separate UAC2
-function. ASIO uses the native WinUSB interface and takes priority while active.
+The device exposes vendor audio and CDC management only, without UAC2.
+ASIO uses native WinUSB; there is no class-audio/WASAPI fallback. Ordinary Windows
+system audio needs a separate native endpoint driver. See [AUSB](AUSB-NATIVE.md).
 The driver does not require a custom Windows SYS file or Test Mode.
 
 ## Controls

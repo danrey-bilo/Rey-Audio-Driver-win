@@ -33,7 +33,7 @@ includes the real USB cable and Pi, but excludes the analog ADC/DAC path.
 
 Control eight input or eight output channels with gain, Mute, Solo and polarity.
 Output Master controls playback. Meters show real PCM levels. The panel has
-three pages: **Mixer**, **Settings** and **Diagnostics**, with access from the tray.
+three pages: **Mixer**, **Device** and **Diagnostics**, with access from the tray.
 
 <details>
 <summary><strong>USB settings and diagnostics</strong></summary>
@@ -71,7 +71,7 @@ The [installation guide](docs/USB-ASIO.md) describes format changes and reopenin
 | Sample rates | 44.1 / 48 / 88.2 / 96 / 176.4 / 192 kHz |
 | Transport | Pi5-AUSB, USB High-Speed interrupt transfers, asynchronous WinUSB |
 | Processing | Bounded PCM rings, gain ramps, Mute/Solo/polarity, live meters |
-| Buffers | Manual ASIO block/render lead and USB queue; no automatic tuning |
+| Buffers | Selectable ASIO buffer; USB queue/reserve are automatic per rate |
 | Startup | Windows service at boot; panel/tray at login |
 | Settings | Atomic USB/mixer registry profile; migration of earlier USB settings |
 | Chrome / Telegram | System Windows audio endpoints remain a separate qualification stage |

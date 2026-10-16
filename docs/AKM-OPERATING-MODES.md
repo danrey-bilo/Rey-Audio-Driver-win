@@ -45,10 +45,12 @@ function** on the Pi. It discovers one Linux gadget COM port, validates the
 `Rey Effects` protocol-1 handshake and keeps PCM out of the management channel.
 Without that function the controls remain unavailable with an explanation.
 
-The companion Linux application now provides a composite UAC2, CDC and optional
-native WinUSB function, plus the JACK provider shared by analog routes and effects.
-ASIO uses backend 2 (native JACK); backend 1 remains a separate legacy digital echo
-fixture. Ordinary Windows USB Audio uses UAC2 when ASIO releases the native path.
+The companion Linux application provides native WinUSB audio and CDC management,
+plus the JACK provider shared by analog routes and effects. UAC2 is not exposed.
+ASIO uses backend 3 (physical-clock JACK); backend 2 remains readable for an
+orderly update from dev.4 and backend 1 is a separate legacy digital echo fixture.
+There is no class-audio fallback. System audio without ASIO needs a separate
+native Windows endpoint driver. See [AUSB](AUSB-NATIVE.md).
 [Current qualification](USB-LATENCY-2026-10-16.md) measures real USB with a digital
 JACK loop. Analog ADC/DAC latency and full production installation remain separate
 checks. A successful control command alone is not audio proof.

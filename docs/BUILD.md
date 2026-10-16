@@ -36,7 +36,7 @@ Minimal LLVM-MinGW environments can supply `REY_SETUPAPI_LIBRARY`,
 `CMAKE_CXX_COMPILER` and `CMAKE_RC_COMPILER`. Standard SDK toolchains use their
 own import libraries. ARM64 is not supported.
 
-Validation covers 39 contracts (IPC ownership/timeline, bounded render waits, settings migration,
+Validation covers 39 contracts (capture publication, IPC ownership/timeline, bounded render waits, settings migration,
 PCM alignment, mixer, endpoint mapping and single-device selection). Use the
 installed COM matrix and profile tools only with an idle ASIO host, one Pi,
 and unity mixer. Audio tests use at most 175 seconds, completing within three minutes.

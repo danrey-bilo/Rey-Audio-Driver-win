@@ -145,8 +145,24 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
       const std::uint8_t *data = nullptr;
       std::size_t bytes = 0;
       bool ready = false;
-      if (!usb_.reap_capture(current, collected ? 0 : 100, data, bytes, ready,
-                             error)) {
+      bool reaped = true;
+      if (device_clock && !collected) {
+        // Keep short inter-packet gaps out of a scheduler sleep. The bounded
+        // spin is shorter than a microframe and only runs during a stream.
+        const auto spin_end = now_ns() + 75000;
+        do {
+          reaped = usb_.reap_capture(current, 0, data, bytes, ready, error);
+          if (!reaped || ready || WaitForSingleObject(stop, 0) == WAIT_OBJECT_0)
+            break;
+          YieldProcessor();
+        } while (now_ns() < spin_end);
+        if (reaped && !ready && WaitForSingleObject(stop, 0) != WAIT_OBJECT_0)
+          reaped = usb_.reap_capture(current, 1, data, bytes, ready, error);
+      } else {
+        reaped = usb_.reap_capture(current, collected ? 0 : 100, data, bytes,
+                                    ready, error);
+      }
+      if (!reaped) {
         ok = false;
         break;
       }
