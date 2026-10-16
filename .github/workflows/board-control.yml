@@ -22,5 +22,10 @@ jobs:
       - name: Compile installer API without packaging or running an installer
         shell: powershell
         run: ./tools/check_installer_compile.ps1
+      - name: Capture publication contract without USB library or ASIO SDK
+        run: |
+          cmake -S tests -B build/capture-contract -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/capture-contract --config Release
+          ctest --test-dir build/capture-contract --build-config Release --output-on-failure
       # Native service/ASIO validation uses the separately supplied ASIO SDK.
       # This job does not claim native or physical USB qualification.
