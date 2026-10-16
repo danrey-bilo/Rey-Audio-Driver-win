@@ -11,7 +11,7 @@ Close the DAW before upgrading a loaded ASIO DLL. All four payloads must come
 from the same build. The installer verifies their hashes and preserves preferences.
 
 The Pi must run the coordinated Rey Effects native USB integration. The pinned
-Pi5-AUSB 0.2 dependency supplies WinUSB/FunctionFS, not an analog converter driver.
+Pi5-AUSB 0.3 dependency supplies WinUSB/FunctionFS, not an analog converter driver.
 Ordinary Windows playback/recording uses the composite device's separate UAC2
 function. ASIO uses the native WinUSB interface and takes priority while active.
 The driver does not require a custom Windows SYS file or Test Mode.
@@ -43,7 +43,7 @@ changes the icon state; it does not control the panel's lifetime.
 ## Timing and validation
 
 The Diagnostics page reports ASIO queue/callback counters. The displayed ASIO
-buffer calculation excludes Pi/JACK/clock-conversion and ADC/DAC latency; it is
+buffer calculation excludes Pi/JACK and ADC/DAC latency; it is
 not measured round-trip latency. The real digital USB/JACK loop is measured
 separately. A 125 microsecond USB interval is not the complete audio latency.
 

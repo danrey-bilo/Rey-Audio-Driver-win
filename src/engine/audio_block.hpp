@@ -13,6 +13,9 @@ struct AudioBlock {
   // WinUSB delivers microframes and leaves this at zero.
   unsigned render_delay_frames = 0;
   bool capture_only = false, render_only = false;
+  // An already queued native USB transfer can briefly yield its unused
+  // render deadline to the ASIO callback. Other transports leave this zero.
+  unsigned render_wait_ns = 0;
 };
 using ProcessBlock = bool (*)(void *, const AudioBlock &);
 } // namespace rey::engine

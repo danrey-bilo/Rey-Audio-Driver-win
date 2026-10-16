@@ -5,9 +5,9 @@ Use a Windows x64 C++17 toolchain with Windows SDK libraries, CMake 3.20+ and
 ASIO SDK separately; its headers are not included in this repository or package.
 [ASIO SDK](ASIO-SDK.md).
 
-Initialize the pinned [Pi5-AUSB](https://github.com/danrey-bilo/Pi5-AUSB) 0.2
+Initialize the pinned [Pi5-AUSB](https://github.com/danrey-bilo/Pi5-AUSB) 0.3
 checkout at `lib/pi5-ausb` (repository access required), or supply an installed
-0.2 package. AoIP-lib is not required.
+0.3 package. AoIP-lib is not required.
 From a Windows x64 compiler environment:
 
 ```powershell
@@ -36,7 +36,7 @@ Minimal LLVM-MinGW environments can supply `REY_SETUPAPI_LIBRARY`,
 `CMAKE_CXX_COMPILER` and `CMAKE_RC_COMPILER`. Standard SDK toolchains use their
 own import libraries. ARM64 is not supported.
 
-Validation covers 37 contracts (IPC ownership/timeline, settings migration,
+Validation covers 39 contracts (IPC ownership/timeline, bounded render waits, settings migration,
 PCM alignment, mixer, endpoint mapping and single-device selection). Use the
 installed COM matrix and profile tools only with an idle ASIO host, one Pi,
 and unity mixer. Audio tests use at most 175 seconds, completing within three minutes.
@@ -53,7 +53,7 @@ After committing the tested source, package the EXE, documentation and source:
 
 ```powershell
 python tools/package_usb_release.py --setup build/usb-setup --out dist/usb-release `
-  --asio-notice C:/SDK/asio/LICENSE.txt --ref HEAD --version 2.8.2-akm-dev.4
+  --asio-notice C:/SDK/asio/LICENSE.txt --ref HEAD --version 2.8.2-akm-dev.5
 ```
 
 The tool checks the installer hash and one-device manifest, archives committed

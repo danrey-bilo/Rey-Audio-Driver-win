@@ -3,6 +3,30 @@
 #include <cstdio>
 #include <cstring>
 #include <stdexcept>
+#include <limits>
+
+// Deterministic scheduling of a host publication inside the render fence.
+// The static clock dependency is replaced only in this contract executable.
+static uint64_t mock_ns=0;
+static rey::asio::Shared* publish_to=nullptr;
+static bool publish_late=false, observed_consumed_clock=false;
+namespace rey {
+uint64_t now_ns() {
+  mock_ns+=1000;
+  if(mock_ns>10000000)throw std::runtime_error("render wait was not bounded");
+  if(publish_to && mock_ns>=10000) {
+    if(load(publish_to->clock_position)!=0)throw std::runtime_error("prospective playback clock discarded a usable host block");
+    observed_consumed_clock=true;
+    if(publish_late) {
+      auto& item=publish_to->render.data[1];item.frames=16;item.frame_position=16;
+      for(auto& sample:item.pcm)sample=222;
+      asio::store(publish_to->render.written,2);
+      publish_late=false;publish_to=nullptr;
+    }
+  }
+  return mock_ns;
+}
+}
 
 namespace {
 void require(bool okay, const char *message) { if (!okay) throw std::runtime_error(message); }
@@ -39,6 +63,23 @@ int main(int argc, char **argv) try {
     require(rey::asio::load(f.shared->ready) == 0, "disconnect flag");
   } else {
     require(f.connect(), "connect"); rey::asio::store(f.shared->running, 1);
+    if(test=="render_wait" || test=="render_timeout") {
+      std::array<int32_t,32*8> captured{},played{};
+      auto& first=f.shared->render.data[0];first.frames=16;first.frame_position=0;
+      for(auto& sample:first.pcm)sample=111;
+      rey::asio::store(f.shared->render.written,1);
+      publish_to=f.shared;publish_late=test=="render_wait";
+      rey::engine::AudioBlock audio{captured.data(),played.data(),32,8,8,32};
+      audio.render_wait_ns=std::numeric_limits<unsigned>::max();
+      f.server.process(audio,1000000);
+      require(observed_consumed_clock,"render clock was not observed during the fence");
+      require(mock_ns<=150000,"render fence exceeded its budget plus per-frame clock checks");
+      require(played[0]==111 && played[15*8+7]==111,"existing render was changed");
+      require(played[16*8]==(test=="render_wait"?222:0),"late host publication was not handled");
+      require(rey::asio::load(f.shared->render_missing)==(test=="render_wait"?0u:16u),"missed render was hidden");
+      require(rey::asio::load(f.shared->clock_position)==32,"consumed clock did not commit");
+      return 0;
+    }
     if (test == "burst") {
       std::array<int32_t, 256 * 8> capture{}, render{};
       for (unsigned offset = 0; offset < 576; offset += 256) {

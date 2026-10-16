@@ -63,13 +63,21 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
       head = 1,
       tail = 0; // one silent frame covers rational cadence phase differences.
   pi5ausb::Cadence cadence(profile_.rate);
+  const bool device_clock = usb_.device().hello.backend == pi5ausb::Backend::jack_clock;
+  const unsigned batch = device_clock ? 4u : 1u;
+  if (depth % batch) {
+    error = "USB depth must contain complete render batches";
+    return false;
+  }
+  std::array<std::uint8_t, pi5ausb::interrupt_packet_bytes * 4> grouped{};
+  unsigned captured_frames = 0;
   std::uint32_t sequence = 0;
   std::uint64_t next_frame = 0, expected_frame = 0, callbacks = 0,
                 underruns = 0, overruns = 0, gap_max = 0, previous = 0;
   auto submit = [&](unsigned slot, bool initial) {
-    const auto frames = cadence.next();
+    const auto frames = device_clock && !initial ? captured_frames : cadence.next();
     const pi5ausb::PacketInfo info{
-        pi5ausb::Direction::render, 0, epoch, sequence++, next_frame, frames};
+        pi5ausb::Direction::render, 0, epoch, sequence++, next_frame, std::uint16_t(frames)};
     next_frame += frames;
     render.fill(0);
     if (!initial)
@@ -90,6 +98,15 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
     }
     if (initial && !usb_.submit_capture(slot, error))
       return false;
+    if (batch > 1) {
+      auto *destination = grouped.data() + (slot % batch) * pi5ausb::interrupt_packet_bytes;
+      std::fill_n(destination, pi5ausb::interrupt_packet_bytes, 0);
+      std::copy_n(packet.data(), bytes, destination);
+      if ((slot + 1) % batch)
+        return true;
+      return usb_.submit_render_batch(slot / batch, grouped.data(),
+                                      batch * pi5ausb::interrupt_packet_bytes, error);
+    }
     return usb_.submit_render(slot, packet.data(), bytes, error);
   };
   for (unsigned slot = 0; slot < depth; ++slot)
@@ -142,7 +159,7 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
       break;
     }
     render.fill(0);
-    const AudioBlock block{capture.data(),
+    AudioBlock block{capture.data(),
                            render.data(),
                            view.info.frames,
                            8,
@@ -153,12 +170,15 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
                            view.info.first_frame,
                            received,
                            false};
+    if (device_clock)
+      block.render_wait_ns = 125000;
     if (!process(context, block)) {
       error = "USB audio callback stopped";
       ok = false;
       break;
     }
     expected_frame += view.info.frames;
+    captured_frames = view.info.frames;
     ++callbacks;
     for (unsigned f = 0; f < view.info.frames; ++f) {
       if (head - tail == 64) {
@@ -169,7 +189,8 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
       }
       std::copy_n(render.data() + f * 8, 8, fifo.data() + (head++ % 64) * 8);
     }
-    if (!ok || !usb_.reap_render(slot, 100, ready, error) || !ready ||
+    if (!ok || (((slot + 1) % batch == 0) &&
+                (!usb_.reap_render(slot / batch, 100, ready, error) || !ready)) ||
         !submit(slot, false)) {
       ok = false;
       break;

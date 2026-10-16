@@ -28,7 +28,13 @@ void prefer_audio_cpu(unsigned role) {
   // An ideal processor is a preference. A one-CPU selected set prevented the
   // scheduler from moving an audio thread away from a temporarily busy core.
   // Keep the caller's affinity/CPU-set restrictions and permit normal migration.
-  PROCESSOR_NUMBER ideal{allowed.Group,cores[1+role%3].processor,0};
+  const auto performance_cores=std::count_if(cores.begin(),cores.end(),
+      [&](const Cpu& cpu){return cpu.performance==cores.front().performance;});
+  // Prefer separate physical cores in the latter half of the fastest group.
+  // This avoids concentrating both audio threads next to the boot/IRQ core,
+  // without pinning them or overriding the DAW's existing CPU restrictions.
+  const auto index=1+(performance_cores/2-1+role%3)%(performance_cores-1);
+  PROCESSOR_NUMBER ideal{allowed.Group,cores[size_t(index)].processor,0};
   SetThreadIdealProcessorEx(GetCurrentThread(),&ideal,nullptr);
 }
 }

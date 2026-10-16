@@ -4,17 +4,16 @@
 #include "pi5ausb/windows.hpp"
 #include <atomic>
 namespace rey::engine {
-// Laboratory USB backend: exact device identity, bounded overlapped queues,
-// packed PCM adapter, and the Windows endpoint bridge contract.
-// Device-clocked ADC/DAC and direct KMDF USB streaming remain qualification
-// work.
+// USB PCM backend: exact device identity and bounded overlapped queues.
+// Backend 3 follows JACK's physical sample clock through packet frame counts.
+// Converter latency is qualified separately from this digital transport.
 class UsbSession {
 public:
   bool open(const UsbProfile &, const std::string &expected_id, std::string &error);
   bool open(const UsbProfile &, const std::string &expected_id, const std::wstring &path, std::string &error);
   bool run(ProcessBlock, void *, HANDLE stop, unsigned seconds, unsigned depth,
            std::string &error,const std::atomic<bool> *requested=nullptr,unsigned jack_block=128);
-  bool jack_audio() const { return usb_.device().hello.backend == pi5ausb::Backend::jack_audio; }
+  bool jack_audio() const { return usb_.device().hello.backend != pi5ausb::Backend::digital_loopback; }
   const std::string &identity() const { return id_; }
 
 private:

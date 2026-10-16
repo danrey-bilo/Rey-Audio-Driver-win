@@ -9,6 +9,8 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <filesystem>
+#include <fstream>
 
 namespace {
 struct Pulse { uint64_t sent = 0, rtt = 0, position = 0, rtt_frames = 0; bool received = false; };
@@ -24,6 +26,7 @@ bool pulse_loop = false;
 uint64_t rejected_peaks = 0;
 uint64_t detection_after = 0;
 std::atomic<uint64_t> emit_until_ns{UINT64_MAX};
+std::atomic<bool> marker_gate{true};
 std::vector<int32_t> recorded;
 constexpr double pi = 3.14159265358979323846;
 double tone_frequency(unsigned channel) { return 401.0 + channel * 113.0; }
@@ -99,7 +102,7 @@ void process(long half, ASIOBool) {
             int32_t(amplitude * std::sin(2*pi*tone_frequency(ch)*double((frames+f) % rate)/rate)));
     }
   }
-  if ((!stream_only || pulse_loop) && now < emit_until_ns.load(std::memory_order_relaxed) && now - first_ns >= (pulse_loop ? 5000000000ull : 50000000ull) && frames >= next_pulse && pulse_id + 1 < pulses.size()) {
+  if ((!stream_only || pulse_loop) && marker_gate.load(std::memory_order_relaxed) && now < emit_until_ns.load(std::memory_order_relaxed) && now - first_ns >= (pulse_loop ? 5000000000ull : 50000000ull) && frames >= next_pulse && pulse_id + 1 < pulses.size()) {
     ++pulse_id; pulses[pulse_id].sent = now;
     pulses[pulse_id].position = previous_position;
     for (unsigned ch = 0; ch < 8; ++ch) {
@@ -129,6 +132,7 @@ bool check(ASIOError result, const char *action) {
 }
 int wmain(int argc, wchar_t **argv) {
   std::wstring dll;
+  std::wstring ready_file;
   unsigned seconds = 5, requested_rate = 0;
   bool registered = false;
   for (int i = 1; i < argc; ++i) {
@@ -140,6 +144,7 @@ int wmain(int argc, wchar_t **argv) {
     if (arg == L"--pulse-loop") { pulse_loop = true; continue; }
     if (i + 1 >= argc) return 1;
     if (arg == L"--dll") dll = argv[++i];
+    else if (arg == L"--pulse-ready-file") {ready_file=argv[++i];marker_gate=false;}
     else if (arg == L"--seconds") seconds = unsigned(_wtoi(argv[++i]));
     else if (arg == L"--block") block = unsigned(_wtoi(argv[++i]));
     else if (arg == L"--rate") requested_rate = unsigned(_wtoi(argv[++i]));
@@ -200,7 +205,19 @@ int wmain(int argc, wchar_t **argv) {
     if (!check(driver->start(), "start")) return 12;
     const auto begin = rey::now_ns();
     emit_until_ns = begin+uint64_t(seconds)*1000000000ull-200000000ull;
-    Sleep(seconds * 1000);
+    while(rey::now_ns()<begin+uint64_t(seconds)*1000000000ull) {
+      if(!marker_gate.load(std::memory_order_relaxed) && !ready_file.empty()) {
+        std::ifstream input{std::filesystem::path(ready_file)};
+        std::array<char,16384> bytes{};input.read(bytes.data(),bytes.size());
+        std::string text(bytes.data(),size_t(input.gcount()));
+        text.erase(std::remove(text.begin(),text.end(),'\0'),text.end());
+        if(text.find("JACK_USB_CHECK ready;")!=std::string::npos) {
+          marker_gate=true;
+          std::printf("ASIO_FIXTURE_READY seconds_since_start=%.3f\n",(rey::now_ns()-begin)/1e9);
+        }
+      }
+      Sleep(20);
+    }
     rey::asio::Diagnostics live;
     if (!check(driver->future(rey::asio::diagnostics_selector, &live), "live_diagnostics")) return 14;
     const bool stream_completed = live.running != 0;

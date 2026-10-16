@@ -4,6 +4,7 @@
 #include <cstring>
 #include <limits>
 #include <sstream>
+#include "../platform/realtime.hpp"
 
 namespace rey::asio {
 struct Server::Connection {
@@ -31,13 +32,13 @@ struct Server::Connection {
     }
     if (!running) { running = true; accumulated = 0; rendered = false; previous_ns = 0; }
     const auto end = audio.frame_position + audio.frames;
-    if (!audio.capture_only) store(shared->clock_position, end > audio.render_delay_frames ? end-audio.render_delay_frames : 0);
     if (!audio.render_only) {
       if (previous_ns && now - previous_ns > load(shared->capture_gap_max_ns))
         store(shared->capture_gap_max_ns, now - previous_ns);
       previous_ns = now;
     }
     const int64_t full = int64_t(1) << (bits - 1);
+    uint64_t wait_deadline=0;
     // Playback is scheduled against transport sample indices, never queue age.
     for (unsigned f = 0; f < audio.frames; ++f) {
       const uint64_t capture_position = audio.frame_position + f;
@@ -46,8 +47,16 @@ struct Server::Connection {
       bool supplied = false;
       for (unsigned attempt = 0; render_due && attempt < slots; ++attempt) {
         auto read = load(shared->render.read);
-        const auto written = load(shared->render.written);
+        auto written = load(shared->render.written);
         if (written < read || written - read > slots) { store(shared->ready, 0); return; }
+        if (read == written && rendered && audio.render_wait_ns) {
+          if(!wait_deadline)wait_deadline=rey::now_ns()+std::min(audio.render_wait_ns,125000u);
+          while(read==written && rey::now_ns()<wait_deadline) {
+            YieldProcessor();
+            written=load(shared->render.written);
+          }
+          if(written<read || written-read>slots){store(shared->ready,0);return;}
+        }
         if (read == written) break;
         if (render_read != read) { render_read = read; render_offset = 0; }
         const auto &item = shared->render.data[read % slots];
@@ -93,6 +102,10 @@ struct Server::Connection {
         accumulated = 0;
       }
     }
+    // This is the last consumed render position, not the next packet's
+    // prospective deadline. Publishing it early falsely discarded capture
+    // while the host was still allowed to finish the corresponding output.
+    if (!audio.capture_only) store(shared->clock_position, end > audio.render_delay_frames ? end-audio.render_delay_frames : 0);
   }
 };
 Server::Server() = default;

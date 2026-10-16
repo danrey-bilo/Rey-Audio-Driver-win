@@ -7,12 +7,12 @@ struct TransportTuning {
 };
 // Internal transport policy. The host remains free to select its ASIO buffer.
 inline constexpr std::array<TransportTuning, 6> transport_tunings{
-    {{44100, 8, 1000},
-     {48000, 8, 1000},
-     {88200, 8, 750},
-     {96000, 8, 750},
-     {176400, 8, 1500},
-     {192000, 8, 1500}}};
+    {{44100, 8, 333},
+     {48000, 8, 333},
+     {88200, 8, 333},
+     {96000, 8, 333},
+     {176400, 8, 333},
+     {192000, 8, 333}}};
 constexpr TransportTuning transport_tuning(unsigned rate) {
   for (const auto &value : transport_tunings)
     if (value.rate == rate)
