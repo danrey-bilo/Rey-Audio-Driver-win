@@ -18,6 +18,9 @@ for the host cannot withhold capture that the host needs. Render waits are
 bounded, frame/sequence/epoch validation is strict, and shortages are counted.
 Queue depth and reserve are internal per-rate policies. The ASIO buffer remains
 user-selectable. Integer/float conversion remains; bit-exact PCM32 is not claimed.
+Profile changes quiesce the native JACK clients before server replacement and
+resume them when the server is ready. This avoids concurrent libjack lifecycle
+calls during JACK teardown without adding a steady-state PCM queue.
 
 This is a custom user-space transport using Microsoft's existing WinUSB driver,
 not a newly implemented Windows kernel USB driver. Ordinary Windows system audio
