@@ -4,6 +4,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <limits>
+#include <cstdlib>
 
 // Deterministic scheduling of a host publication inside the render fence.
 // The static clock dependency is replaced only in this contract executable.
@@ -51,6 +52,10 @@ struct Fixture {
 };
 }
 int main(int argc, char **argv) try {
+  if (argc == 3 && std::string(argv[1]) == "child_wait") {
+    const auto handle = reinterpret_cast<HANDLE>(uintptr_t(std::strtoull(argv[2], nullptr, 10)));
+    return WaitForSingleObject(handle, 5000) == WAIT_OBJECT_0 ? 0 : 3;
+  }
   if (argc != 2) return 1;
   Fixture f;
   const std::string test = argv[1];
@@ -61,6 +66,39 @@ int main(int argc, char **argv) try {
     require(!f.server.disconnect(GetCurrentProcessId() + 1), "other owner disconnected");
     require(f.server.disconnect(GetCurrentProcessId()), "owner close");
     require(rey::asio::load(f.shared->ready) == 0, "disconnect flag");
+  } else if (test == "dead_owner") {
+    SECURITY_ATTRIBUTES attributes{sizeof(attributes), nullptr, TRUE};
+    HANDLE quit = CreateEventW(&attributes, TRUE, FALSE, nullptr);
+    require(quit && SetHandleInformation(f.mapping, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT) &&
+        SetHandleInformation(f.event, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT), "child handles");
+    wchar_t path[32768]{};
+    require(GetModuleFileNameW(nullptr, path, DWORD(std::size(path))) != 0, "test path");
+    std::wstring command = L"\"" + std::wstring(path) + L"\" child_wait " + std::to_wstring(uintptr_t(quit));
+    STARTUPINFOW startup{sizeof(startup)};
+    PROCESS_INFORMATION child{};
+    require(CreateProcessW(nullptr, command.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW,
+        nullptr, nullptr, &startup, &child) != FALSE, "child process");
+    struct ChildLifetime {
+      PROCESS_INFORMATION value; HANDLE quit;
+      ~ChildLifetime() { SetEvent(quit); WaitForSingleObject(value.hProcess, 6000);
+        CloseHandle(value.hThread); CloseHandle(value.hProcess); CloseHandle(quit); }
+    } lifetime{child, quit};
+    std::string error;
+    require(f.server.connect(child.dwProcessId, uintptr_t(f.mapping), uintptr_t(f.event), 16, 2, error), "child connect");
+    rey::asio::store(f.shared->running, 1);
+    f.server.poll();
+    require(f.server.running(), "maintenance disconnected a live owner");
+    SetEvent(quit);
+    require(WaitForSingleObject(child.hProcess, 5000) == WAIT_OBJECT_0, "child exit");
+    require(!f.server.running(), "dead owner still running");
+    f.server.poll();
+    require(f.server.status().find("\"connected\":false") != std::string::npos, "dead owner retained without USB callbacks");
+    require(rey::asio::load(f.shared->ready) == 0, "dead mapping still ready");
+    require(f.server.block_size() == 64, "dead owner's buffer retained");
+    rey::asio::store(f.shared->running, 0);
+    require(f.connect(), "new owner could not connect after process exit");
+    f.server.poll();
+    require(f.server.status().find("\"connected\":true") != std::string::npos, "new live owner was lost");
   } else {
     require(f.connect(), "connect"); rey::asio::store(f.shared->running, 1);
     if(test=="render_wait" || test=="render_timeout") {

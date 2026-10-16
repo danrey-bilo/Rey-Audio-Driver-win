@@ -60,11 +60,12 @@ namespace ReyAudio {
         public bool AsioOnly;
         public bool CanSaveAsio { get { return !Busy; } }
         public string Page = "mixer";
-        public bool MixerOutputs;
         public MixerChannel[] Inputs { get; private set; }
         public MixerChannel[] Outputs { get; private set; }
         public MixerChannel Master { get; private set; }
-        public MixerChannel[] VisibleChannels { get { return MixerOutputs ? Outputs : Inputs; } }
+        public MixerPair[] InputPairs { get; private set; }
+        public MixerPair[] OutputPairs { get; private set; }
+        public IEnumerable<MixerPair> AllPairs { get { foreach(var p in InputPairs) yield return p; foreach(var p in OutputPairs) yield return p; } }
         public IEnumerable<MixerChannel> AllChannels { get { foreach(var c in Inputs) yield return c; foreach(var c in Outputs) yield return c; yield return Master; } }
         public Visibility MixerVisibility { get { return Page == "mixer" ? Visibility.Visible : Visibility.Collapsed; } }
         public string MixerFormat { get { return Available && UsbPresent && ActiveRate > 0 ? (ActiveRate / 1000.0).ToString("0.#") + " кГц · " + ActiveBits + " бит" : "8 × 8"; } }
@@ -84,6 +85,8 @@ namespace ReyAudio {
         public ViewModel() {
             Inputs = new MixerChannel[8]; Outputs = new MixerChannel[8]; Master = new MixerChannel(2, 0);
             for(int i = 0; i < 8; ++i) { Inputs[i] = new MixerChannel(0, i); Outputs[i] = new MixerChannel(1, i); }
+            InputPairs = new MixerPair[4]; OutputPairs = new MixerPair[4];
+            for(int i = 0; i < 4; ++i) { InputPairs[i] = new MixerPair(Inputs[2*i], Inputs[2*i+1]); OutputPairs[i] = new MixerPair(Outputs[2*i], Outputs[2*i+1]); }
             Rates = new[] { new Choice(44100, "44,1 кГц"), new Choice(48000, "48 кГц"), new Choice(88200, "88,2 кГц"), new Choice(96000, "96 кГц"), new Choice(176400, "176,4 кГц"), new Choice(192000, "192 кГц") };
             Bits = new[] { new Choice(16, "16 бит"), new Choice(24, "24 бит"), new Choice(32, "32 бит") };
             Blocks = new[] { new Choice(16, "16"), new Choice(32, "32"), new Choice(64, "64"), new Choice(128, "128"), new Choice(256, "256") };
@@ -172,6 +175,11 @@ namespace ReyAudio {
                 foreach(Dictionary<string, object> row in (IEnumerable)mixer["inputs"]) { if (i < 8) Inputs[i++].Update(row, meters); }
                 i = 0; foreach(Dictionary<string, object> row in (IEnumerable)mixer["outputs"]) { if (i < 8) Outputs[i++].Update(row, meters); }
                 Master.Update(new Dictionary<string, object> { {"gain_cdb", mixer["master_cdb"]}, {"mute", mixer["master_mute"]} }, false);
+                foreach(var direction in new[] {0, 1}) {
+                    var key = direction == 0 ? "input_stereo" : "output_stereo";
+                    var pairs = direction == 0 ? InputPairs : OutputPairs;
+                    if (mixer.ContainsKey(key)) { int pair = 0; foreach(var linked in (IEnumerable)mixer[key]) if(pair < 4) pairs[pair++].Update(Convert.ToBoolean(linked)); }
+                }
             }
             Log.Clear();
             foreach (Dictionary<string, object> row in (IEnumerable)data["events"]) {

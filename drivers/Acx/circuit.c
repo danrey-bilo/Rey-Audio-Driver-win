@@ -10,28 +10,32 @@ static VOID Append(WCHAR *text, ULONG *length, const WCHAR *value) {
   while (*value && *length < 95) text[(*length)++] = *value++;
   text[*length] = 0;
 }
-static VOID FriendlyName(const REY_DEVICE_CONTEXT *d, const REY_CIRCUIT_CONTEXT *c,
+static VOID FriendlyName(const REY_CIRCUIT_CONTEXT *c,
                           WCHAR *text) {
-  ULONG length = 0, i;
-  Append(text, &length, L"Rey Audio ");
-  for (i = 24; i < 32; ++i) text[length++] = (WCHAR)d->profile.device_id[i];
-  text[length] = 0;
-  Append(text, &length, c->capture ? L" Input " : L" Output ");
-  if (c->slot < 2) {
-    text[length++] = L'1';
-    if (c->channels > 1) {
-      text[length++] = L'-'; text[length++] = (WCHAR)(L'0' + c->channels);
-    }
-    text[length] = 0; Append(text, &length, L" (Multichannel)");
-  }
-  else {
+  ULONG length = 0;
+  Append(text, &length, c->capture ? L"Input " : L"Output ");
+  {
     text[length++] = (WCHAR)(L'1' + c->first_channel);
     if (c->channels == 2) {
-      text[length++] = L'/';
+      text[length++] = L'-';
       text[length++] = (WCHAR)(L'2' + c->first_channel);
     }
     text[length] = 0;
   }
+  Append(text, &length, L" (Rey Audio)");
+}
+
+EVT_ACX_PIN_RETRIEVE_NAME ReyPinName;
+NTSTATUS ReyPinName(ACXPIN pin, PUNICODE_STRING name) {
+  const REY_CIRCUIT_CONTEXT *c = ReyCircuitContext(AcxPinGetCircuit(pin));
+  WCHAR friendly[96];
+  UNICODE_STRING source;
+  FriendlyName(c, friendly);
+  RtlInitUnicodeString(&source, friendly);
+  if (!name || !name->Buffer || name->MaximumLength < source.Length + sizeof(WCHAR))
+    return STATUS_BUFFER_TOO_SMALL;
+  RtlCopyUnicodeString(name, &source);
+  return STATUS_SUCCESS;
 }
 
 NTSTATUS ReyCircuitInitialize(WDFDEVICE device, ACXCIRCUIT circuit, ACXOBJECTBAG properties) {
@@ -69,7 +73,7 @@ NTSTATUS ReyCircuitInitialize(WDFDEVICE device, ACXCIRCUIT circuit, ACXOBJECTBAG
   status = IoSetDeviceInterfacePropertyData(&audio_link, &packet_key, 0, 0, DEVPROP_TYPE_BINARY,
                                             sizeof(constraints), &constraints);
   if (NT_SUCCESS(status)) {
-    FriendlyName(d, c, friendly);
+    FriendlyName(c, friendly);
     status = IoSetDeviceInterfacePropertyData(&audio_link, &DEVPKEY_DeviceInterface_FriendlyName,
         0, 0, DEVPROP_TYPE_STRING, (ULONG)((wcslen(friendly) + 1) * sizeof(WCHAR)), friendly);
   }
@@ -79,19 +83,19 @@ NTSTATUS ReyCircuitInitialize(WDFDEVICE device, ACXCIRCUIT circuit, ACXOBJECTBAG
 
 NTSTATUS ReyCreateCircuit(WDFDEVICE device, ULONG slot, ACXCIRCUIT *result) {
   static const WCHAR *const names[REY_ENDPOINT_SLOTS] = {
-      L"ReyAudioInput", L"ReyAudioOutput", L"ReyAudioInput1_2", L"ReyAudioOutput1_2",
+      L"ReyAudioInput1_2", L"ReyAudioOutput1_2",
       L"ReyAudioInput3_4", L"ReyAudioOutput3_4", L"ReyAudioInput5_6", L"ReyAudioOutput5_6",
       L"ReyAudioInput7_8", L"ReyAudioOutput7_8"};
   REY_DEVICE_CONTEXT *d = ReyDeviceContext(device);
   ULONG channels = rey_endpoint_channels(slot, d->profile.inputs, d->profile.outputs), i;
   BOOLEAN capture = (BOOLEAN)rey_endpoint_capture(slot);
-  GUID component = slot < 2 ? (capture ? GUID_REY_CAPTURE : GUID_REY_RENDER) :
-      (capture ? GUID_REY_PAIR_CAPTURE : GUID_REY_PAIR_RENDER);
+  GUID component = capture ? GUID_REY_PAIR_CAPTURE : GUID_REY_PAIR_RENDER;
   UNICODE_STRING name;
   PACXCIRCUIT_INIT init = NULL;
   WDF_OBJECT_ATTRIBUTES attributes;
   ACXCIRCUIT circuit = NULL;
   ACX_PIN_CONFIG pin_config;
+  ACX_PIN_CALLBACKS pin_callbacks;
   ACXPIN pins[2];
   ACX_DATAFORMAT_CONFIG format_config;
   ACXDATAFORMAT format;
@@ -100,7 +104,7 @@ NTSTATUS ReyCreateCircuit(WDFDEVICE device, ULONG slot, ACXCIRCUIT *result) {
   KSDATAFORMAT_WAVEFORMATEXTENSIBLE wave;
   NTSTATUS status;
   if (!channels) return STATUS_INVALID_PARAMETER;
-  if (slot >= 2) component.Data1 += ((slot - 2) / 2) * 2;
+  component.Data1 += (slot / 2) * 2;
   RtlInitUnicodeString(&name, names[slot]);
   init = AcxCircuitInitAllocate(device);
   if (!init) return STATUS_INSUFFICIENT_RESOURCES;
@@ -133,8 +137,11 @@ NTSTATUS ReyCreateCircuit(WDFDEVICE device, ULONG slot, ACXCIRCUIT *result) {
   ACX_PIN_CONFIG_INIT(&pin_config);
   pin_config.Type = capture ? AcxPinTypeSink : AcxPinTypeSource;
   pin_config.Communication = AcxPinCommunicationNone;
-  pin_config.Category = capture ? (slot < 2 ? &KSNODETYPE_LINE_CONNECTOR : &KSNODETYPE_MICROPHONE) :
+  pin_config.Category = capture ? &KSNODETYPE_LINE_CONNECTOR :
       &KSNODETYPE_SPEAKER;
+  ACX_PIN_CALLBACKS_INIT(&pin_callbacks);
+  pin_callbacks.EvtAcxPinRetrieveName = ReyPinName;
+  pin_config.PinCallbacks = &pin_callbacks;
   status = AcxPinCreate(circuit, &attributes, &pin_config, &pins[1]);
   if (!NT_SUCCESS(status)) goto failed;
 
@@ -152,8 +159,7 @@ NTSTATUS ReyCreateCircuit(WDFDEVICE device, ULONG slot, ACXCIRCUIT *result) {
   wave.WaveFormatExt.Format.wBitsPerSample = 32;
   wave.WaveFormatExt.Format.cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
   wave.WaveFormatExt.Samples.wValidBitsPerSample = (WORD)d->profile.valid_bits;
-  wave.WaveFormatExt.dwChannelMask = slot < 2 ? KSAUDIO_SPEAKER_DIRECTOUT :
-      (channels == 2 ? KSAUDIO_SPEAKER_STEREO : KSAUDIO_SPEAKER_MONO);
+  wave.WaveFormatExt.dwChannelMask = channels == 2 ? KSAUDIO_SPEAKER_STEREO : KSAUDIO_SPEAKER_MONO;
   wave.WaveFormatExt.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
   ACX_DATAFORMAT_CONFIG_INIT_KS(&format_config, &wave);
   status = AcxDataFormatCreate(device, &attributes, &format_config, &format);

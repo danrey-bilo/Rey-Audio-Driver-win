@@ -19,8 +19,8 @@ using Forms = System.Windows.Forms;
 [assembly: AssemblyTitle("Rey Audio Driver")]
 [assembly: AssemblyProduct("Rey Audio Driver")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.2.4")]
-[assembly: AssemblyFileVersion("2.8.2.4")]
+[assembly: AssemblyVersion("2.8.2.6")]
+[assembly: AssemblyFileVersion("2.8.2.6")]
 namespace ReyAudio {
     internal sealed class Panel : IDisposable {
         private readonly Application app;
@@ -38,16 +38,20 @@ namespace ReyAudio {
         private long nextRefresh;
         private Exception connectionError;
         private readonly HashSet<MixerChannel> pendingMix = new HashSet<MixerChannel>();
+        private readonly HashSet<MixerPair> pendingLinks = new HashSet<MixerPair>();
         private bool mixing;
         public Panel(Application application, EventWaitHandle activate) {
             app = application; showEvent = activate;
             using (var source = Assembly.GetExecutingAssembly().GetManifestResourceStream("ReyAudio.MainWindow.xaml")) window = (Window)XamlReader.Load(source);
             window.DataContext = view;
             ((RadioButton)window.FindName("NavMixer")).Checked += (s, e) => Navigate("mixer");
-            ((RadioButton)window.FindName("MixerInputs")).Checked += (s, e) => { view.MixerOutputs = false; view.Notify(); };
-            ((RadioButton)window.FindName("MixerOutputs")).Checked += (s, e) => { view.MixerOutputs = true; view.Notify(); };
-            foreach(var channel in view.AllChannels) channel.Changed = c => pendingMix.Add(c);
-            Click("ResetMixer", async () => { pendingMix.Clear(); foreach(var c in view.AllChannels) c.Dirty = false; await Command("MIX_RESET", "Микшер сброшен."); });
+            foreach(var channel in view.AllChannels) channel.Changed = c => {
+                var other = c.Pair == null ? null : c.Pair.Mirror(c);
+                if(other != null) pendingMix.Remove(other);
+                pendingMix.Add(c);
+            };
+            foreach(var pair in view.AllPairs) pair.Changed = p => pendingLinks.Add(p);
+            Click("ResetMixer", async () => { pendingMix.Clear(); pendingLinks.Clear(); foreach(var c in view.AllChannels) c.Dirty = false; foreach(var p in view.AllPairs) p.Dirty = false; await Command("MIX_RESET", "Уровни сброшены."); });
             ((RadioButton)window.FindName("NavUsb")).Checked += (s, e) => Navigate("usb");
             ((RadioButton)window.FindName("NavDiagnostics")).Checked += (s, e) => Navigate("diagnostics");
             Click("SaveUsb", SaveUsb);
@@ -65,12 +69,29 @@ namespace ReyAudio {
             timer.Tick += async (s, e) => {
                 if (showEvent != null && showEvent.WaitOne(0)) Show();
                 if (mixing) return;
-                if (pendingMix.Count != 0 && view.Available && !view.Busy && !polling) {
-                    mixing = true; view.MixerSending = true; view.Notify(); var channel = pendingMix.First(); pendingMix.Remove(channel); long revision = channel.Revision;
+                if (pendingLinks.Count != 0 && view.Available && !view.Busy && !polling) {
+                    mixing = true; view.MixerSending = true;
+                    var pair = pendingLinks.First(); pendingLinks.Remove(pair);
+                    long revision = pair.Revision, leftRevision = pair.Left.Revision, rightRevision = pair.Right.Revision;
+                    bool linked = pair.Linked;
+                    try {
+                        var response = await service.Send(pair.Command);
+                        if (!ViewModel.Bool(response, "ok")) throw new ArgumentException(ViewModel.String(response, "error"));
+                        if(pair.Revision == revision) pair.Dirty = false;
+                        if(linked && pair.Left.Revision == leftRevision) { pair.Left.Dirty = false; pendingMix.Remove(pair.Left); }
+                        if(linked && pair.Right.Revision == rightRevision) { pair.Right.Dirty = false; pendingMix.Remove(pair.Right); }
+                        Update(response, false);
+                    } catch(Exception error) { pendingLinks.Add(pair); view.Message = FriendlyError(error); view.Notify(); }
+                    finally { mixing = false; view.MixerSending = false; }
+                } else if (pendingMix.Count != 0 && view.Available && !view.Busy && !polling) {
+                    mixing = true; view.MixerSending = true; var channel = pendingMix.First(); pendingMix.Remove(channel); long revision = channel.Revision;
+                    var partner = channel.Pair != null && channel.Pair.Linked ? (channel == channel.Pair.Left ? channel.Pair.Right : channel.Pair.Left) : null;
+                    long partnerRevision = partner == null ? 0 : partner.Revision;
                     try {
                         var response = await service.Send(channel.Command);
                         if (!ViewModel.Bool(response, "ok")) throw new ArgumentException(ViewModel.String(response, "error"));
                         if(channel.Revision == revision) channel.Dirty = false;
+                        if(partner != null && partner.Revision == partnerRevision) partner.Dirty = false;
                         Update(response, false);
                     } catch(Exception error) { pendingMix.Add(channel); view.Message = FriendlyError(error); view.Notify(); }
                     finally { mixing = false; view.MixerSending = false; view.Notify(); }
@@ -212,9 +233,32 @@ namespace ReyAudio {
                 asio_apply_hint = view.AsioApplyHint, asio_latency_label = view.AsioLatencyLabel,
                 width = root.ActualWidth, height = root.ActualHeight, fixture = fixture != null
             }));
+            VerifyMixerPairs(directory);
             VerifyTrayLifecycle(directory);
             VerifyAsioPanel(directory);
             VerifyBoardPanel(directory);
+        }
+        private void VerifyMixerPairs(string directory) {
+            Navigate("mixer");
+            var inputs = (ItemsControl)window.FindName("InputMixerPairs");
+            var outputs = (ItemsControl)window.FindName("OutputMixerPairs");
+            if(inputs.Items.Count != 4 || outputs.Items.Count != 4 || window.FindName("MixerInputs") != null || window.FindName("MixerOutputs") != null)
+                throw new InvalidOperationException("Mixer must show four input pairs and four output pairs together");
+            var original = view.AllPairs.Select(p => p.Linked).ToArray();
+            foreach(bool linked in new[] {true, false}) {
+                foreach(var pair in view.AllPairs) pair.Update(linked);
+                var root=(FrameworkElement)window.Content;
+                root.Measure(new Size(1120,800));root.Arrange(new Rect(0,0,1120,800));root.UpdateLayout();
+                var bitmap=new RenderTargetBitmap(1120,800,96,96,PixelFormats.Pbgra32);bitmap.Render(root);
+                var png=new PngBitmapEncoder();png.Frames.Add(BitmapFrame.Create(bitmap));
+                using(var output=File.Create(Path.Combine(directory,linked ? "rey-mixer-stereo.png" : "rey-mixer-mono.png")))png.Save(output);
+            }
+            int index=0;foreach(var pair in view.AllPairs) pair.Update(original[index++]);
+            File.WriteAllText(Path.Combine(directory,"mixer-pairs-check.json"),new JavaScriptSerializer().Serialize(new {
+                scope="finite WPF fixture; no service mutation or physical audio",input_pairs=inputs.Items.Count,
+                output_pairs=outputs.Items.Count,directions_visible_together=true,direction_selector_absent=true,
+                independently_linkable_pairs=8,meters_per_stereo_pair=2,default_gain_db=0
+            }));
         }
         private void VerifyAsioPanel(string directory) {
             // The one user buffer control shares the audio format card.

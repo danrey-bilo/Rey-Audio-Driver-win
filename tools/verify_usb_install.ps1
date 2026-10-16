@@ -19,7 +19,9 @@ $process = if ($service.ProcessId) { Get-CimInstance Win32_Process -Filter ('Pro
 $profile = (Get-ItemProperty -LiteralPath 'HKLM:\Software\ReyAudio').UsbProfile
 $profileFormat = if ($profile.Length -ge 8) { [BitConverter]::ToUInt32($profile,4) } else { 0 }
 $profileValid = ($profileFormat -eq 3 -and $profile.Length -eq 168) -or
-    ($profileFormat -eq 4 -and $profile.Length -eq 172 -and [BitConverter]::ToUInt32($profile,168) -le 1)
+    ($profileFormat -eq 4 -and $profile.Length -eq 172 -and [BitConverter]::ToUInt32($profile,168) -le 1) -or
+    ($profileFormat -eq 5 -and $profile.Length -eq 180 -and [BitConverter]::ToUInt32($profile,168) -le 1 -and
+     [BitConverter]::ToUInt32($profile,172) -le 15 -and [BitConverter]::ToUInt32($profile,176) -le 15)
 $dll = (Get-Item -LiteralPath 'HKLM:\Software\Classes\CLSID\{91BA2C4A-56BC-4C49-A499-231979EC5F60}\InprocServer32').GetValue('')
 $asio = Get-ItemProperty -LiteralPath 'HKLM:\Software\ASIO\Rey Audio USB ASIO'
 $block = 64; $lead = 3

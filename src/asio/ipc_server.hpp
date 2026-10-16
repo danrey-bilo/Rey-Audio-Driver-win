@@ -15,6 +15,8 @@ public:
   void configure(const REY_BRIDGE_PROFILE &, unsigned depth, uint64_t generation);
   void transport_buffers(unsigned capture, unsigned render, unsigned delay);
   void offline();
+  // Control-thread maintenance also runs when USB callbacks are idle.
+  void poll();
   bool info(Info &);
   std::string status() const;
   bool running() const;

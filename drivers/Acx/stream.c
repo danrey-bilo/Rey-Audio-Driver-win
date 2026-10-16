@@ -378,7 +378,9 @@ NTSTATUS ReyExchange(WDFDEVICE child, const REY_BRIDGE_EXCHANGE *input,
                         REY_BRIDGE_EXCHANGE *output) {
   REY_DEVICE_CONTEXT *d = ReyDeviceContext(child);
   ULONG frames = input->frames, flags = 0, slot;
-  uint32_t gap = 0;
+  uint32_t gap[2] = {0, 0};
+  const BOOLEAN capture = (BOOLEAN)rey_bridge_captures(input->flags);
+  const BOOLEAN render = (BOOLEAN)rey_bridge_renders(input->flags);
   ULONGLONG qpc = (ULONGLONG)KeQueryPerformanceCounter(NULL).QuadPart;
   if (!rey_bridge_valid_exchange(input, &d->profile))
     return STATUS_INVALID_PARAMETER;
@@ -387,28 +389,23 @@ NTSTATUS ReyExchange(WDFDEVICE child, const REY_BRIDGE_EXCHANGE *input,
     WdfWaitLockRelease(d->lock);
     return STATUS_DEVICE_NOT_CONNECTED;
   }
-  if (d->bridge_seen &&
-      (input->epoch != d->bridge_epoch ||
-       !rey_bridge_frame_gap(input, d->next_bridge_frame, d->profile.block * 4, &gap))) {
+  if (!rey_bridge_advance(&d->bridge_clock, input, d->profile.block * 4, gap)) {
     WdfWaitLockRelease(d->lock);
     return STATUS_DATA_ERROR;
   }
-  d->bridge_seen = TRUE;
-  d->bridge_epoch = (USHORT)input->epoch;
-  d->next_bridge_frame = input->frame_position + frames;
-  if (input->flags)
+  if (input->flags & (REY_BRIDGE_DISCONTINUITY | REY_BRIDGE_MISSING))
     ++d->stats.discontinuities;
-  for (slot = 0; slot < REY_ENDPOINT_SLOTS; slot += 2)
+  for (slot = 0; capture && slot < REY_ENDPOINT_SLOTS; slot += 2)
     if (d->streams[slot] && ReyStreamContext(d->streams[slot])->running) {
-      if (gap) AdvanceStream(d->streams[slot], NULL, NULL, gap, qpc, d);
+      if (gap[0]) AdvanceStream(d->streams[slot], NULL, NULL, gap[0], qpc, d);
       AdvanceStream(d->streams[slot], input->samples, NULL, frames, qpc, d);
       flags |= REY_BRIDGE_CAPTURE_ACTIVE;
     }
   // Both METHOD_BUFFERED directions may alias. Capture has consumed the input.
   RtlZeroMemory(output->samples, sizeof(output->samples));
-  for (slot = 1; slot < REY_ENDPOINT_SLOTS; slot += 2)
+  for (slot = 1; render && slot < REY_ENDPOINT_SLOTS; slot += 2)
     if (d->streams[slot] && ReyStreamContext(d->streams[slot])->running) {
-      if (gap) AdvanceStream(d->streams[slot], NULL, NULL, gap, qpc, d);
+      if (gap[1]) AdvanceStream(d->streams[slot], NULL, NULL, gap[1], qpc, d);
       AdvanceStream(d->streams[slot], NULL, output->samples, frames, qpc, d);
       flags |= REY_BRIDGE_RENDER_ACTIVE;
     }

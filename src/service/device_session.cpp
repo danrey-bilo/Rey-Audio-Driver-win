@@ -161,12 +161,13 @@ void DeviceSession::worker(Settings settings,
     } while (WaitForSingleObject(worker_stop_, 0) != WAIT_OBJECT_0);
   } else {
     state(digital_test_ ? "digital_test" : "streaming", digital_test_ ? "USB digital test is running" : "USB audio endpoints are attached");
-    const bool okay = session.run(process, &context, worker_stop_, 0, settings.usb_depth, error);
+    const bool okay = session.run(process, &context, worker_stop_, 0, settings.usb_depth, error, nullptr, std::max(32u, unsigned(settings.usb.block)));
     if (!okay) state("stream_error", error.empty() ? "USB stream stopped with errors" : error);
   }
 
 }
 void DeviceSession::poll(uint64_t now, const std::wstring &path, bool bridge) {
+  asio_.poll();
   stream_requested_.store(asio_.running(), std::memory_order_release);
   Settings s;
   { std::lock_guard<std::mutex> lock(mutex_); s = settings_; bridge_present_ = bridge;
@@ -193,7 +194,7 @@ bool DeviceSession::update(const Settings &next, std::string &error) {
 std::string DeviceSession::status_locked(const std::string &error) const {
   const auto &s = settings_;
   std::ostringstream out;
-  out << "{\"version\":\"2.8.2-akm-dev.5\",\"ok\":" << (error.empty() ? "true" : "false")
+  out << "{\"version\":\"2.8.2-akm-dev.6\",\"ok\":" << (error.empty() ? "true" : "false")
       << ",\"error\":" << json_string(error)
       << ",\"state\":" << json_string(state_)
       << ",\"detail\":" << json_string(detail_)
@@ -233,7 +234,11 @@ std::string DeviceSession::status_locked(const std::string &error) const {
     }
     out << ']';
   }
-  out << "},\"events\":[";
+  out << ",\"input_stereo\":[";
+  for (unsigned pair = 0; pair < 4; ++pair) out << (pair ? "," : "") << ((s.mix.stereo_links[0] & (1u << pair)) ? "true" : "false");
+  out << "],\"output_stereo\":[";
+  for (unsigned pair = 0; pair < 4; ++pair) out << (pair ? "," : "") << ((s.mix.stereo_links[1] & (1u << pair)) ? "true" : "false");
+  out << "]},\"events\":[";
   bool comma = false;
   for (auto i = events_.rbegin(); i != events_.rend(); ++i) {
     if (comma)

@@ -10,6 +10,7 @@ struct Channel {
 };
 struct Mix {
   std::array<Channel, 8> inputs{}, outputs{};
+  std::array<uint8_t, 2> stereo_links{};
   int master_cdb = 0;
   bool master_mute = false;
 };

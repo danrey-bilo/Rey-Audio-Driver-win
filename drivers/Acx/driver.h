@@ -42,9 +42,7 @@ typedef struct REY_DEVICE_CONTEXT {
   ACXCIRCUIT circuits[REY_ENDPOINT_SLOTS];
   ACXSTREAM streams[REY_ENDPOINT_SLOTS];
   REY_BRIDGE_STATS stats;
-  ULONGLONG next_bridge_frame;
-  USHORT bridge_epoch;
-  BOOLEAN bridge_seen;
+  REY_BRIDGE_TIMELINE bridge_clock;
 } REY_DEVICE_CONTEXT;
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(REY_DEVICE_CONTEXT, ReyDeviceContext);
 

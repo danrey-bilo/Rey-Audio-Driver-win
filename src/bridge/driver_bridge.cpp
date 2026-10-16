@@ -95,13 +95,15 @@ bool DriverBridge::process(const engine::AudioBlock &block) {
   exchange_.capture_channels = block.inputs;
   exchange_.render_channels = block.outputs;
   exchange_.flags = (block.missing ? REY_BRIDGE_MISSING : 0) |
-                    (block.discontinuity ? REY_BRIDGE_DISCONTINUITY : 0);
+                    (block.discontinuity ? REY_BRIDGE_DISCONTINUITY : 0) |
+                    (block.capture_only ? REY_BRIDGE_CAPTURE_ONLY : 0) |
+                    (block.render_only ? REY_BRIDGE_RENDER_ONLY : 0);
   exchange_.epoch = block.epoch;
   exchange_.reserved = 0;
   exchange_.frame_position = block.frame_position;
   exchange_.qpc = 0;
-  for (size_t n = 0; n < size_t(block.frames) * block.inputs; ++n)
-    exchange_.samples[n] = int32_t(rey::audio::wave_sample(block.capture[n], block.bits));
+  if (!block.render_only) for (size_t n = 0; n < size_t(block.frames) * block.inputs; ++n)
+    exchange_.samples[n] = block.capture ? int32_t(rey::audio::wave_sample(block.capture[n], block.bits)) : 0;
   DWORD bytes = 0;
   // Development bridge: METHOD_BUFFERED exchanges are measured explicitly.
   // The driver's PCM work has a fixed frame bound and no network operations.
@@ -120,7 +122,7 @@ bool DriverBridge::process(const engine::AudioBlock &block) {
     error_ = ERROR_INVALID_DATA;
     return false;
   }
-  for (size_t n = 0; n < size_t(block.frames) * block.outputs; ++n)
+  if (!block.capture_only) for (size_t n = 0; n < size_t(block.frames) * block.outputs; ++n)
     block.render[n] = rey::audio::wire_sample(uint32_t(exchange_.samples[n]), block.bits);
   return true;
 }

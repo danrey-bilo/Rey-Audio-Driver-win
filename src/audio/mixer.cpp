@@ -13,6 +13,15 @@ bool valid(const Mix &m) {
   if (m.master_cdb < -6000 || m.master_cdb > 600) return false;
   for (const auto *group : {&m.inputs, &m.outputs})
     for (const auto &c : *group) if (c.gain_cdb < -6000 || c.gain_cdb > 1200) return false;
+  const std::array<Channel, 8> *groups[] = {&m.inputs, &m.outputs};
+  for (unsigned d = 0; d < 2; ++d) {
+    if (m.stereo_links[d] & ~15u) return false;
+    for (unsigned pair = 0; pair < 4; ++pair) if (m.stereo_links[d] & (1u << pair)) {
+      const auto &left = (*groups[d])[pair * 2], &right = (*groups[d])[pair * 2 + 1];
+      if (left.gain_cdb != right.gain_cdb || left.mute != right.mute ||
+          left.solo != right.solo || left.invert != right.invert) return false;
+    }
+  }
   return true;
 }
 Mixer::Mixer() { publish(Mix{}); }

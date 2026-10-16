@@ -161,10 +161,11 @@ public:
   }
   ASIOError getChannelInfo(ASIOChannelInfo *info) override {
     if (!info || info->channel < 0 || info->channel >= long(channels)) return ASE_InvalidParameter;
-    info->isActive = ASIOFalse; info->channelGroup = 0;
+    info->isActive = ASIOFalse; info->channelGroup = info->channel / 2;
     for (const auto &c : buffers_) if (c.number == unsigned(info->channel) && c.input == (info->isInput != 0)) info->isActive = ASIOTrue;
     info->type = info_.bits == 16 ? ASIOSTInt16LSB : info_.bits == 24 ? ASIOSTInt24LSB : ASIOSTInt32LSB;
-    std::snprintf(info->name, sizeof(info->name), "Rey USB %s %ld", info->isInput ? "input" : "output", info->channel + 1);
+    const long first = (info->channel / 2) * 2 + 1;
+    std::snprintf(info->name, sizeof(info->name), "%s %ld-%ld %s", info->isInput ? "Input" : "Output", first, first + 1, info->channel % 2 ? "R" : "L");
     return ASE_OK;
   }
   ASIOError createBuffers(ASIOBufferInfo *info, long count, long frames, ASIOCallbacks *callbacks) override {

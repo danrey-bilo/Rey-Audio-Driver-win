@@ -41,24 +41,57 @@
     <Style TargetType="Expander"><Setter Property="Foreground" Value="#405970"/><Setter Property="FontSize" Value="13"/></Style>
     <Style x:Key="MixSwitch" TargetType="ToggleButton">
       <Setter Property="Foreground" Value="#B6C6D8"/><Setter Property="Background" Value="#304056"/><Setter Property="Cursor" Value="Hand"/>
-      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton"><Border x:Name="Face" Background="{TemplateBinding Background}" CornerRadius="5" Padding="5,8"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="Face" Property="Background" Value="#167E6D"/><Setter Property="Foreground" Value="White"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Face" Property="Opacity" Value="0.8"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Face" Property="BorderBrush" Value="#85E5C6"/><Setter TargetName="Face" Property="BorderThickness" Value="1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton"><Border x:Name="Face" Background="{TemplateBinding Background}" CornerRadius="5" Padding="4,3"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="Face" Property="Background" Value="#167E6D"/><Setter Property="Foreground" Value="White"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Face" Property="Opacity" Value="0.8"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Face" Property="BorderBrush" Value="#85E5C6"/><Setter TargetName="Face" Property="BorderThickness" Value="1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
     </Style>
     <Style x:Key="MixFader" TargetType="Slider">
       <Setter Property="Orientation" Value="Vertical"/><Setter Property="Minimum" Value="-60"/><Setter Property="Maximum" Value="12"/><Setter Property="SmallChange" Value="0.1"/><Setter Property="LargeChange" Value="1"/>
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Slider"><Grid Width="34"><Border Width="3" Background="#42536A" CornerRadius="2" HorizontalAlignment="Center"/><Track x:Name="PART_Track" Orientation="Vertical" IsDirectionReversed="False"><Track.DecreaseRepeatButton><RepeatButton Command="Slider.DecreaseLarge" Focusable="False"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.DecreaseRepeatButton><Track.Thumb><Thumb Width="32" Height="25"><Thumb.Template><ControlTemplate TargetType="Thumb"><Border x:Name="Cap" Background="#88E5C6" CornerRadius="5" BorderBrush="#BAF1E0" BorderThickness="1"><Border Height="2" Background="#245C52" Margin="5,0" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsDragging" Value="True"><Setter TargetName="Cap" Property="Background" Value="#CEFFEE"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Thumb.Template></Thumb></Track.Thumb><Track.IncreaseRepeatButton><RepeatButton Command="Slider.IncreaseLarge" Focusable="False"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.IncreaseRepeatButton></Track></Grid></ControlTemplate></Setter.Value></Setter>
     </Style>
-    <DataTemplate x:Key="ChannelStrip">
-      <Border Background="#1D2B3F" CornerRadius="9" Margin="3,0" Padding="8,13">
+    <DataTemplate x:Key="ChannelMeter">
+      <Grid Width="8" Height="84" Background="#111C2A" ToolTip="{Binding PeakLabel}">
+        <Border Height="{Binding MeterHeight}" VerticalAlignment="Bottom"><Border.Background><LinearGradientBrush StartPoint="0,1" EndPoint="0,0"><GradientStop Color="#20B99B" Offset="0"/><GradientStop Color="#9FCA4B" Offset="0.72"/><GradientStop Color="#F5BD57" Offset="1"/></LinearGradientBrush></Border.Background></Border>
+        <Border Height="3" Background="{Binding ClipColor}" VerticalAlignment="Top" ToolTip="{Binding ClipHint}"/>
+      </Grid>
+    </DataTemplate>
+    <DataTemplate x:Key="ChannelButtons">
+      <UniformGrid Columns="3" Height="27">
+        <ToggleButton Content="M" IsChecked="{Binding Mute, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="1,0" ToolTip="Приглушить"/>
+        <ToggleButton Content="S" IsChecked="{Binding Solo, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="1,0" ToolTip="Соло"/>
+        <ToggleButton Content="Ø" IsChecked="{Binding Invert, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="1,0" ToolTip="Полярность"/>
+      </UniformGrid>
+    </DataTemplate>
+    <DataTemplate x:Key="MonoStrip">
+      <StackPanel Margin="3,0">
+        <Grid><TextBlock Text="{Binding Number}" Foreground="#91A8C0" FontSize="11"/><TextBlock Text="{Binding GainLabel}" Foreground="#9AE8CF" FontSize="11" HorizontalAlignment="Right"/></Grid>
+        <Grid Height="84" Margin="5,8,4,4"><Grid.ColumnDefinitions><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ChannelMeter}" HorizontalAlignment="Left"/>
+          <Slider Grid.Column="1" Style="{StaticResource MixFader}" Height="84" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding GainLabel}" AutomationProperties.Name="{Binding Name}"/>
+        </Grid>
+        <TextBlock Text="{Binding PeakLabel}" Foreground="#8FABC5" FontSize="10" Margin="0,0,0,7" HorizontalAlignment="Center"/>
+        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ChannelButtons}"/>
+      </StackPanel>
+    </DataTemplate>
+    <DataTemplate x:Key="PairStrip">
+      <Border Background="#1D2B3F" CornerRadius="9" Margin="3,0" Padding="9,10">
         <StackPanel>
-          <TextBlock Text="{Binding Name}" Foreground="#EFF6FF" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-          <TextBlock Text="{Binding GainLabel}" Foreground="#9AE8CF" FontSize="12" Margin="0,10,0,15" HorizontalAlignment="Center"/>
-          <Grid Height="140"><Grid.ColumnDefinitions><ColumnDefinition Width="13"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-            <StackPanel><Border Height="8" Background="{Binding ClipColor}" CornerRadius="2" Margin="0,0,0,10" ToolTip="{Binding ClipHint}"/><Grid Height="110" Background="#121D2D"><Border Height="{Binding MeterHeight}" VerticalAlignment="Bottom"><Border.Background><LinearGradientBrush StartPoint="0,1" EndPoint="0,0"><GradientStop Color="#20B99B" Offset="0"/><GradientStop Color="#9FCA4B" Offset="0.72"/><GradientStop Color="#F5BD57" Offset="1"/></LinearGradientBrush></Border.Background></Border></Grid></StackPanel>
-            <Slider Grid.Column="1" Style="{StaticResource MixFader}" Height="128" VerticalAlignment="Bottom" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="Уровень канала, dB" AutomationProperties.Name="{Binding Name}"/>
+          <Grid Margin="2,0,2,10"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Name}" Foreground="#EFF6FF" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
+            <ToggleButton Grid.Column="1" Content="{Binding LinkLabel}" IsChecked="{Binding Linked, Mode=TwoWay}" Style="{StaticResource MixSwitch}" FontSize="9" MinWidth="55" Height="25" ToolTip="Связать или разделить управление соседними каналами" AutomationProperties.Name="{Binding Name, StringFormat=Stereo link {0}}"/>
           </Grid>
-          <TextBlock Text="{Binding PeakLabel}" Foreground="#8FABC5" FontSize="10" Margin="0,9,0,14" HorizontalAlignment="Center" ToolTip="Пиковый уровень после регулировки, dBFS"/>
-          <UniformGrid Columns="2"><ToggleButton Content="M" IsChecked="{Binding Mute, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="0,0,3,0" ToolTip="Mute · выключить этот канал"/><ToggleButton Content="S" IsChecked="{Binding Solo, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="3,0,0,0" ToolTip="Solo · оставить выбранные каналы этого направления"/></UniformGrid>
-          <ToggleButton Content="Ø" IsChecked="{Binding Invert, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="0,8,0,0" ToolTip="Инвертировать полярность PCM"/>
+          <Grid Visibility="{Binding MonoVisibility}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <ContentControl Content="{Binding Left}" ContentTemplate="{StaticResource MonoStrip}"/>
+            <ContentControl Grid.Column="1" Content="{Binding Right}" ContentTemplate="{StaticResource MonoStrip}"/>
+          </Grid>
+          <StackPanel Visibility="{Binding StereoVisibility}">
+            <Grid><TextBlock Text="L / R" Foreground="#91A8C0" FontSize="11"/><TextBlock Text="{Binding Left.GainLabel}" Foreground="#9AE8CF" FontSize="11" HorizontalAlignment="Right"/></Grid>
+            <Grid Height="84" Margin="5,8,4,4"><Grid.ColumnDefinitions><ColumnDefinition Width="14"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+              <ContentControl Content="{Binding Left}" ContentTemplate="{StaticResource ChannelMeter}" HorizontalAlignment="Left"/>
+              <ContentControl Grid.Column="1" Content="{Binding Right}" ContentTemplate="{StaticResource ChannelMeter}" HorizontalAlignment="Left"/>
+              <Slider Grid.Column="2" Style="{StaticResource MixFader}" Height="84" Value="{Binding Left.Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding Left.GainLabel}" AutomationProperties.Name="{Binding Name}"/>
+            </Grid>
+            <UniformGrid Columns="2" Margin="0,0,0,7"><TextBlock Text="{Binding Left.PeakLabel}" Foreground="#8FABC5" FontSize="10" HorizontalAlignment="Center"/><TextBlock Text="{Binding Right.PeakLabel}" Foreground="#8FABC5" FontSize="10" HorizontalAlignment="Center"/></UniformGrid>
+            <ContentControl Content="{Binding Left}" ContentTemplate="{StaticResource ChannelButtons}"/>
+          </StackPanel>
         </StackPanel>
       </Border>
     </DataTemplate>
@@ -89,21 +122,12 @@
       <Border Grid.Row="2" Background="#E4F2ED" Padding="16,11" CornerRadius="9" Margin="0,0,0,16" Visibility="{Binding MessageVisibility}"><TextBlock Text="{Binding Message}" Foreground="#246553" FontSize="12"/></Border>
       <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,9,0">
         <Grid>
-          <StackPanel Visibility="{Binding MixerVisibility}">
-            <Border Style="{StaticResource Card}" Padding="16,13"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <StackPanel Orientation="Horizontal"><RadioButton x:Name="MixerInputs" GroupName="MixerDirection" Content="Входы" IsChecked="True" Margin="0,0,24,0" VerticalAlignment="Center"/><RadioButton x:Name="MixerOutputs" GroupName="MixerDirection" Content="Выходы" VerticalAlignment="Center"/></StackPanel>
-              <TextBlock Grid.Column="1" Text="{Binding MixerFormat}" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
-            </Grid></Border>
-            <Border Style="{StaticResource Card}" Padding="12,18"><StackPanel>
-              <ItemsControl x:Name="MixerStrips" IsEnabled="{Binding CanEditMixer}" ItemsSource="{Binding VisibleChannels}" ItemTemplate="{StaticResource ChannelStrip}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="8"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
-            </StackPanel></Border>
-            <Border Style="{StaticResource Card}"><Expander Header="Дополнительно"><StackPanel Margin="0,14,0,0">
-              <Grid DataContext="{Binding Master}" IsEnabled="{Binding DataContext.CanEditMixer, RelativeSource={RelativeSource AncestorType=Window}}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Все выходы" Style="{StaticResource FieldLabel}"/><Slider Minimum="-60" Maximum="6" SmallChange="0.1" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding GainLabel}" Margin="0,8,24,0"/></StackPanel>
-                <CheckBox Grid.Column="1" Content="Приглушить" IsChecked="{Binding Mute, Mode=TwoWay}"/>
-              </Grid>
-              <Button x:Name="ResetMixer" Content="Сбросить уровни" IsEnabled="{Binding CanEditMixer}" HorizontalAlignment="Right" Padding="14,9" Margin="0,16,0,0"/>
-            </StackPanel></Expander></Border>
+          <StackPanel x:Name="MixerStrips" Visibility="{Binding MixerVisibility}">
+            <Grid Margin="3,0,3,9"><TextBlock Text="Входы" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/><TextBlock Text="{Binding MixerFormat}" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid>
+            <ItemsControl x:Name="InputMixerPairs" IsEnabled="{Binding CanEditMixer}" ItemsSource="{Binding InputPairs}" ItemTemplate="{StaticResource PairStrip}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
+            <TextBlock Text="Выходы" FontSize="15" FontWeight="SemiBold" Margin="3,17,3,9"/>
+            <ItemsControl x:Name="OutputMixerPairs" IsEnabled="{Binding CanEditMixer}" ItemsSource="{Binding OutputPairs}" ItemTemplate="{StaticResource PairStrip}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
+            <Button x:Name="ResetMixer" Content="Сбросить" IsEnabled="{Binding CanEditMixer}" HorizontalAlignment="Right" Padding="13,6" FontSize="11" Margin="0,12,3,0"/>
           </StackPanel>
           <StackPanel Visibility="{Binding UsbVisibility}">
             <Border x:Name="BoardModeCard" Style="{StaticResource Card}"><StackPanel>

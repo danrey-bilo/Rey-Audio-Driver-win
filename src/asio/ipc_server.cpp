@@ -129,6 +129,11 @@ void Server::offline() {
   std::lock_guard<std::mutex> lock(mutex_);
   available_ = false; close_locked();
 }
+void Server::poll() {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (owned_ && WaitForSingleObject(owned_->process, 0) != WAIT_TIMEOUT)
+    close_locked();
+}
 bool Server::info(Info &out) {
   std::lock_guard<std::mutex> lock(mutex_);
   if (!available_) return false;

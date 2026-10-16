@@ -12,8 +12,8 @@ using Microsoft.Win32;
 [assembly: AssemblyTitle("Rey Audio USB ASIO Setup")]
 [assembly: AssemblyProduct("Rey Audio Driver USB ASIO")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.2.5")]
-[assembly: AssemblyFileVersion("2.8.2.5")]
+[assembly: AssemblyVersion("2.8.2.6")]
+[assembly: AssemblyFileVersion("2.8.2.6")]
 namespace ReyAudio.UsbAsioSetup {
     internal static class Program {
         private const string OwnerKey = @"Software\ReyAudio\USBASIOSetup";
@@ -108,11 +108,23 @@ namespace ReyAudio.UsbAsioSetup {
             }
             bool existed = ServiceRegistration.Exists, owned = Owned();
             var changed = new List<string>();
+            byte[] savedProfile = null;
+            bool profileCaptured = false;
             string asioDll = Path.Combine(Target, "ReyAudioAsio.dll");
             if (replacements.ContainsKey("ReyAudioAsio.dll") && File.Exists(asioDll))
                 using (var access = new FileStream(asioDll, FileMode.Open, FileAccess.ReadWrite, FileShare.Read)) { }
             CloseOwnPanel(); ServiceRegistration.Stop(); Directory.CreateDirectory(Target);
             try {
+                using(var profileKey = Registry.LocalMachine.OpenSubKey(@"Software\ReyAudio"))
+                    savedProfile = profileKey == null ? null : profileKey.GetValue("UsbProfile") as byte[];
+                profileCaptured = true;
+                if(previous.Count != 0 && replacements.Count != 0) {
+                    string backup = Path.Combine(Target, "backups", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff"));
+                    CheckDirectory(backup); Directory.CreateDirectory(backup);
+                    foreach(var item in previous) File.WriteAllBytes(Path.Combine(backup,item.Key),item.Value);
+                    if(savedProfile != null) File.WriteAllBytes(Path.Combine(backup,"UsbProfile.bin"),savedProfile);
+                    Record("BACKUP: " + backup);
+                }
                 // Check locks before replacing any payload. A DAW may retain the
                 // COM DLL after choosing No Device; that requires closing the host.
                 foreach (var name in previous.Keys.Where(replacements.ContainsKey))
@@ -131,6 +143,10 @@ namespace ReyAudio.UsbAsioSetup {
                     foreach (var name in changed) {
                         if (previous.ContainsKey(name)) File.WriteAllBytes(Path.Combine(Target, name), previous[name]);
                         else File.Delete(Path.Combine(Target, name));
+                    }
+                    if(profileCaptured) using(var profileKey = Registry.LocalMachine.CreateSubKey(@"Software\ReyAudio")) {
+                        if(savedProfile == null) profileKey.DeleteValue("UsbProfile",false);
+                        else profileKey.SetValue("UsbProfile",savedProfile,RegistryValueKind.Binary);
                     }
                     if (existed) { RegisterDll(false); ServiceRegistration.Start(); }
                     if (!owned) { RemoveMetadata(); File.Delete(Path.Combine(Target, "USBASIOSetup.exe")); }

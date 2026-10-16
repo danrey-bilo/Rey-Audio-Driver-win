@@ -29,11 +29,14 @@ includes the real USB cable and Pi, but excludes the analog ADC/DAC path.
 
 ## Mixer
 
-![Mixer for one USB audio card](docs/assets/rey-usb-preview2-mixer.png)
+![Mixer rendered with fixture levels](docs/assets/mixer-pairs-20261016.png)
 
-Control eight input or eight output channels with gain, Mute, Solo and polarity.
-Output Master controls playback. Meters show real PCM levels. The panel has
-three pages: **Mixer**, **Device** and **Diagnostics**, with access from the tray.
+All eight inputs and eight outputs are visible together. Each adjacent pair
+has an independent **MONO / STEREO** switch. Stereo links share gain, Mute,
+Solo and polarity while keeping separate left/right audio and meters.
+New profiles start at 0 dB. The panel has three pages: **Mixer**, **Device**
+and **Diagnostics**, with access from the tray. The image uses fixture levels;
+installed-service and real USB checks are recorded [separately](docs/MIXER.md).
 
 <details>
 <summary><strong>USB settings and diagnostics</strong></summary>
