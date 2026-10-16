@@ -4,6 +4,7 @@
 #include <cstring>
 #include <limits>
 #include <sstream>
+#include "../platform/realtime.hpp"
 
 namespace rey::asio {
 struct Server::Connection {
@@ -30,19 +31,32 @@ struct Server::Connection {
       store(shared->ready, 0); return;
     }
     if (!running) { running = true; accumulated = 0; rendered = false; previous_ns = 0; }
-    store(shared->clock_position, audio.frame_position + audio.frames);
-    if (previous_ns && now - previous_ns > load(shared->capture_gap_max_ns))
-      store(shared->capture_gap_max_ns, now - previous_ns);
-    previous_ns = now;
+    const auto end = audio.frame_position + audio.frames;
+    if (!audio.render_only) {
+      if (previous_ns && now - previous_ns > load(shared->capture_gap_max_ns))
+        store(shared->capture_gap_max_ns, now - previous_ns);
+      previous_ns = now;
+    }
     const int64_t full = int64_t(1) << (bits - 1);
+    uint64_t wait_deadline=0;
     // Playback is scheduled against transport sample indices, never queue age.
     for (unsigned f = 0; f < audio.frames; ++f) {
-      const uint64_t wanted = audio.frame_position + f;
+      const uint64_t capture_position = audio.frame_position + f;
+      const bool render_due = !audio.capture_only && capture_position >= audio.render_delay_frames;
+      const uint64_t wanted = render_due ? capture_position - audio.render_delay_frames : 0;
       bool supplied = false;
-      for (unsigned attempt = 0; attempt < slots; ++attempt) {
+      for (unsigned attempt = 0; render_due && attempt < slots; ++attempt) {
         auto read = load(shared->render.read);
-        const auto written = load(shared->render.written);
+        auto written = load(shared->render.written);
         if (written < read || written - read > slots) { store(shared->ready, 0); return; }
+        if (read == written && rendered && audio.render_wait_ns) {
+          if(!wait_deadline)wait_deadline=rey::now_ns()+std::min(audio.render_wait_ns,125000u);
+          while(read==written && rey::now_ns()<wait_deadline) {
+            YieldProcessor();
+            written=load(shared->render.written);
+          }
+          if(written<read || written-read>slots){store(shared->ready,0);return;}
+        }
         if (read == written) break;
         if (render_read != read) { render_read = read; render_offset = 0; }
         const auto &item = shared->render.data[read % slots];
@@ -66,10 +80,11 @@ struct Server::Connection {
         if (offset + 1 == block) store(shared->render.read, read + 1);
         break;
       }
-      if (rendered && !supplied) add(shared->render_missing);
-      if (!accumulated) { first_frame = wanted; first_ns = now; }
-      if (wanted != first_frame + accumulated) {
-        accumulated = 0; first_frame = wanted; first_ns = now; add(shared->capture_dropped);
+      if (render_due && rendered && !supplied) add(shared->render_missing);
+      if (audio.render_only) continue;
+      if (!accumulated) { first_frame = capture_position; first_ns = now; }
+      if (capture_position != first_frame + accumulated) {
+        accumulated = 0; first_frame = capture_position; first_ns = now; add(shared->capture_dropped);
       }
       std::copy_n(audio.capture + size_t(f) * channels, channels,
                   capture.data() + size_t(accumulated++) * channels);
@@ -87,9 +102,17 @@ struct Server::Connection {
         accumulated = 0;
       }
     }
+    // This is the last consumed render position, not the next packet's
+    // prospective deadline. Publishing it early falsely discarded capture
+    // while the host was still allowed to finish the corresponding output.
+    if (!audio.capture_only) store(shared->clock_position, end > audio.render_delay_frames ? end-audio.render_delay_frames : 0);
   }
 };
 Server::Server() = default;
+void Server::transport_buffers(unsigned capture, unsigned render, unsigned delay) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  info_.capture_buffer = capture; info_.render_buffer = render; info_.render_delay = delay;
+}
 Server::~Server() { offline(); }
 void Server::close_locked() {
   active_.store(nullptr, std::memory_order_seq_cst);
@@ -106,10 +129,48 @@ void Server::offline() {
   std::lock_guard<std::mutex> lock(mutex_);
   available_ = false; close_locked();
 }
+void Server::poll() {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (owned_ && WaitForSingleObject(owned_->process, 0) != WAIT_TIMEOUT)
+    close_locked();
+}
 bool Server::info(Info &out) {
   std::lock_guard<std::mutex> lock(mutex_);
   if (!available_) return false;
   out = info_; return true;
+}
+bool Server::running() const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  return owned_ && owned_->shared && load(owned_->shared->ready) == 1 &&
+      load(owned_->shared->running) == 1 && WaitForSingleObject(owned_->process, 0) == WAIT_TIMEOUT;
+}
+unsigned Server::block_size() const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  return owned_ ? owned_->block : info_.block;
+}
+bool Server::render_span(uint64_t &first_frame, uint64_t &end_frame, unsigned &block_frames) {
+  readers_.fetch_add(1, std::memory_order_seq_cst);
+  bool result = false;
+  if (auto *client = active_.load(std::memory_order_seq_cst)) {
+    auto &shared = *client->shared;
+    if (load(shared.ready) == 1 && load(shared.running) == 1) {
+      const auto read = load(shared.render.read), written = load(shared.render.written);
+      if (written > read && written-read <= slots) {
+        const auto &first = shared.render.data[read%slots];
+        const auto &last = shared.render.data[(written-1)%slots];
+        result = first.frames == client->block && last.frames == client->block &&
+                 first.frame_position <= last.frame_position && last.frame_position <= UINT64_MAX-last.frames;
+        if (result) { first_frame = first.frame_position; end_frame = last.frame_position+last.frames; block_frames = client->block; }
+      }
+    }
+  }
+  readers_.fetch_sub(1, std::memory_order_seq_cst);
+  return result;
+}
+bool Server::render_ready(uint64_t end_frame) {
+  uint64_t first = 0, last = 0;
+  unsigned block = 0;
+  return render_span(first,last,block) && first < end_frame && last >= end_frame;
 }
 std::string Server::status() const {
   std::lock_guard<std::mutex> lock(mutex_);
@@ -131,7 +192,7 @@ std::string Server::status() const {
 bool Server::connect(DWORD pid, uint64_t mapping, uint64_t event, unsigned block,
                      unsigned lead, std::string &error) {
   std::lock_guard<std::mutex> lock(mutex_);
-  if (!available_ || !valid_block(block) || lead < 1 || lead > 4 || !pid) {
+  if (!available_ || !valid_block(block) || lead < 1 || lead > max_lead_blocks || !pid) {
     error = "USB ASIO profile is unavailable"; return false;
   }
   if (owned_) {

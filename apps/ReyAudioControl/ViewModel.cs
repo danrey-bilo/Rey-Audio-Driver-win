@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 namespace ReyAudio {
     internal sealed class Choice {
@@ -17,7 +18,7 @@ namespace ReyAudio {
         public string Title { get; set; }
         public string Detail { get; set; }
     }
-    internal sealed class ViewModel : INotifyPropertyChanged {
+    internal sealed partial class ViewModel : INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
         public void Notify() { if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs("")); }
         public readonly ObservableCollection<LogRow> Log = new ObservableCollection<LogRow>();
@@ -26,13 +27,11 @@ namespace ReyAudio {
         public string DeviceLabel { get { return "Rey Audio · Pi5"; } }
         public string DeviceWarning = "";
         public ObservableCollection<LogRow> Events { get { return Log; } }
-        public Choice[] Rates { get; private set; }
+        private Choice[] allRates, effectRates;
+        public Choice[] Rates { get { return BoardMode == 1 ? effectRates : allRates; } private set { allRates=value; effectRates=value.Where(r=>r.Value<=96000).ToArray(); } }
         public Choice[] Bits { get; private set; }
-        public Choice[] Depths { get; private set; }
         public Choice[] Blocks { get; private set; }
-        public Choice[] AsioLeads { get; private set; }
         public int AsioBlock { get; set; }
-        public int AsioLead { get; set; }
         public string AsioStateLabel { get; private set; }
         public string AsioCountersLabel { get; private set; }
         private int liveAsioBlock, liveAsioLead, activeUsbDepth;
@@ -51,7 +50,7 @@ namespace ReyAudio {
         public string AsioLatencyDetail { get { return AsioLatencyLabel == "—" ? "Нет активного ASIO-потока" : "Вход " + AsioInputLatency.ToString("0.00") + " мс · выход " + AsioOutputLatency.ToString("0.00") + " мс. Расчёт буферов; физическая задержка не измеряется."; } }
         public string AsioApplyHint {
             get {
-                return AsioRunning && (liveAsioBlock != AsioBlock || liveAsioLead != AsioLead)
+                return AsioRunning && liveAsioBlock != AsioBlock
                     ? "Применяется после перезапуска аудиодвижка." : "";
             }
         }
@@ -61,11 +60,12 @@ namespace ReyAudio {
         public bool AsioOnly;
         public bool CanSaveAsio { get { return !Busy; } }
         public string Page = "mixer";
-        public bool MixerOutputs;
         public MixerChannel[] Inputs { get; private set; }
         public MixerChannel[] Outputs { get; private set; }
         public MixerChannel Master { get; private set; }
-        public MixerChannel[] VisibleChannels { get { return MixerOutputs ? Outputs : Inputs; } }
+        public MixerPair[] InputPairs { get; private set; }
+        public MixerPair[] OutputPairs { get; private set; }
+        public IEnumerable<MixerPair> AllPairs { get { foreach(var p in InputPairs) yield return p; foreach(var p in OutputPairs) yield return p; } }
         public IEnumerable<MixerChannel> AllChannels { get { foreach(var c in Inputs) yield return c; foreach(var c in Outputs) yield return c; yield return Master; } }
         public Visibility MixerVisibility { get { return Page == "mixer" ? Visibility.Visible : Visibility.Collapsed; } }
         public string MixerFormat { get { return Available && UsbPresent && ActiveRate > 0 ? (ActiveRate / 1000.0).ToString("0.#") + " кГц · " + ActiveBits + " бит" : "8 × 8"; } }
@@ -85,19 +85,20 @@ namespace ReyAudio {
         public ViewModel() {
             Inputs = new MixerChannel[8]; Outputs = new MixerChannel[8]; Master = new MixerChannel(2, 0);
             for(int i = 0; i < 8; ++i) { Inputs[i] = new MixerChannel(0, i); Outputs[i] = new MixerChannel(1, i); }
+            InputPairs = new MixerPair[4]; OutputPairs = new MixerPair[4];
+            for(int i = 0; i < 4; ++i) { InputPairs[i] = new MixerPair(Inputs[2*i], Inputs[2*i+1]); OutputPairs[i] = new MixerPair(Outputs[2*i], Outputs[2*i+1]); }
             Rates = new[] { new Choice(44100, "44,1 кГц"), new Choice(48000, "48 кГц"), new Choice(88200, "88,2 кГц"), new Choice(96000, "96 кГц"), new Choice(176400, "176,4 кГц"), new Choice(192000, "192 кГц") };
             Bits = new[] { new Choice(16, "16 бит"), new Choice(24, "24 бит"), new Choice(32, "32 бит") };
-            Depths = new[] { new Choice(1, "1 пакет"), new Choice(2, "2 пакета"), new Choice(3, "3 пакета"), new Choice(4, "4 пакета"), new Choice(6, "6 пакетов"), new Choice(8, "8 пакетов"), new Choice(12, "12 пакетов"), new Choice(16, "16 пакетов") };
-            Blocks = new[] { new Choice(16, "16 Samples"), new Choice(32, "32 Samples"), new Choice(64, "64 Samples"), new Choice(128, "128 Samples"), new Choice(256, "256 Samples") };
-            AsioLeads = new[] { new Choice(1, "1 блок"), new Choice(2, "2 блока"), new Choice(3, "3 блока"), new Choice(4, "4 блока") };
-            var asio = AsioPreferences.Load(); AsioBlock = asio.Block; AsioLead = asio.Lead;
+            Blocks = new[] { new Choice(16, "16"), new Choice(32, "32"), new Choice(64, "64"), new Choice(128, "128"), new Choice(256, "256") };
+            var asio = AsioPreferences.Load(); AsioBlock = asio.Block;
             AsioStateLabel = "ASIO не активен"; AsioCountersLabel = "—";
             UsbRate = 192000; UsbBits = 32; UsbDepth = 4; UsbBlock = 64; UsbGuard = "0"; UsbAutomatic = true;
             Message = "";
         }
         public Visibility UsbVisibility { get { return Page == "usb" ? Visibility.Visible : Visibility.Collapsed; } }
         public Visibility DiagnosticsVisibility { get { return Page == "diagnostics" ? Visibility.Visible : Visibility.Collapsed; } }
-        public string PageTitle { get { return Page == "mixer" ? "Микшер" : Page == "usb" ? "Настройки" : "Диагностика"; } }
+        public string PageTitle { get { return Page == "mixer" ? "Микшер" : Page == "usb" ? "Устройство" : "Диагностика"; } }
+        public string BoardSummary { get { return BoardBusy ? "Применение…" : BoardAvailable ? "" : "USB-управление платой недоступно"; } }
         public string ServiceLabel { get { return Available ? "Служба работает" : "Служба недоступна"; } }
         public bool CanApply { get { return Available && !Busy; } }
         public string ShortIdentity { get { return Identity.Length >= 8 ? Identity.Substring(Identity.Length - 8).ToUpperInvariant() : "—"; } }
@@ -107,26 +108,28 @@ namespace ReyAudio {
                 if (DeviceWarning.Length != 0) return "Проверьте подключение";
                 if (State == "connecting") return "Подключение…";
                 if (State == "stopping") return "Применение…";
-                return UsbPresent ? "Подключено" : "Не подключено";
+                if (State == "stream_error" || State == "device_unavailable") return "Аудиопоток недоступен";
+                return UsbPresent ? "Аудио подключено" : BoardAvailable ? "Управление подключено" : "USB не обнаружен";
             }
         }
         public string StatusBody {
             get {
                 if (DeviceWarning.Length != 0) return DeviceWarning;
                 if (!Available) return "Служба Rey Audio недоступна.";
-                return UsbPresent ? "" : "Подключите аудиокарту по USB.";
+                if (State == "stream_error" || State == "device_unavailable") return Detail;
+                return UsbPresent ? "" : BoardAvailable ? "Управление платой доступно. Аудиопоток USB недоступен." : "Аудиоустройство Rey Audio не обнаружено.";
             }
         }
         public Visibility StatusBodyVisibility { get { return StatusBody.Length == 0 ? Visibility.Collapsed : Visibility.Visible; } }
         public string StatusColor { get { return !Available || !UsbPresent ? "#8391A5" : DeviceWarning.Length != 0 ? "#B87512" : "#128466"; } }
         public string RouteLabel { get { return Route == "usb" ? "USB" : "Не подключено"; } }
         public string DriverLabel { get { return AsioOnly ? "USB-ASIO" : DriverPresent ? "Доступен" : "Не установлен"; } }
-        public string BackendLabel { get { return Backend.Length == 0 ? "—" : Backend; } }
+        public string BackendLabel { get { return Backend.Length == 0 ? "—" : Backend == "winusb-jack" ? "Rey AUSB" : Backend; } }
         public string CallbackLabel { get { return Callbacks.ToString("N0"); } }
         public string FrameLabel { get { return Frames.ToString("N0"); } }
         public string MissingLabel { get { return Missing.ToString("N0"); } }
         public string GapLabel { get { return Gap.ToString("0.0", CultureInfo.CurrentCulture) + " мкс"; } }
-        public string QueueHint { get { return "Запас очереди " + (UsbDepth * 0.125).ToString("0.###") + " мс; не сквозная задержка."; } }
+        public string QueueHint { get { return "Интервал USB — 125 мкс."; } }
         public Visibility MessageVisibility { get { return string.IsNullOrEmpty(Message) ? Visibility.Collapsed : Visibility.Visible; } }
         public static string String(Dictionary<string, object> d, string key) { return d.ContainsKey(key) && d[key] != null ? Convert.ToString(d[key], CultureInfo.InvariantCulture) : ""; }
         public static int Int(Dictionary<string, object> d, string key) { int v; return int.TryParse(String(d, key), out v) ? v : 0; }
@@ -153,6 +156,8 @@ namespace ReyAudio {
                 AsioCountersLabel = Bool(asio, "connected") ? "Пропуски входа: " + String(asio, "capture_dropped") + " · опоздания выхода: " + String(asio, "render_late_frames") + " · пропуски выхода: " + String(asio, "render_missing_frames") + " · переполнение: " + String(asio, "render_overflow") : "—";
             }
             Identity = String(data, "identity"); Backend = String(data, "backend");
+            ServiceBoardMode = data.ContainsKey("board_mode") ? String(data,"board_mode") : "soundcard";
+            if (!BoardAvailable) BoardMode = ServiceBoardMode=="combined" ? 1 : 0;
             var usb = (Dictionary<string, object>)data["usb"];
             activeUsbDepth = Int(usb, "depth");
             UsbPresent = Int(usb, "present") == 1;
@@ -170,6 +175,11 @@ namespace ReyAudio {
                 foreach(Dictionary<string, object> row in (IEnumerable)mixer["inputs"]) { if (i < 8) Inputs[i++].Update(row, meters); }
                 i = 0; foreach(Dictionary<string, object> row in (IEnumerable)mixer["outputs"]) { if (i < 8) Outputs[i++].Update(row, meters); }
                 Master.Update(new Dictionary<string, object> { {"gain_cdb", mixer["master_cdb"]}, {"mute", mixer["master_mute"]} }, false);
+                foreach(var direction in new[] {0, 1}) {
+                    var key = direction == 0 ? "input_stereo" : "output_stereo";
+                    var pairs = direction == 0 ? InputPairs : OutputPairs;
+                    if (mixer.ContainsKey(key)) { int pair = 0; foreach(var linked in (IEnumerable)mixer[key]) if(pair < 4) pairs[pair++].Update(Convert.ToBoolean(linked)); }
+                }
             }
             Log.Clear();
             foreach (Dictionary<string, object> row in (IEnumerable)data["events"]) {

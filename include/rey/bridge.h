@@ -4,7 +4,7 @@
 
 // Versioned kernel/service contract. Buffered requests contain bounded PCM and
 // values only; no user pointers, MDL addresses or writable kernel descriptors.
-#define REY_BRIDGE_VERSION 1u
+#define REY_BRIDGE_VERSION 2u
 #define REY_BRIDGE_CHANNELS 8u
 #define REY_BRIDGE_FRAMES 256u
 #define REY_BRIDGE_PACKET_FRAMES 4096u
@@ -13,6 +13,8 @@
 #define REY_BRIDGE_MISSING 2u
 #define REY_BRIDGE_CAPTURE_ACTIVE 4u
 #define REY_BRIDGE_RENDER_ACTIVE 8u
+#define REY_BRIDGE_CAPTURE_ONLY 16u
+#define REY_BRIDGE_RENDER_ONLY 32u
 #define REY_BRIDGE_CTL(function) ((0x22u << 16) | (3u << 14) | ((function) << 2))
 #define IOCTL_REY_ATTACH REY_BRIDGE_CTL(0x800u)
 #define IOCTL_REY_DETACH REY_BRIDGE_CTL(0x801u)
@@ -60,12 +62,42 @@ static inline int rey_bridge_valid_exchange(const REY_BRIDGE_EXCHANGE *x,
          x->frames <= REY_BRIDGE_FRAMES && x->capture_channels == p->inputs &&
          x->render_channels == p->outputs && x->epoch > 0 && x->epoch <= 65535 &&
          x->frame_position <= UINT64_MAX - x->frames && !x->reserved &&
-         !(x->flags & ~(REY_BRIDGE_DISCONTINUITY | REY_BRIDGE_MISSING));
+         !(x->flags & ~(REY_BRIDGE_DISCONTINUITY | REY_BRIDGE_MISSING |
+                       REY_BRIDGE_CAPTURE_ONLY | REY_BRIDGE_RENDER_ONLY)) &&
+         (x->flags & (REY_BRIDGE_CAPTURE_ONLY | REY_BRIDGE_RENDER_ONLY)) !=
+                       (REY_BRIDGE_CAPTURE_ONLY | REY_BRIDGE_RENDER_ONLY);
 }
+static inline int rey_bridge_captures(uint32_t flags) { return !(flags & REY_BRIDGE_RENDER_ONLY); }
+static inline int rey_bridge_renders(uint32_t flags) { return !(flags & REY_BRIDGE_CAPTURE_ONLY); }
 static inline int rey_bridge_frame_gap(const REY_BRIDGE_EXCHANGE *x, uint64_t expected,
                                           unsigned max_gap, unsigned *gap) {
   if (!x || !gap || x->frame_position < expected || x->frame_position - expected > max_gap)
     return 0;
   *gap = (unsigned)(x->frame_position - expected);
   return !*gap || (x->flags & REY_BRIDGE_DISCONTINUITY);
+}
+
+typedef struct REY_BRIDGE_TIMELINE {
+  uint64_t next[2];
+  uint16_t epoch[2];
+  uint8_t seen[2];
+} REY_BRIDGE_TIMELINE;
+
+static inline int rey_bridge_advance(REY_BRIDGE_TIMELINE *clock,
+    const REY_BRIDGE_EXCHANGE *x, unsigned max_gap, unsigned gap[2]) {
+  unsigned direction;
+  if (!clock || !x || !gap) return 0;
+  gap[0] = gap[1] = 0;
+  for (direction = 0; direction < 2; ++direction) {
+    if (direction == 0 ? !rey_bridge_captures(x->flags) : !rey_bridge_renders(x->flags)) continue;
+    if (clock->seen[direction] && (clock->epoch[direction] != x->epoch ||
+        !rey_bridge_frame_gap(x, clock->next[direction], max_gap, &gap[direction]))) return 0;
+  }
+  for (direction = 0; direction < 2; ++direction) {
+    if (direction == 0 ? !rey_bridge_captures(x->flags) : !rey_bridge_renders(x->flags)) continue;
+    clock->seen[direction] = 1;
+    clock->epoch[direction] = (uint16_t)x->epoch;
+    clock->next[direction] = x->frame_position + x->frames;
+  }
+  return 1;
 }

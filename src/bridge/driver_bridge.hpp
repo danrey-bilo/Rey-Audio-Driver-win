@@ -3,6 +3,9 @@
 #include "../engine/audio_block.hpp"
 #include "../../include/rey/bridge.h"
 namespace rey::bridge {
+#ifdef REY_ENABLE_SAR_BRIDGE
+class SarBridge;
+#endif
 #ifdef REY_ENABLE_TAG_BRIDGE
 class GatewayBridge;
 #endif
@@ -17,8 +20,12 @@ public:
   static bool available(); // read-only interface enumeration; never takes ownership
   bool attach(const REY_BRIDGE_PROFILE &, std::string &error);
   bool process(const engine::AudioBlock &);
+  bool running();
   void detach();
   DWORD last_error() const {
+#ifdef REY_ENABLE_SAR_BRIDGE
+    if (sar_) return sar_error();
+#endif
 #ifdef REY_ENABLE_TAG_BRIDGE
     if (gateway_) return gateway_error();
 #endif
@@ -27,6 +34,10 @@ public:
   bool stats(REY_BRIDGE_STATS &);
 
 private:
+#ifdef REY_ENABLE_SAR_BRIDGE
+  std::unique_ptr<SarBridge> sar_;
+  DWORD sar_error() const;
+#endif
 #ifdef REY_ENABLE_TAG_BRIDGE
   std::unique_ptr<GatewayBridge> gateway_;
   DWORD gateway_error() const;

@@ -1,20 +1,19 @@
 #pragma once
 #include <stdint.h>
 
-/* One multichannel input/output plus four input/output pairs per board.
+/* Four stereo input/output pairs per board. ASIO retains all eight channels.
  * The same bounded PCM mapping is used by ACX and the host contract tests. */
-#define REY_ENDPOINT_SLOTS 10u
+#define REY_ENDPOINT_SLOTS 8u
 #define REY_DEVICE_LIMIT 1u
 
 static inline unsigned rey_endpoint_capture(unsigned slot) { return !(slot & 1u); }
 static inline unsigned rey_endpoint_first_channel(unsigned slot) {
-  return slot < 2 ? 0 : ((slot - 2) / 2) * 2;
+  return (slot / 2) * 2;
 }
 static inline unsigned rey_endpoint_channels(unsigned slot, unsigned inputs, unsigned outputs) {
   unsigned total, first;
   if (slot >= REY_ENDPOINT_SLOTS || inputs > 8 || outputs > 8) return 0;
   total = rey_endpoint_capture(slot) ? inputs : outputs;
-  if (slot < 2) return total;
   first = rey_endpoint_first_channel(slot);
   if (first >= total) return 0;
   return total - first > 2 ? 2 : total - first;

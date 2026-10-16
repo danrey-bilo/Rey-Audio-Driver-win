@@ -11,6 +11,8 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ('wdk','sdk','msvc-include','llvm','out'): parser.add_argument('--'+name,type=Path,required=True)
     args=parser.parse_args()
+    compiler=next((args.llvm/name for name in ('clang-22.exe','clang-23.exe','clang-cl.exe') if (args.llvm/name).is_file()),None)
+    if compiler is None: parser.error('LLVM directory must contain clang-22.exe, clang-23.exe or clang-cl.exe')
     args.out.mkdir(parents=True,exist_ok=True)
     includes=[args.wdk/'Include/10.0.26100.0/km',args.sdk/'Include/10.0.26100.0/shared',args.sdk/'Include/10.0.26100.0/ucrt',args.sdk/'Include/10.0.26100.0/um',
         args.wdk/'Include/wdf/kmdf/1.31',args.wdk/'Include/10.0.26100.0/km/acx/km/1.1',args.msvc_include]
@@ -19,7 +21,7 @@ def main():
     logs=[]
     for source in sorted((project/'drivers/Acx').glob('*.c')):
         obj=args.out/(source.stem+'.obj')
-        command=[str(args.llvm/'clang-22.exe'),'--driver-mode=cl','--target=x86_64-pc-windows-msvc','/nologo','/c','/TC','/O2','/Zl','/GS','/W3',
+        command=[str(compiler),'--driver-mode=cl','--target=x86_64-pc-windows-msvc','/nologo','/c','/TC','/O2','/Zl','/GS','/W3',
             '/D_AMD64_','/D_WIN64','/DWINNT','/DNTDDI_VERSION=0x0A00000B','/DKMDF_VERSION_MAJOR=1','/DKMDF_VERSION_MINOR=31','/DACX_VERSION_MAJOR=1','/DACX_VERSION_MINOR=1',
             '/clang:-fno-vectorize','/clang:-fno-slp-vectorize','/clang:-mno-sse','/clang:-mno-sse2','/clang:-mno-mmx','/clang:-Wno-nonportable-include-path','/clang:-Wno-microsoft-enum-forward-reference','/clang:-Wno-switch','/clang:-Wno-ignored-attributes','/clang:-Wno-pragma-pack','/clang:-Wno-unknown-pragmas','/clang:-Wno-unused-but-set-variable']
         command+=[arg for path in includes for arg in ('-imsvc',str(path))]+[str(source),'/Fo'+str(obj)]
@@ -46,7 +48,7 @@ def main():
     (args.out/'inf2cat.log').write_text(result.stdout)
     print(result.stdout[-12000:],flush=True)
     digest=hashlib.sha256((args.out/'ReyAudioAcx.sys').read_bytes()).hexdigest()
-    (args.out/'manifest.json').write_text(json.dumps({'architecture':'x64','kmdf':'1.31','acx':'1.1','compiler':'Clang 22 MSVC ABI','sha256':digest,
+    (args.out/'manifest.json').write_text(json.dumps({'architecture':'x64','kmdf':'1.31','acx':'1.1','compiler':compiler.name+' MSVC ABI','sha256':digest,
         'signed':False,'installed':False,'infverif_exit_code':0,'inf2cat_exit_code':result.returncode,
         'source_sha256':{p.relative_to(project).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((project/'drivers/Acx').glob('*')) if p.suffix in ('.c','.h','.inf')},
         'contract_sha256':{name:hashlib.sha256((project/'include/rey'/name).read_bytes()).hexdigest() for name in ('bridge.h','endpoints.h')}},indent=2))

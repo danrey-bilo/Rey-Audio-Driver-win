@@ -1,4 +1,0 @@
-LIBRARY PiAoipAsio
-EXPORTS
-    DllGetClassObject
-    DllCanUnloadNow

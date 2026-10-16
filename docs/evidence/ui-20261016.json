@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-16",
+  "scope": "installed panel and finite WPF fixtures; no physical USB PCM qualification",
+  "control_file_version": "2.8.2.2",
+  "csharp_contracts_passed": 21,
+  "installed_payload_hashes_match": true,
+  "installed_service_registration_valid": true,
+  "full_service_status_preserved": true,
+  "preferences_format": 4,
+  "tray": {
+    "cases": [
+      {
+        "service": false,
+        "usb": false,
+        "icon": true,
+        "window": false
+      },
+      {
+        "service": true,
+        "usb": false,
+        "icon": true,
+        "window": false
+      },
+      {
+        "service": true,
+        "usb": true,
+        "icon": true,
+        "window": false
+      },
+      {
+        "service": false,
+        "usb": true,
+        "icon": true,
+        "window": false
+      },
+      {
+        "service": true,
+        "usb": true,
+        "icon": true,
+        "window": false
+      },
+      {
+        "service": true,
+        "usb": false,
+        "icon": true,
+        "window": false
+      }
+    ],
+    "close_keeps_tray": true,
+    "minimize_keeps_tray": true,
+    "exit_keeps_icon_hidden": true,
+    "minimum_window": [
+      {
+        "page": "mixer",
+        "width": 1085.6,
+        "height": 662.4,
+        "core_controls_visible": true
+      },
+      {
+        "page": "usb",
+        "width": 1085.6,
+        "height": 662.4,
+        "core_controls_visible": true
+      },
+      {
+        "page": "diagnostics",
+        "width": 1085.6,
+        "height": 662.4,
+        "core_controls_visible": true
+      }
+    ],
+    "hidden_window_wake_ms": 250,
+    "hidden_status_poll_ms": 1000
+  },
+  "asio": {
+    "controls_accessible_after_expand": true
+  },
+  "usb_present": 0
+}

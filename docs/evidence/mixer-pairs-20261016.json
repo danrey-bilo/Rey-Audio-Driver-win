@@ -1,0 +1,280 @@
+{
+  "captured_utc": "2026-10-16T21:53:41.216631+00:00",
+  "version": "2.8.2-akm-dev.6",
+  "native_contracts": 43,
+  "independent_build_contracts": {
+    "passed": 6,
+    "subset_of_native_contracts": true,
+    "toolchain_dlls_required": false
+  },
+  "board_control_contracts": 23,
+  "mixer_pair_csharp_contracts": "passed",
+  "wpf_fixture": {
+    "scope": "finite WPF fixture; no service mutation or physical audio",
+    "input_pairs": 4,
+    "output_pairs": 4,
+    "directions_visible_together": true,
+    "direction_selector_absent": true,
+    "independently_linkable_pairs": 8,
+    "meters_per_stereo_pair": 2,
+    "default_gain_db": 0
+  },
+  "tray_and_minimum_window_fixture": {
+    "cases": [
+      {
+        "service": false,
+        "usb": false,
+        "icon": true,
+        "window": false
+      },
+      {
+        "service": true,
+        "usb": false,
+        "icon": true,
+        "window": false
+      },
+      {
+        "service": true,
+        "usb": true,
+        "icon": true,
+        "window": false
+      },
+      {
+        "service": false,
+        "usb": true,
+        "icon": true,
+        "window": false
+      },
+      {
+        "service": true,
+        "usb": true,
+        "icon": true,
+        "window": false
+      },
+      {
+        "service": true,
+        "usb": false,
+        "icon": true,
+        "window": false
+      }
+    ],
+    "close_keeps_tray": true,
+    "minimize_keeps_tray": true,
+    "exit_keeps_icon_hidden": true,
+    "minimum_window": [
+      {
+        "page": "mixer",
+        "width": 1085.6,
+        "height": 662.4,
+        "core_controls_visible": true
+      },
+      {
+        "page": "usb",
+        "width": 1085.6,
+        "height": 662.4,
+        "core_controls_visible": true
+      },
+      {
+        "page": "diagnostics",
+        "width": 1085.6,
+        "height": 662.4,
+        "core_controls_visible": true
+      }
+    ],
+    "hidden_window_wake_ms": 250,
+    "hidden_status_poll_ms": 1000
+  },
+  "windows_payload_sha256": {
+    "ReyAudioControl.exe": "5ac7bf088ca3ac85311b5e33e1dc82f2f79f7fab6feef9757bd1c6a588136c76",
+    "ReyAudioService.exe": "6d27d71a58ab0752d5397df35a9e60c52ec5c48b00ef2c51d8ccb860804f15de",
+    "ReyAudioAsio.dll": "27024e90c753875b2dce63b95df46647a17260c65ec973a57b3b1a43e5810645",
+    "ReyAsioProbe.exe": "5394338bb1ccbde9c421741b2889c2b4857c3aea0712f06292522a33f4cb466e"
+  },
+  "setup_sha256": "dfd33575ca5cf4003748618343081c596dc9581229e3423986de33cc0c0b4c7d",
+  "installation_verified": true,
+  "installed_pairs": {
+    "captured_utc": "2026-10-16T21:51:30.8686944Z",
+    "version": "2.8.2-akm-dev.6",
+    "cases": [
+      {
+        "direction": "inputs",
+        "pair": "1-2",
+        "linked": true,
+        "right_edit_mirrored": true,
+        "mono_independent": true
+      },
+      {
+        "direction": "inputs",
+        "pair": "3-4",
+        "linked": true,
+        "right_edit_mirrored": true,
+        "mono_independent": true
+      },
+      {
+        "direction": "inputs",
+        "pair": "5-6",
+        "linked": true,
+        "right_edit_mirrored": true,
+        "mono_independent": true
+      },
+      {
+        "direction": "inputs",
+        "pair": "7-8",
+        "linked": true,
+        "right_edit_mirrored": true,
+        "mono_independent": true
+      },
+      {
+        "direction": "outputs",
+        "pair": "1-2",
+        "linked": true,
+        "right_edit_mirrored": true,
+        "mono_independent": true
+      },
+      {
+        "direction": "outputs",
+        "pair": "3-4",
+        "linked": true,
+        "right_edit_mirrored": true,
+        "mono_independent": true
+      },
+      {
+        "direction": "outputs",
+        "pair": "5-6",
+        "linked": true,
+        "right_edit_mirrored": true,
+        "mono_independent": true
+      },
+      {
+        "direction": "outputs",
+        "pair": "7-8",
+        "linked": true,
+        "right_edit_mirrored": true,
+        "mono_independent": true
+      }
+    ],
+    "settings_restored": true,
+    "physical_audio": false
+  },
+  "installed_asio_process_recovery": {
+    "captured_utc": "2026-10-16T21:53:41.1379842Z",
+    "version": "2.8.2-akm-dev.6",
+    "killed_owner_pid": 50472,
+    "recovered_ms": 111.1514,
+    "reopened_successfully": true,
+    "final_state": "ready",
+    "asio_connected": false,
+    "physical_audio": false,
+    "scope": "installed registered ASIO process recovery; no analog measurement"
+  },
+  "installed_real_usb_digital_loop": {
+    "registered_asio": true,
+    "scope": "permanent Windows and Pi / real USB digital JACK loop",
+    "physical_audio": false,
+    "ableton_host": false,
+    "seconds": 20.007,
+    "native_counter_deltas": {
+      "receive_overflow_frames": 0,
+      "receive_underflow_frames": 0,
+      "send_overflow_frames": 0,
+      "send_underflow_frames": 0,
+      "jack_xruns": 0,
+      "conversion_errors": 0,
+      "lease_timeouts": 0
+    },
+    "native_counter_max_deltas": {
+      "receive_overflow_frames": 0,
+      "receive_underflow_frames": 0,
+      "send_overflow_frames": 0,
+      "send_underflow_frames": 0,
+      "jack_xruns": 0,
+      "conversion_errors": 0,
+      "lease_timeouts": 0
+    },
+    "usb_packets_observed": 142160,
+    "max_native_status_age_seconds": 0.09961819648742676,
+    "pc_host": {
+      "seconds": "20.007",
+      "callbacks": "119039",
+      "frames": "1904624",
+      "pulses": "732",
+      "received": "732",
+      "missing": "0",
+      "invalid": "0",
+      "duplicates": "0",
+      "rtt_p50_us": "4637.000",
+      "rtt_p95_us": "4764.400",
+      "rtt_p99_us": "4778.600",
+      "rtt_max_us": "4823.000",
+      "capture_dropped": "0",
+      "render_late_frames": "0",
+      "render_missing_frames": "0",
+      "render_overflow": "0",
+      "callback_gap_max_us": "550.000",
+      "processing_max_us": "65.300",
+      "capture_age_max_us": "423.900",
+      "service_gap_max_us": "416.400",
+      "positions_backwards": "0",
+      "mmcss_failures": "0",
+      "cadence_seconds": "19.840462100",
+      "cadence_frames": "1904608",
+      "dense_markers": "0",
+      "stream_only": "0",
+      "gap_p50_us": "131.900",
+      "gap_p95_us": "274.700",
+      "gap_p99_us": "284.300",
+      "gap_max_us": "550.200",
+      "okay": "1",
+      "physical_audio": "0",
+      "ableton_host": "0"
+    },
+    "sample_rtt": {
+      "p50_us": "4718.750",
+      "p95_us": "4718.750",
+      "p99_us": "4718.750",
+      "max_us": "4718.750",
+      "rejected_peak_candidates": "0",
+      "digital_jack_loop": "1",
+      "physical_audio": "0"
+    },
+    "helper": {
+      "xruns": "53",
+      "steady_xruns": "0",
+      "startup_seconds": "5",
+      "physical_audio": "0"
+    },
+    "service_cpu_one_core_percent": 98.30229173316057,
+    "pi_cpu_one_core_percent": {
+      "rey-effects-usb-native": 17.49144085754031,
+      "rey-effects-jack": 10.831519861573074,
+      "rey-effects-io": 8.270011786201067
+    },
+    "scm_layout_log_counters": "not available from installed SCM stdout; isolated console qualification recorded separately",
+    "goal_pcm_p99_below_5ms": true,
+    "okay": true
+  },
+  "final_service_state": "ready",
+  "final_asio_connected": false,
+  "final_usb": {
+    "rate": 96000,
+    "bits": 32,
+    "depth": 8,
+    "block": 64,
+    "guard": 0,
+    "automatic": true
+  },
+  "matrix_trial_removed": true,
+  "matrix_dependency": false,
+  "system_windows_endpoints_installed": false,
+  "native_acx": {
+    "endpoint_count": 8,
+    "stereo_pairs_each_direction": 4,
+    "built_and_inf_catalog_checked": true,
+    "signed": false,
+    "installed": false
+  },
+  "required_delivery": "one Rey installer; automatic four stereo input/output pairs; only the Rey user interface",
+  "endpoint_delivery_gap": "production-signed native package or suitable signed eight-line OEM package and runtime qualification",
+  "physical_adc_dac_latency_measured": false,
+  "daw_project_measured": false
+}

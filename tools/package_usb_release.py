@@ -50,22 +50,37 @@ def main():
     source_zip = output / (stem + '-source.zip')
     subprocess.run(['git', 'archive', '--format=zip', '--prefix=' + stem + '-source/',
                     '--output=' + str(source_zip), args.ref], cwd=project, check=True)
+    # git archive omits gitlinks. Record their immutable revision without
+    # exporting the private transport's source into a Windows source archive.
+    commit = subprocess.check_output(['git', 'rev-parse', args.ref], cwd=project, text=True).strip()
+    usb_revision = subprocess.check_output(['git', 'rev-parse', args.ref + ':lib/pi5-ausb'],
+                                            cwd=project, text=True).strip()
+    provenance = json.dumps({'application_commit': commit,
+        'usb_transport': {'repository': 'https://github.com/danrey-bilo/Pi5-AUSB',
+                          'path': 'lib/pi5-ausb', 'commit': usb_revision, 'source_included': False}}, indent=2) + '\n'
+    with zipfile.ZipFile(source_zip, 'a', zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(stem + '-source/SUBMODULES.json', provenance)
     package_zip = output / (stem + '-x64.zip')
     prefix = stem + '-x64/'
     quick_start = ('Run Rey-Audio-USB-ASIO-Setup-x64.exe and accept UAC.\n'
                    'Close Ableton completely before updating. Connect one configured Pi5-AUSB board.\n'
                    'Select ASIO / Rey Audio USB ASIO in Ableton. Read docs/USB-ASIO.md.\n'
-                   '96/192 kHz measurements and manual profiles: docs/USB-LATENCY-2.8.1.md.\n'
+                   'Current AKM integration: docs/USB-LATENCY-2026-10-16.md.\n'
+                   'Select frequency, PCM format and ASIO buffer; USB requests/reserve are automatic.\n'
+                   'The coordinated Pi USB/JACK update is required for native ASIO.\n'
                    'Each audio test lasts at most 175 seconds. Physical ADC/DAC latency is unmeasured.\n\n'
                    'Запустите Rey-Audio-USB-ASIO-Setup-x64.exe и подтвердите UAC.\n'
                    'Перед обновлением полностью закройте Ableton. Подключите одну настроенную Pi5-AUSB.\n'
                    'В Ableton выберите ASIO / Rey Audio USB ASIO. Инструкция: docs/USB-ASIO.ru.md.\n'
-                   'Профили и измерения 96/192 кГц: docs/USB-LATENCY-2.8.1.ru.md.\n'
+                   'Интеграция AKM: docs/USB-LATENCY-2026-10-16.md.\n'
+                   'Выберите частоту, PCM и буфер ASIO; очередь/запас USB задаются автоматически.\n'
+                   'Для нативного ASIO нужно согласованное обновление USB/JACK на Pi.\n'
                    'Аудиопрогоны до 175 секунд. Физическая задержка ADC/DAC не измерена.\n')
     with zipfile.ZipFile(package_zip, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         archive.write(source_setup, prefix + source_setup.name)
         archive.write(setup / 'SHA256.json', prefix + 'SHA256.json')
         archive.write(args.asio_notice, prefix + 'LICENSE-ASIO-SDK.txt')
+        archive.writestr(prefix + 'SUBMODULES.json', provenance)
         archive.writestr(prefix + 'START-HERE.txt', quick_start)
         for name in files:
             if name in ('README.md', 'README.ru.md', 'LICENSE') or name.startswith('docs/'):

@@ -3,6 +3,7 @@
 #include "../bridge/driver_bridge.hpp"
 #include "../platform/device_names.hpp"
 #include "pi5ausb/windows.hpp"
+#include "../engine/transport_tuning.hpp"
 namespace rey::service {
 Manager::Manager(std::wstring path, bool test, bool asio_only)
     : path_(std::move(path)), digital_test_(test), asio_only_(asio_only) {}
@@ -10,6 +11,9 @@ Manager::~Manager() = default;
 bool Manager::initialize(std::string &error) {
   Settings settings; unsigned format = 0;
   if (!load(path_, settings, error, L"Software\\ReyAudio", &format)) return false;
+#ifndef REY_FINITE_QUALIFICATION
+  settings.usb_depth=rey::engine::transport_tuning(settings.usb.rate).requests;
+#endif
   migrate_profile_ = format < 3;
   session_ = std::make_unique<DeviceSession>("", path_, L"Software\\ReyAudio", settings, digital_test_, asio_only_);
   bridge_present_ = !asio_only_ && bridge::DriverBridge::available();
@@ -27,19 +31,24 @@ bool Manager::activate(const std::string &id, std::string &error) {
     if (!save(path_, settings, error)) return false;
     migrate_profile_ = false;
   }
+#ifndef REY_FINITE_QUALIFICATION
+  settings.usb_depth=rey::engine::transport_tuning(settings.usb.rate).requests;
+#endif
   auto next = std::make_unique<DeviceSession>(id, path_, L"Software\\ReyAudio", settings, digital_test_, asio_only_);
   session_ = std::move(next); // The old session closes its IPC and stream first.
   identity_ = id;
   return true;
 }
 bool Manager::persist(const Settings &next, std::string &error) {
-  if (!session_->update(next, error)) return false;
+  auto automatic=next;
+  automatic.usb_depth=rey::engine::transport_tuning(next.usb.rate).requests;
+  if (!session_->update(automatic, error)) return false;
   migrate_profile_ = false;
   return true;
 }
 void Manager::scan_usb() {
   std::string error;
-  const auto paths = pi5ausb::WindowsDevice::interface_paths(error);
+  auto paths = pi5ausb::WindowsDevice::interface_paths(error);
   if (!error.empty()) { device_warning_ = error; return; }
   const auto selection = select_usb(paths, usb_path_);
   device_warning_ = selection.warning;
@@ -47,9 +56,10 @@ void Manager::scan_usb() {
     session_->poll(GetTickCount64(), L"", bridge_present_);
     usb_path_.clear();
     if (!selection.path.empty()) {
+      std::string id;
       pi5ausb::WindowsDevice usb;
       if (!usb.open(selection.path, error)) { device_warning_ = error; return; }
-      const std::string id(usb.device().hello.id.data(), 32);
+      id.assign(usb.device().hello.id.data(), 32);
       if (identity_ != id && !activate(id, error)) { device_warning_ = error; return; }
       usb_path_ = selection.path;
       normalize_usb_name(usb_path_);
@@ -76,6 +86,8 @@ std::string Manager::request(const std::string &command, DWORD sender_pid) {
   if (command.compare(0, 5, "ASIO ") == 0) return asio_request(command, sender_pid);
   std::lock_guard<std::mutex> lock(mutex_);
   if (command == "STATUS") return status_locked();
+  if (command.compare(0, 11, "BOARD_MODE ") == 0 && session_->asio().running())
+    return status_locked("Stop the ASIO audio engine before changing board mode");
   Settings next; std::string error;
   if (!command_settings(session_->settings(), command, next, error) || !persist(next, error)) return status_locked(error);
   return status_locked();

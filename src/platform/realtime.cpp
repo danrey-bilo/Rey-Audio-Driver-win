@@ -4,13 +4,13 @@
 #include <cstdio>
 namespace rey {
 namespace {
-void prefer_audio_cpu(unsigned role) {
+void prefer_audio_cpu(unsigned role,bool use_pool) {
   ULONG bytes=0; GetSystemCpuSetInformation(nullptr,0,&bytes,GetCurrentProcess(),0);
   if(!bytes) return;
   std::vector<uint8_t> buffer(bytes);
   if(!GetSystemCpuSetInformation(reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.data()),bytes,&bytes,GetCurrentProcess(),0)) return;
   GROUP_AFFINITY allowed{}; if(!GetThreadGroupAffinity(GetCurrentThread(),&allowed)) return;
-  struct Cpu { ULONG id; BYTE core,performance; };
+  struct Cpu { BYTE processor,core,performance; ULONG id; };
   std::vector<Cpu> cores;
   for(size_t offset=0;offset+sizeof(SYSTEM_CPU_SET_INFORMATION)<=bytes;) {
     const auto* item=reinterpret_cast<const SYSTEM_CPU_SET_INFORMATION*>(buffer.data()+offset);
@@ -19,14 +19,33 @@ void prefer_audio_cpu(unsigned role) {
     if(item->Type==CpuSetInformation && cpu.Group==allowed.Group && cpu.LogicalProcessorIndex<sizeof(ULONG_PTR)*8 &&
       (allowed.Mask & (ULONG_PTR(1)<<cpu.LogicalProcessorIndex)) && (!cpu.Allocated || cpu.AllocatedToTargetProcess)) {
       bool duplicate=false; for(const auto& previous:cores) if(previous.core==cpu.CoreIndex) duplicate=true;
-      if(!duplicate) cores.push_back({cpu.Id,cpu.CoreIndex,cpu.EfficiencyClass});
+      if(!duplicate) cores.push_back({cpu.LogicalProcessorIndex,cpu.CoreIndex,cpu.EfficiencyClass,cpu.Id});
     }
     offset+=item->Size;
   }
   std::stable_sort(cores.begin(),cores.end(),[](const Cpu& a,const Cpu& b) { return a.performance>b.performance; });
   if(cores.size()<4 || cores[3].performance!=cores.front().performance) return;
-  const ULONG chosen=cores[1+role%3].id; // separate physical cores; respect caller affinity/reservations
-  SetThreadSelectedCpuSets(GetCurrentThread(),&chosen,1);
+  // Keep caller CPU restrictions. An unrestricted machine with enough fast
+  // physical cores can give each private audio thread a separate two-core
+  // pool, retaining migration without service/host competing on the same core.
+  const auto performance_cores=std::count_if(cores.begin(),cores.end(),
+      [&](const Cpu& cpu){return cpu.performance==cores.front().performance;});
+  // Prefer separate physical cores in the latter half of the fastest group.
+  // This avoids concentrating both audio threads next to the boot/IRQ core,
+  // without pinning them or overriding the DAW's existing CPU restrictions.
+  auto index=1+(performance_cores/2-1+role%3)%(performance_cores-1);
+  if(use_pool && performance_cores>=6 && role<2) {
+    ULONG selected[64]{},defaults[64]{},selected_count=0,default_count=0;
+    if(GetThreadSelectedCpuSets(GetCurrentThread(),selected,64,&selected_count) &&
+       GetProcessDefaultCpuSets(GetCurrentProcess(),defaults,64,&default_count) &&
+       !selected_count && !default_count) {
+      const auto first=performance_cores-4+2*role;
+      const ULONG pool[]{cores[size_t(first)].id,cores[size_t(first+1)].id};
+      if(SetThreadSelectedCpuSets(GetCurrentThread(),pool,2))index=first;
+    }
+  }
+  PROCESSOR_NUMBER ideal{allowed.Group,cores[size_t(index)].processor,0};
+  SetThreadIdealProcessorEx(GetCurrentThread(),&ideal,nullptr);
 }
 }
 uint64_t now_ns() {
@@ -46,7 +65,8 @@ void max_counter(std::atomic<uint64_t>& v,uint64_t x) {
   while(x>old && !v.compare_exchange_weak(old,x,std::memory_order_relaxed)) {}
 }
 RealtimeThread::RealtimeThread(std::atomic<uint64_t>& failures,unsigned role,int requested_cpu) {
-  prefer_audio_cpu(role);
+  const bool use_pool=requested_cpu<0 && !GetEnvironmentVariableA("REY_RT_CPUS",nullptr,0);
+  prefer_audio_cpu(role,use_pool);
   DWORD index=0; mmcss_=AvSetMmThreadCharacteristicsW(L"Pro Audio",&index);
   if(!mmcss_ || !AvSetMmThreadPriority(mmcss_,AVRT_PRIORITY_CRITICAL)) ++failures;
   if(!mmcss_) SetThreadPriority(GetCurrentThread(),THREAD_PRIORITY_HIGHEST);

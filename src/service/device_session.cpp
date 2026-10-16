@@ -39,6 +39,7 @@ void DeviceSession::stop_worker() {
     SetEvent(worker_stop_);
   if (worker_.joinable())
     worker_.join();
+  windows_requested_.store(false,std::memory_order_release);
   mixer_.reset();
   if (worker_stop_)
     CloseHandle(worker_stop_);
@@ -74,18 +75,21 @@ bool DeviceSession::process(void *opaque, const rey::engine::AudioBlock &b) {
   auto &context = *static_cast<CallbackContext *>(opaque);
   auto &m = *context.manager;
   const auto now = rey::now_ns();
-  if (context.previous) {
+  if (!b.render_only && context.previous) {
     const auto gap = now - context.previous;
     if (gap > m.gap_max_.load(std::memory_order_relaxed))
       m.gap_max_.store(gap, std::memory_order_relaxed);
   }
-  context.previous = now;
-  m.callbacks_.fetch_add(1, std::memory_order_relaxed);
-  m.frames_.fetch_add(b.frames, std::memory_order_relaxed);
+  if (!b.render_only) {
+    context.previous = now;
+    m.callbacks_.fetch_add(1, std::memory_order_relaxed);
+    m.frames_.fetch_add(b.frames, std::memory_order_relaxed);
+  }
   if (b.missing)
     m.missing_.fetch_add(b.frames, std::memory_order_relaxed);
   rey::engine::AudioBlock adjusted;
-  if (!m.mixer_.capture(b, adjusted)) return false;
+  adjusted = b;
+  if (!b.render_only && !m.mixer_.capture(b, adjusted)) return false;
   bool ok = true;
   if (context.echo) {
     for (unsigned f = 0; f < b.frames; ++f)
@@ -93,11 +97,15 @@ bool DeviceSession::process(void *opaque, const rey::engine::AudioBlock &b) {
         b.render[size_t(f) * b.outputs + ch] =
             ch < b.inputs ? adjusted.capture[size_t(f) * b.inputs + ch] : 0;
   } else {
-    if (context.windows) ok = static_cast<rey::bridge::DriverBridge *>(context.bridge)->process(adjusted);
+    if (context.windows) {
+      auto &bridge=*static_cast<rey::bridge::DriverBridge *>(context.bridge);
+      ok=bridge.process(adjusted);
+      m.windows_requested_.store(bridge.running(),std::memory_order_release);
+    }
     else std::fill_n(b.render, size_t(b.frames) * b.outputs, 0);
     m.asio_.process(adjusted, now);
   }
-  m.mixer_.render(adjusted);
+  if (!b.capture_only) m.mixer_.render(adjusted);
   const auto elapsed = rey::now_ns() - now;
   m.processing_sum_.fetch_add(elapsed, std::memory_order_relaxed);
   if (elapsed > m.processing_max_.load(std::memory_order_relaxed)) m.processing_max_.store(elapsed, std::memory_order_relaxed);
@@ -115,6 +123,8 @@ void DeviceSession::worker(Settings settings,
     return;
   }
   const auto id = session.identity();
+  const bool native = session.jack_audio();
+  if(native && digital_test_) { state("device_unavailable","The JACK audio backend is not a digital echo fixture"); return; }
   REY_BRIDGE_PROFILE profile{sizeof(profile),
                                 REY_BRIDGE_VERSION,
                                 settings.usb.rate,
@@ -129,7 +139,7 @@ void DeviceSession::worker(Settings settings,
     std::lock_guard<std::mutex> lock(mutex_);
     usb_id_ = id;
     active_ = settings.usb;
-    backend_ = "digital-loopback";
+    backend_ = native ? "winusb-jack" : "digital-loopback";
   }
   if (!digital_test_ && !asio_only_ && !bridge.attach(profile, error)) {
     state("driver_unavailable", error);
@@ -137,16 +147,44 @@ void DeviceSession::worker(Settings settings,
   }
   context.windows = !digital_test_ && !asio_only_;
   if (!digital_test_) asio_.configure(profile, settings.usb_depth, generation_.load());
-  state(digital_test_ ? "digital_test" : "streaming",
-        digital_test_ ? "USB digital test is running"
-                      : asio_only_ ? "USB ASIO service is ready" : "USB audio endpoints are attached");
-  if (!session.run(process, &context, worker_stop_, 0, settings.usb_depth,
-                   error))
-    state("stream_error",
-          error.empty() ? "USB stream stopped with errors" : error);
+  if (native) {
+    do {
+      context.previous = 0;
+      error.clear();
+      bool okay=true;
+      if(context.windows) windows_requested_.store(bridge.running(),std::memory_order_release);
+      stream_requested_.store(asio_.running() || windows_requested_.load(std::memory_order_acquire),std::memory_order_release);
+      if(stream_requested_.load()) {
+        state("streaming",context.windows?"USB audio stream is running":"USB ASIO stream is running");
+        // Windows pairs and ASIO share the native hardware clock. A 32-frame
+        // native quantum also preserves the existing 16-frame ASIO path.
+        okay=session.run(process,&context,worker_stop_,0,settings.usb_depth,error,&stream_requested_,context.windows?32u:asio_.block_size());
+      }
+      if (!okay && stream_requested_.load()) {
+        std::fprintf(stderr, "REY_USB_STREAM_ERROR %s\n", error.c_str());
+        state("stream_error", error); return;
+      }
+      mixer_.reset();
+      state("ready", context.windows?"USB audio service is ready":"USB ASIO service is ready");
+      // A 20-ms idle poll could miss the first two Windows capture periods.
+      // Shared registers are cheap to inspect; detect a new client within 1 ms.
+      while (WaitForSingleObject(worker_stop_, context.windows?1:20) == WAIT_TIMEOUT && !stream_requested_.load(std::memory_order_acquire)) {
+        if(context.windows) {
+          windows_requested_.store(bridge.running(),std::memory_order_release);
+          stream_requested_.store(asio_.running() || windows_requested_.load(std::memory_order_acquire),std::memory_order_release);
+        }
+      }
+    } while (WaitForSingleObject(worker_stop_, 0) != WAIT_OBJECT_0);
+  } else {
+    state(digital_test_ ? "digital_test" : "streaming", digital_test_ ? "USB digital test is running" : "USB audio endpoints are attached");
+    const bool okay = session.run(process, &context, worker_stop_, 0, settings.usb_depth, error, nullptr, std::max(32u, unsigned(settings.usb.block)));
+    if (!okay) state("stream_error", error.empty() ? "USB stream stopped with errors" : error);
+  }
 
 }
 void DeviceSession::poll(uint64_t now, const std::wstring &path, bool bridge) {
+  asio_.poll();
+  stream_requested_.store(asio_.running() || windows_requested_.load(std::memory_order_acquire), std::memory_order_release);
   Settings s;
   { std::lock_guard<std::mutex> lock(mutex_); s = settings_; bridge_present_ = bridge;
     usb_present_ = path.empty() ? 0 : 1; usb_id_ = path.empty() ? "" : identity_; }
@@ -172,7 +210,7 @@ bool DeviceSession::update(const Settings &next, std::string &error) {
 std::string DeviceSession::status_locked(const std::string &error) const {
   const auto &s = settings_;
   std::ostringstream out;
-  out << "{\"version\":\"2.8.1\",\"ok\":" << (error.empty() ? "true" : "false")
+  out << "{\"version\":\"2.8.2-akm-dev.7\",\"ok\":" << (error.empty() ? "true" : "false")
       << ",\"error\":" << json_string(error)
       << ",\"state\":" << json_string(state_)
       << ",\"detail\":" << json_string(detail_)
@@ -181,6 +219,7 @@ std::string DeviceSession::status_locked(const std::string &error) const {
       << ",\"asio_only\":" << (asio_only_ ? "true" : "false")
       << ",\"digital_test\":" << (digital_test_ ? "true" : "false")
       << ",\"identity\":" << json_string(identity_)
+      << ",\"board_mode\":" << json_string(s.board_effects ? "combined" : "soundcard")
       << ",\"backend\":" << json_string(backend_)
       << ",\"usb\":{\"present\":" << usb_present_
       << ",\"identity\":" << json_string(usb_id_) << ",\"rate\":" << s.usb.rate
@@ -211,7 +250,11 @@ std::string DeviceSession::status_locked(const std::string &error) const {
     }
     out << ']';
   }
-  out << "},\"events\":[";
+  out << ",\"input_stereo\":[";
+  for (unsigned pair = 0; pair < 4; ++pair) out << (pair ? "," : "") << ((s.mix.stereo_links[0] & (1u << pair)) ? "true" : "false");
+  out << "],\"output_stereo\":[";
+  for (unsigned pair = 0; pair < 4; ++pair) out << (pair ? "," : "") << ((s.mix.stereo_links[1] & (1u << pair)) ? "true" : "false");
+  out << "]},\"events\":[";
   bool comma = false;
   for (auto i = events_.rbegin(); i != events_.rend(); ++i) {
     if (comma)

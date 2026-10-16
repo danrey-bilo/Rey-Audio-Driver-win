@@ -9,8 +9,11 @@
 #include <string>
 
 namespace rey::asio {
-constexpr uint32_t magic = 0x52415349, version = 1;
-constexpr unsigned channels = 8, max_frames = 256, slots = 8;
+constexpr uint32_t magic = 0x52415349, version = 2;
+// Windows delivers a USB Audio buffer in bursts: at 192 kHz its 3 ms
+// packet contains 36 ASIO blocks of 16 frames. Capacity is not added latency.
+constexpr unsigned channels = 8, max_frames = 256, slots = 64;
+constexpr unsigned max_lead_blocks = slots-2;
 constexpr long diagnostics_selector = 0x52455931;
 inline constexpr GUID clsid = {0x91ba2c4a, 0x56bc, 0x4c49,
     {0xa4, 0x99, 0x23, 0x19, 0x79, 0xec, 0x5f, 0x60}};
@@ -37,7 +40,7 @@ struct Shared {
 };
 static_assert(alignof(Counter) == 64 && sizeof(Counter) == 64);
 static_assert(offsetof(Shared, capture) % 64 == 0);
-static_assert(sizeof(Shared) < 1024 * 1024);
+static_assert(sizeof(Shared) < 2 * 1024 * 1024);
 inline bool valid_block(unsigned n) { return n >= 16 && n <= max_frames && !(n & (n - 1)); }
 inline bool valid_rate(unsigned n) {
   return n == 44100 || n == 48000 || n == 88200 || n == 96000 || n == 176400 || n == 192000;
@@ -46,6 +49,7 @@ struct Info {
   std::string id;
   unsigned rate = 0, bits = 0, block = 64, depth = 3;
   uint64_t generation = 0;
+  unsigned capture_buffer = 0, render_buffer = 0, render_delay = 0;
 };
 struct Diagnostics {
   uint32_t size = sizeof(Diagnostics), abi_version = version, running = 0, block = 0;

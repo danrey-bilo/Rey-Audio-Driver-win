@@ -3,7 +3,7 @@ Signature="$WINDOWS NT$"
 Class=MEDIA
 ClassGuid={4d36e96c-e325-11ce-bfc1-08002be10318}
 Provider=%Provider%
-DriverVer=10/03/2026,2.7.0.0
+DriverVer=10/16/2026,2.8.2.6
 CatalogFile=ReyAudioAcx.cat
 PnpLockDown=1
 
@@ -38,6 +38,71 @@ KmdfService=ReyAudioAcx,WdfSection
 [WdfSection]
 KmdfLibraryVersion=1.31
 
+[PiAoipInstall.NT.Interfaces]
+AddInterface=%KSCATEGORY_AUDIO%,ReyAudioInput1_2,Input12
+AddInterface=%KSCATEGORY_CAPTURE%,ReyAudioInput1_2,Input12
+AddInterface=%KSCATEGORY_REALTIME%,ReyAudioInput1_2,Input12
+AddInterface=%KSCATEGORY_AUDIO%,ReyAudioInput3_4,Input34
+AddInterface=%KSCATEGORY_CAPTURE%,ReyAudioInput3_4,Input34
+AddInterface=%KSCATEGORY_REALTIME%,ReyAudioInput3_4,Input34
+AddInterface=%KSCATEGORY_AUDIO%,ReyAudioInput5_6,Input56
+AddInterface=%KSCATEGORY_CAPTURE%,ReyAudioInput5_6,Input56
+AddInterface=%KSCATEGORY_REALTIME%,ReyAudioInput5_6,Input56
+AddInterface=%KSCATEGORY_AUDIO%,ReyAudioInput7_8,Input78
+AddInterface=%KSCATEGORY_CAPTURE%,ReyAudioInput7_8,Input78
+AddInterface=%KSCATEGORY_REALTIME%,ReyAudioInput7_8,Input78
+AddInterface=%KSCATEGORY_AUDIO%,ReyAudioOutput1_2,Output12
+AddInterface=%KSCATEGORY_RENDER%,ReyAudioOutput1_2,Output12
+AddInterface=%KSCATEGORY_REALTIME%,ReyAudioOutput1_2,Output12
+AddInterface=%KSCATEGORY_AUDIO%,ReyAudioOutput3_4,Output34
+AddInterface=%KSCATEGORY_RENDER%,ReyAudioOutput3_4,Output34
+AddInterface=%KSCATEGORY_REALTIME%,ReyAudioOutput3_4,Output34
+AddInterface=%KSCATEGORY_AUDIO%,ReyAudioOutput5_6,Output56
+AddInterface=%KSCATEGORY_RENDER%,ReyAudioOutput5_6,Output56
+AddInterface=%KSCATEGORY_REALTIME%,ReyAudioOutput5_6,Output56
+AddInterface=%KSCATEGORY_AUDIO%,ReyAudioOutput7_8,Output78
+AddInterface=%KSCATEGORY_RENDER%,ReyAudioOutput7_8,Output78
+AddInterface=%KSCATEGORY_REALTIME%,ReyAudioOutput7_8,Output78
+
+[Input12]
+AddReg=Endpoint.Common,Input12.Name
+[Input34]
+AddReg=Endpoint.Common,Input34.Name
+[Input56]
+AddReg=Endpoint.Common,Input56.Name
+[Input78]
+AddReg=Endpoint.Common,Input78.Name
+[Output12]
+AddReg=Endpoint.Common,Output12.Name
+[Output34]
+AddReg=Endpoint.Common,Output34.Name
+[Output56]
+AddReg=Endpoint.Common,Output56.Name
+[Output78]
+AddReg=Endpoint.Common,Output78.Name
+
+[Endpoint.Common]
+HKR,,CLSID,,"{17CCA71B-ECD7-11D0-B908-00A0C9223196}"
+HKR,EP\0,"{1DA5D803-D492-4EDD-8C23-E0C0FFEE7F0E},2",,"{00000000-0000-0000-0000-000000000000}"
+HKR,EP\0,"{1DA5D803-D492-4EDD-8C23-E0C0FFEE7F0E},7",0x00010001,1
+
+[Input12.Name]
+HKR,,FriendlyName,,"Input 1-2 (Rey Audio)"
+[Input34.Name]
+HKR,,FriendlyName,,"Input 3-4 (Rey Audio)"
+[Input56.Name]
+HKR,,FriendlyName,,"Input 5-6 (Rey Audio)"
+[Input78.Name]
+HKR,,FriendlyName,,"Input 7-8 (Rey Audio)"
+[Output12.Name]
+HKR,,FriendlyName,,"Output 1-2 (Rey Audio)"
+[Output34.Name]
+HKR,,FriendlyName,,"Output 3-4 (Rey Audio)"
+[Output56.Name]
+HKR,,FriendlyName,,"Output 5-6 (Rey Audio)"
+[Output78.Name]
+HKR,,FriendlyName,,"Output 7-8 (Rey Audio)"
+
 [SourceDisksNames]
 1=%Disk%,,,""
 
@@ -48,3 +113,7 @@ ReyAudioAcx.sys=1
 Provider="Rey Audio"
 Device="Rey Audio Driver"
 Disk="Rey Audio Driver development package"
+KSCATEGORY_AUDIO="{6994AD04-93EF-11D0-A3CC-00A0C9223196}"
+KSCATEGORY_CAPTURE="{65E8773D-8F56-11D0-A3B9-00A0C9223196}"
+KSCATEGORY_RENDER="{65E8773E-8F56-11D0-A3B9-00A0C9223196}"
+KSCATEGORY_REALTIME="{EB115FFC-10C8-4964-831D-6DCB02E6F23F}"

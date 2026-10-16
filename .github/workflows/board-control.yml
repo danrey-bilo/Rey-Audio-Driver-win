@@ -1,0 +1,34 @@
+name: Windows board control
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  panel:
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          submodules: false
+      - name: Compile WPF panel
+        shell: powershell
+        run: ./tools/build_control.ps1
+      - name: Check modes, rates and eight-channel command payload
+        shell: powershell
+        run: ./tools/check_board_control.ps1
+      - name: Check independent mono and stereo mixer pairs
+        shell: powershell
+        run: ./tools/check_mixer_pairs.ps1
+      - name: Compile installer API without packaging or running an installer
+        shell: powershell
+        run: ./tools/check_installer_compile.ps1
+      - name: Capture publication contract without USB library or ASIO SDK
+        run: |
+          cmake -S tests -B build/capture-contract -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/capture-contract --config Release
+          ctest --test-dir build/capture-contract --build-config Release --output-on-failure
+      # Native service/ASIO validation uses the separately supplied ASIO SDK.
+      # This job does not claim native or physical USB qualification.

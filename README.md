@@ -9,23 +9,39 @@ Eight inputs and eight outputs, integer PCM16/24/32 and six sample rates from
 44.1 to 192 kHz. The service connects the board automatically and keeps running
 when the mixer window closes.
 
+**Development:** [AKM board modes](docs/AKM-OPERATING-MODES.md) adds two choices
+in the ASIO panel: Audio interface and Combined, with automatic standalone
+effects on disconnect. Combined is limited to 96 kHz; the existing USB transport
+remains limited to 192 kHz. The coordinated native AKM USB/JACK integration,
+automatic per-rate tuning and simplified controls are in this development branch.
+See [2026-10-16 qualification](docs/USB-LATENCY-2026-10-16.md); its digital loop
+includes the real USB cable and Pi, but excludes the analog ADC/DAC path.
+
+**Windows pairs, dev.7:** one Rey installer now embeds the original signed SAR
+kernel and creates four stereo inputs plus four stereo outputs automatically.
+All controls stay in Rey; ASIO remains available alongside Windows audio.
+See [installation and qualification](docs/ENDPOINTS.md).
+
 **[Download 2.8.1 USB preview 2](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.2)**
 · [Install & Ableton](docs/USB-ASIO.md)
 · [Documentation](docs/README.md)
 · [Pi5-AUSB transport](https://github.com/danrey-bilo/Pi5-AUSB)
 
-> **Pre-release.** Native 96/192 kHz profiles completed 175 s with zero PCM
+> **Historical 2.8.1 digital echo preview.** Native 96/192 kHz profiles completed 175 s with zero PCM
 > errors and RTT p99 about 1.53 ms. Rare maxima still exceeded 3 ms.
 > Actual Ableton load checks and physical-audio limits are recorded in
 > the [2.8.1 report](docs/USB-LATENCY-2.8.1.md).
 
 ## Mixer
 
-![Mixer for one USB audio card](docs/assets/rey-usb-preview2-mixer.png)
+![Mixer rendered with fixture levels](docs/assets/mixer-pairs-20261016.png)
 
-Control eight input or eight output channels with gain, Mute, Solo and polarity.
-Output Master controls playback. Meters show real PCM levels. The panel has
-three pages: **Mixer**, **Settings** and **Diagnostics**, with access from the tray.
+All eight inputs and eight outputs are visible together. Each adjacent pair
+has an independent **MONO / STEREO** switch. Stereo links share gain, Mute,
+Solo and polarity while keeping separate left/right audio and meters.
+New profiles start at 0 dB. The panel has three pages: **Mixer**, **Device**
+and **Diagnostics**, with access from the tray. The image uses fixture levels;
+installed-service and real USB checks are recorded [separately](docs/MIXER.md).
 
 <details>
 <summary><strong>USB settings and diagnostics</strong></summary>
@@ -44,11 +60,14 @@ three pages: **Mixer**, **Settings** and **Diagnostics**, with access from the t
 2. Connect one configured Pi5-AUSB board over USB. Open **Rey Audio Driver**.
 3. In Ableton **Settings → Audio**, set **Driver Type: ASIO** and
    **Audio Device: Rey Audio USB ASIO**. Enable the required inputs/outputs.
-4. For the documented 192 kHz test, start with **64 Samples**. Set USB queue
-   and ASIO render reserve manually using the [buffer guide](docs/BUFFER-GUIDE.md).
+4. Start with **64 Samples**. The current development driver fixes USB requests
+   and render reserve automatically; only the ASIO buffer is adjustable.
+   See the [buffer guide](docs/BUFFER-GUIDE.md).
 
-Microsoft WinUSB handles the USB interface. The package needs no installation
-INI, custom kernel driver, test certificate, Test Mode or boot/security change.
+Microsoft WinUSB handles USB. The development package also embeds the original
+signed SAR endpoint kernel. No external routing application is needed.
+Installation does not change boot/security policy; compatibility with other
+PCs' signature policies is described in [Windows endpoints](docs/ENDPOINTS.md).
 Fully close the DAW before an update because it can keep the ASIO DLL loaded.
 The [installation guide](docs/USB-ASIO.md) describes format changes and reopening.
 
@@ -62,10 +81,10 @@ The [installation guide](docs/USB-ASIO.md) describes format changes and reopenin
 | Sample rates | 44.1 / 48 / 88.2 / 96 / 176.4 / 192 kHz |
 | Transport | Pi5-AUSB, USB High-Speed interrupt transfers, asynchronous WinUSB |
 | Processing | Bounded PCM rings, gain ramps, Mute/Solo/polarity, live meters |
-| Buffers | Manual ASIO block/render lead and USB queue; no automatic tuning |
+| Buffers | Selectable ASIO buffer; USB queue/reserve are automatic per rate |
 | Startup | Windows service at boot; panel/tray at login |
 | Settings | Atomic USB/mixer registry profile; migration of earlier USB settings |
-| Chrome / Telegram | System Windows audio endpoints remain a separate qualification stage |
+| Windows applications, dev.7 | Four stereo input/output pairs; finite bench qualification |
 
 ## Validation
 
@@ -104,7 +123,7 @@ included. [Build instructions](docs/BUILD.md).
 
 From **2.8.0**, development is USB-only and supports one board. AoIP/LAN and
 multiple-card management are retired; their sources and reports are preserved
-in [the archive](archive/aoip/README.md), outside the active build. Separate
+in [Git history](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/18e6353fa767dcbcde1cef15dabab339848e62d1/archive/aoip/README.md). The retired archive is removed from the current tree. Separate
 AoIP repositories and old release assets are unchanged.
 
 [License](LICENSE) · [External ASIO SDK](docs/ASIO-SDK.md)

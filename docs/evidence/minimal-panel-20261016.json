@@ -1,0 +1,52 @@
+{
+  "saved_profile_bytes": 172,
+  "fixture": {
+    "scope": "real WPF bindings with fixture state; no physical USB",
+    "pc_modes": 2,
+    "channels": 8,
+    "effect_rate_max": 96000,
+    "web_mode_selector": false
+  },
+  "setup_sha256": "a153f1d5d8af0bad91165fbf2cacf4bf1b847e984b2843a611d2ed14e1177bd3",
+  "files": [
+    {
+      "name": "ReyAudioService.exe",
+      "sha256": "27eac74e4fbd4cedd30971f4fe684f6bb9447ac946569fe40777e299cca2d54f",
+      "expected": "27eac74e4fbd4cedd30971f4fe684f6bb9447ac946569fe40777e299cca2d54f",
+      "matches": true,
+      "version": "2.8.2.0"
+    },
+    {
+      "name": "ReyAudioControl.exe",
+      "sha256": "9d14057304bfea9a4daf8d90335cda6688d407e24585fa7cec4e1106c90b69c7",
+      "expected": "9d14057304bfea9a4daf8d90335cda6688d407e24585fa7cec4e1106c90b69c7",
+      "matches": true,
+      "version": "2.8.2.1"
+    },
+    {
+      "name": "ReyAudioAsio.dll",
+      "sha256": "1fb034ba4d785c8d59e38f7a8952a7a40acde0ed7b8e4a6762deb7828bc29b8d",
+      "expected": "1fb034ba4d785c8d59e38f7a8952a7a40acde0ed7b8e4a6762deb7828bc29b8d",
+      "matches": true,
+      "version": "2.8.2.0"
+    },
+    {
+      "name": "ReyAsioProbe.exe",
+      "sha256": "081935b6bd051c18aca9725e1ec9aea60022bb2d0484b5da865c437e0ef879fc",
+      "expected": "081935b6bd051c18aca9725e1ec9aea60022bb2d0484b5da865c437e0ef879fc",
+      "matches": true,
+      "version": "2.8.2.0"
+    }
+  ],
+  "native_tests": 33,
+  "saved_profile_format": 4,
+  "scope": "Installed Windows panel and WPF fixture; no physical USB PCM measurement",
+  "installed_payload_verified": true,
+  "version": "2.8.2-akm-dev.1",
+  "service_settings_preserved": true,
+  "csharp_contracts": 21,
+  "changes": [
+    "Collapse route controls by default and remove permanent explanations",
+    "Remove retired source archive from current tree; retain pinned Git-history links"
+  ]
+}

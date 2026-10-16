@@ -1,0 +1,73 @@
+{
+  "scope": "Installed Windows development build; idle local service commands; no physical USB PCM",
+  "version": "2.8.2-akm-dev.1",
+  "installation_verified": true,
+  "saved_profile_format": 4,
+  "saved_profile_bytes": 172,
+  "service_state": "Running",
+  "start_mode": "Auto",
+  "files": [
+    {
+      "name": "ReyAudioControl.exe",
+      "sha256": "856cf41afccb9f5bf641bd8132a386f8d8b8be6de8eb7bce716b7ab39364bd13",
+      "matches": true
+    },
+    {
+      "name": "ReyAudioAsio.dll",
+      "sha256": "1fb034ba4d785c8d59e38f7a8952a7a40acde0ed7b8e4a6762deb7828bc29b8d",
+      "matches": true
+    },
+    {
+      "name": "ReyAsioProbe.exe",
+      "sha256": "081935b6bd051c18aca9725e1ec9aea60022bb2d0484b5da865c437e0ef879fc",
+      "matches": true
+    },
+    {
+      "name": "ReyAudioService.exe",
+      "sha256": "27eac74e4fbd4cedd30971f4fe684f6bb9447ac946569fe40777e299cca2d54f",
+      "matches": true
+    }
+  ],
+  "setup_sha256": "5d680676eb6c686c24c0c4b2199e56f772e9d9af94e26ba18a9d31c8cbc18fc8",
+  "setup_hash_matches": true,
+  "service_modes": {
+    "pass": true,
+    "scope": "Installed Windows control pipe, no USB device or PCM",
+    "version": "2.8.2-akm-dev.1",
+    "checks": [
+      {
+        "command": "BOARD_MODE processor",
+        "rejected": true
+      },
+      {
+        "command": "BOARD_MODE combined",
+        "rate": 96000,
+        "confirmed": true
+      },
+      {
+        "command": "USB 192000 32 4 64 0 1",
+        "rejected": true
+      }
+    ],
+    "restored": true,
+    "state": "idle",
+    "board_mode": "soundcard",
+    "usb": {
+      "present": 0,
+      "identity": "",
+      "rate": 192000,
+      "bits": 32,
+      "depth": 4,
+      "block": 64,
+      "guard": 0,
+      "automatic": true
+    },
+    "settings_format": 4
+  },
+  "installer_source_sha256": "3d000c076f466aac24ca76a7e4528f90047f208a96c919feed9c86437ac12a1b",
+  "installer_retry": {
+    "first_attempt": "sharing violation after SCM Stopped; automatic rollback succeeded",
+    "fix": "wait for SCM-owned service process normal exit before replacement; bounded, no service kill",
+    "subsequent_installation_exit": 0
+  }
+}

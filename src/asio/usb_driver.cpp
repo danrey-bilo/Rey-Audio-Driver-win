@@ -1,5 +1,6 @@
 #include "ipc_client.hpp"
 #include "../platform/realtime.hpp"
+#include "../engine/transport_tuning.hpp"
 #include <objbase.h>
 #include <shellapi.h>
 #include "iasiodrv.h"
@@ -44,22 +45,17 @@ public:
   ASIOBool init(void *) override {
     if (running_) return ASIOFalse;
     disposeBuffers();
-    char lead[16]{};
     const std::string choice = "auto";
     lead_ = 3;
     unsigned preferred = 0;
     HKEY preferences = nullptr;
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\ReyAudio\\ASIO", 0, KEY_READ, &preferences) == ERROR_SUCCESS) {
       DWORD value = 0, bytes = sizeof(value), type = 0;
-      if (RegQueryValueExW(preferences, L"RenderLeadBlocks", nullptr, &type, reinterpret_cast<BYTE *>(&value), &bytes) == ERROR_SUCCESS &&
-          type == REG_DWORD && value >= 1 && value <= 4) lead_ = value;
       bytes = sizeof(value);
       if (RegQueryValueExW(preferences, L"BufferSize", nullptr, &type, reinterpret_cast<BYTE *>(&value), &bytes) == ERROR_SUCCESS &&
           type == REG_DWORD && valid_block(value)) preferred = value;
       RegCloseKey(preferences);
     }
-    if (GetEnvironmentVariableA("REY_ASIO_LEAD_BLOCKS", lead, sizeof(lead)) == 1 && lead[0] >= '1' && lead[0] <= '4')
-      lead_ = unsigned(lead[0] - '0');
     std::string error;
     for (unsigned attempt = 0; attempt < 15; ++attempt) {
       if (query_info(choice, info_, error)) {
@@ -73,7 +69,7 @@ public:
     set_error(error); initialized_ = false; return ASIOFalse;
   }
   void getDriverName(char *name) override { if (name) std::strcpy(name, "Rey Audio USB ASIO"); }
-  long getDriverVersion() override { return 281; }
+  long getDriverVersion() override { return 282; }
   void getErrorMessage(char *text) override {
     if (text) std::strcpy(text, stream_lost_.load() ? "USB stream ended; reopen Rey USB ASIO" : error_.data());
   }
@@ -84,6 +80,7 @@ public:
     if (!query_info(info_.id, current, error) || current.rate != info_.rate || current.bits != info_.bits) {
       set_error(error.empty() ? "USB format changed; reopen ASIO" : error); return ASE_NoClock;
     }
+    lead_ = rey::engine::render_lead(current.rate,block_);
     if (!client_.connect(current, block_, lead_, error)) { set_error(error); return ASE_HWMalfunction; }
     callbacks_count_ = dropped_ = gap_max_ = processing_max_ = age_max_ = 0;
     mmcss_failures_ = 0; half_ = 0; position_ = timestamp_ = 0; stream_lost_ = false;
@@ -108,9 +105,13 @@ public:
   }
   ASIOError getLatencies(long *input, long *output) override {
     if (!input || !output || !initialized_) return ASE_InvalidParameter;
+    Info current; std::string error;
+    if (query_info(info_.id, current, error) && current.rate == info_.rate && current.bits == info_.bits)
+      info_ = current;
     const auto packet_frames = (info_.rate + 7999) / 8000;
-    *input = long(block_ + info_.depth * packet_frames);
-    *output = long((lead_ - 1) * block_ + 1); // USB layout's rational-cadence phase frame
+    const auto lead = rey::engine::render_lead(info_.rate,block_);
+    *input = long(block_ + (info_.capture_buffer ? info_.capture_buffer : info_.depth * packet_frames));
+    *output = long((lead - 1) * block_ + 1 + info_.render_buffer + info_.render_delay);
     return ASE_OK;
   }
   ASIOError getBufferSize(long *minimum, long *maximum, long *preferred, long *granularity) override {
@@ -119,7 +120,10 @@ public:
   }
   ASIOError canSampleRate(ASIOSampleRate rate) override {
     if (!std::isfinite(rate) || rate < 44100 || rate > 192000) return ASE_NoClock;
-    return valid_rate(unsigned(rate)) && rate == unsigned(rate) ? ASE_OK : ASE_NoClock;
+    if (!valid_rate(unsigned(rate)) || rate != unsigned(rate) || !initialized_) return ASE_NoClock;
+    std::string reply, error;
+    return command("ASIO CAN_RATE " + info_.id + " " + std::to_string(unsigned(rate)), reply, error) && reply == "REY_ASIO_OK"
+        ? ASE_OK : ASE_NoClock;
   }
   ASIOError getSampleRate(ASIOSampleRate *rate) override {
     if (!rate || !initialized_) return ASE_InvalidParameter;
@@ -157,10 +161,11 @@ public:
   }
   ASIOError getChannelInfo(ASIOChannelInfo *info) override {
     if (!info || info->channel < 0 || info->channel >= long(channels)) return ASE_InvalidParameter;
-    info->isActive = ASIOFalse; info->channelGroup = 0;
+    info->isActive = ASIOFalse; info->channelGroup = info->channel / 2;
     for (const auto &c : buffers_) if (c.number == unsigned(info->channel) && c.input == (info->isInput != 0)) info->isActive = ASIOTrue;
     info->type = info_.bits == 16 ? ASIOSTInt16LSB : info_.bits == 24 ? ASIOSTInt24LSB : ASIOSTInt32LSB;
-    std::snprintf(info->name, sizeof(info->name), "Rey USB %s %ld", info->isInput ? "input" : "output", info->channel + 1);
+    const long first = (info->channel / 2) * 2 + 1;
+    std::snprintf(info->name, sizeof(info->name), "%s %ld-%ld %s", info->isInput ? "Input" : "Output", first, first + 1, info->channel % 2 ? "R" : "L");
     return ASE_OK;
   }
   ASIOError createBuffers(ASIOBufferInfo *info, long count, long frames, ASIOCallbacks *callbacks) override {
@@ -327,6 +332,9 @@ HRESULT registry(const std::wstring &path, const wchar_t *name, const std::wstri
 }
 }
 extern "C" HRESULT __stdcall DllRegisterServer() {
+#ifdef REY_FINITE_QUALIFICATION
+  return E_ACCESSDENIED;
+#endif
   wchar_t dll[32768]{}; const auto length = GetModuleFileNameW(rey::asio::module, dll, DWORD(std::size(dll)));
   if (!length || length == std::size(dll)) return E_FAIL;
   HRESULT result = registry(class_path, nullptr, L"Rey Audio USB ASIO");
@@ -337,5 +345,8 @@ extern "C" HRESULT __stdcall DllRegisterServer() {
   return result;
 }
 extern "C" HRESULT __stdcall DllUnregisterServer() {
+#ifdef REY_FINITE_QUALIFICATION
+  return E_ACCESSDENIED;
+#endif
   RegDeleteTreeW(HKEY_LOCAL_MACHINE, asio_path); RegDeleteTreeW(HKEY_LOCAL_MACHINE, class_path); return S_OK;
 }

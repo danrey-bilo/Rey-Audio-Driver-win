@@ -8,6 +8,8 @@ flowchart LR
   DAW[Ableton / ASIO host] <--> DLL[ReyAudioAsio.dll]
   DLL <--> IPC[Anonymous shared PCM rings + event]
   IPC <--> S[ReyAudioService + mixer]
+  APP[Windows applications] <--> SAR[Signed SAR stereo pairs]
+  SAR <--> S
   S <--> W[Microsoft WinUSB]
   W <--> PI[Pi5-AUSB / Raspberry Pi 5]
   UI[Desktop / tray] --> CTRL[Authenticated control pipe]
@@ -21,15 +23,17 @@ flowchart LR
 | `src/audio` | Allocation-free gain ramps, mute/solo/polarity, meters, PCM alignment |
 | `src/service` | One session, USB detection/retry, control requests, atomic persistence |
 | `src/platform` | MMCSS, timing, device naming, version resources |
-| `src/bridge`, `drivers/Acx` | Optional Windows endpoint experiments; separate from ASIO package |
+| `src/bridge/sar_bridge.*`, `external/sar-0.13.1` | Signed WaveRT kernel and direct shared-memory bridge |
+| `drivers/Acx`, `src/bridge/gateway_bridge.*` | Earlier endpoint experiments; not installed |
 | `apps/ReyAudioControl` | WPF mixer, USB settings, diagnostics, tray |
 | `installer/UsbAsioSetup` | Owned EXE installation/repair with payload hashes and rollback |
 
 The service owns USB. Its transport callback exchanges PCM directly with the
-mixer and bounded ASIO rings; it does not wait on the control pipe, perform
+mixer, Windows pairs and bounded ASIO rings; it does not wait on the control pipe, perform
 network operations, allocate buffers or run UI code. The host callback runs
-on its own Pro Audio MMCSS thread. USB depth and ASIO render lead are distinct
-manual controls. No queue is added by the channel faders.
+on its own Pro Audio MMCSS thread. USB requests and render reserve follow the
+[fixed per-rate policy](BUFFER-GUIDE.md). The user selects the ASIO buffer.
+No queue is added by the channel faders.
 
 In 2.8.1, IN is rearmed as soon as packet metadata and decoded PCM have moved
 into local storage, before mixer/IPC and the OUT completion wait. No pointer
@@ -46,13 +50,13 @@ replace a running card. If multiple interfaces exist with no current owner,
 stream startup waits until exactly one remains. This policy is covered by
 simulated enumeration tests; the bench contains one physical Pi.
 
-Format 3 stores only USB and mixer, as `HKLM\Software\ReyAudio\UsbProfile`.
-Formats 1/2 are accepted only for migration. The attached card's old profile
-is imported once; old selections, network settings and catalogs are inactive.
-ASIO BufferSize/RenderLeadBlocks remain per-user under
-`HKCU\Software\ReyAudio\ASIO`; DeviceId binding is no longer read.
+Format 5 stores USB, mixer, stereo links and board mode as `HKLM\Software\ReyAudio\UsbProfile`.
+Formats 1/2/3/4 migrate without resetting the mixer. Old queue/guard values are
+canonicalized to current transport policy. Only BufferSize remains a per-user
+ASIO control under `HKCU\Software\ReyAudio\ASIO`; DeviceId and RenderLeadBlocks
+no longer override the production policy. Service/DLL shared memory uses ABI 2.
 
 Changing USB format/pause restarts the owned stream; changing a fader does
 not. After a USB removal or format change, reopen ASIO in the host. Physical
-converter timing, sleep/resume, cable removal and generic Windows audio
-endpoints remain separate qualification tasks.
+converter timing, sleep/resume and cable removal remain separate qualification
+tasks. Windows pairs have finite [bench qualification](ENDPOINTS.md).

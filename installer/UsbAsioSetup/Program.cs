@@ -12,15 +12,15 @@ using Microsoft.Win32;
 [assembly: AssemblyTitle("Rey Audio USB ASIO Setup")]
 [assembly: AssemblyProduct("Rey Audio Driver USB ASIO")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.1.2")]
-[assembly: AssemblyFileVersion("2.8.1.2")]
+[assembly: AssemblyVersion("2.8.2.7")]
+[assembly: AssemblyFileVersion("2.8.2.7")]
 namespace ReyAudio.UsbAsioSetup {
     internal static class Program {
         private const string OwnerKey = @"Software\ReyAudio\USBASIOSetup";
         private const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\ReyAudioUSBASIO";
         private const string RunValue = "ReyAudioUSBASIO";
         private static readonly string Target = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"ReyAudio\USBASIO");
-        private static readonly string BinaryPath = "\"" + Path.Combine(Target, "ReyAudioService.exe") + "\" --service --asio-only";
+        private static readonly string BinaryPath = "\"" + Path.Combine(Target, "ReyAudioService.exe") + "\" --service";
         private static readonly StringBuilder Log = new StringBuilder();
         private static void Record(string text) { Log.AppendLine(DateTime.UtcNow.ToString("o") + " " + text); }
         private static void CheckDirectory(string path) {
@@ -38,7 +38,9 @@ namespace ReyAudio.UsbAsioSetup {
         }
         private static void CheckOwnership() {
             CheckDirectory(Target);
-            if (ServiceRegistration.Exists && (!Owned() || !string.Equals(ServiceRegistration.ImagePath, BinaryPath, StringComparison.OrdinalIgnoreCase)))
+            if (ServiceRegistration.Exists && (!Owned() ||
+                !(string.Equals(ServiceRegistration.ImagePath, BinaryPath, StringComparison.OrdinalIgnoreCase) ||
+                  string.Equals(ServiceRegistration.ImagePath, BinaryPath + " --asio-only", StringComparison.OrdinalIgnoreCase))))
                 throw new InvalidOperationException("ReyAudioService уже установлен другим пакетом. Этот USB-ASIO установщик его не заменяет.");
             if (Directory.Exists(Target) && !Owned() && Directory.GetFileSystemEntries(Target).Length != 0)
                 throw new InvalidOperationException("Папка USBASIO содержит другую установку. Автоматическая замена отменена.");
@@ -76,7 +78,7 @@ namespace ReyAudio.UsbAsioSetup {
         private static void WriteMetadata() {
             using (var key = Registry.LocalMachine.CreateSubKey(OwnerKey)) key.SetValue("InstallLocation", Target);
             using (var key = Registry.LocalMachine.CreateSubKey(UninstallKey)) {
-                key.SetValue("DisplayName", "Rey Audio USB ASIO"); key.SetValue("DisplayVersion", "2.8.1-usb-preview.2");
+                key.SetValue("DisplayName", "Rey Audio USB ASIO"); key.SetValue("DisplayVersion", Payload.Version);
                 key.SetValue("Publisher", "Rey Audio"); key.SetValue("InstallLocation", Target);
                 key.SetValue("DisplayIcon", Path.Combine(Target, "ReyAudioControl.exe"));
                 key.SetValue("UninstallString", Quote(Path.Combine(Target, "USBASIOSetup.exe")) + " --uninstall");
@@ -107,12 +109,26 @@ namespace ReyAudio.UsbAsioSetup {
                     replacements[file.Key] = file.Value;
             }
             bool existed = ServiceRegistration.Exists, owned = Owned();
+            string previousServicePath = ServiceRegistration.ImagePath;
+            bool createdEndpointDevice = false;
             var changed = new List<string>();
+            byte[] savedProfile = null;
+            bool profileCaptured = false;
             string asioDll = Path.Combine(Target, "ReyAudioAsio.dll");
             if (replacements.ContainsKey("ReyAudioAsio.dll") && File.Exists(asioDll))
                 using (var access = new FileStream(asioDll, FileMode.Open, FileAccess.ReadWrite, FileShare.Read)) { }
             CloseOwnPanel(); ServiceRegistration.Stop(); Directory.CreateDirectory(Target);
             try {
+                using(var profileKey = Registry.LocalMachine.OpenSubKey(@"Software\ReyAudio"))
+                    savedProfile = profileKey == null ? null : profileKey.GetValue("UsbProfile") as byte[];
+                profileCaptured = true;
+                if(previous.Count != 0 && replacements.Count != 0) {
+                    string backup = Path.Combine(Target, "backups", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff"));
+                    CheckDirectory(backup); Directory.CreateDirectory(backup);
+                    foreach(var item in previous) File.WriteAllBytes(Path.Combine(backup,item.Key),item.Value);
+                    if(savedProfile != null) File.WriteAllBytes(Path.Combine(backup,"UsbProfile.bin"),savedProfile);
+                    Record("BACKUP: " + backup);
+                }
                 // Check locks before replacing any payload. A DAW may retain the
                 // COM DLL after choosing No Device; that requires closing the host.
                 foreach (var name in previous.Keys.Where(replacements.ContainsKey))
@@ -121,18 +137,24 @@ namespace ReyAudio.UsbAsioSetup {
                 foreach (var file in replacements) { changed.Add(file.Key); File.WriteAllBytes(Path.Combine(Target, file.Key), file.Value); }
                 string self = Assembly.GetExecutingAssembly().Location, installedSetup = Path.Combine(Target, "USBASIOSetup.exe");
                 if (!string.Equals(Path.GetFullPath(self), installedSetup, StringComparison.OrdinalIgnoreCase)) File.Copy(self, installedSetup, true);
+                createdEndpointDevice = NativeEndpoints.Ensure(Target, Record);
                 RegisterDll(false); ServiceRegistration.Register(BinaryPath); ServiceRegistration.Start(); WriteMetadata();
-                Record("INSTALL_OK: USB ASIO registered; auto-start service Running; replaced " +
-                    string.Join(", ", changed) + "; no kernel/boot changes.");
+                Record("INSTALL_OK: Windows stereo pairs and USB ASIO registered; auto-start service Running; replaced " +
+                    string.Join(", ", changed) + "; original signed kernel; boot/security settings unchanged.");
             } catch {
                 try {
                     ServiceRegistration.Stop();
+                    if (createdEndpointDevice) NativeEndpoints.RemoveOwned(Record);
                     if (!existed) { ServiceRegistration.Remove(); if (File.Exists(Path.Combine(Target, "ReyAudioAsio.dll"))) RegisterDll(true); }
                     foreach (var name in changed) {
                         if (previous.ContainsKey(name)) File.WriteAllBytes(Path.Combine(Target, name), previous[name]);
                         else File.Delete(Path.Combine(Target, name));
                     }
-                    if (existed) { RegisterDll(false); ServiceRegistration.Start(); }
+                    if(profileCaptured) using(var profileKey = Registry.LocalMachine.CreateSubKey(@"Software\ReyAudio")) {
+                        if(savedProfile == null) profileKey.DeleteValue("UsbProfile",false);
+                        else profileKey.SetValue("UsbProfile",savedProfile,RegistryValueKind.Binary);
+                    }
+                    if (existed) { RegisterDll(false); ServiceRegistration.Register(previousServicePath); ServiceRegistration.Start(); }
                     if (!owned) { RemoveMetadata(); File.Delete(Path.Combine(Target, "USBASIOSetup.exe")); }
                     Record("ROLLBACK_OK");
                 } catch (Exception rollback) { Record("ROLLBACK_ERROR: " + rollback); }
@@ -142,6 +164,7 @@ namespace ReyAudio.UsbAsioSetup {
         private static void Uninstall() {
             CheckOwnership(); if (!Owned()) throw new InvalidOperationException("Установка USB-ASIO не найдена.");
             ServiceRegistration.Stop();
+            NativeEndpoints.RemoveOwned(Record);
             RegisterDll(true); ServiceRegistration.Remove();
             CloseOwnPanel();
             foreach (var name in Payload.Hashes.Keys) File.Delete(Path.Combine(Target, name));
@@ -150,7 +173,7 @@ namespace ReyAudio.UsbAsioSetup {
                 key.SetValue("InstallLocation", Target); key.SetValue("State", "Removed");
             }
             // The running setup and readable log are retained; no recursive deletion.
-            Record("UNINSTALL_OK: own service, ASIO registration and payload removed; card profiles retained.");
+            Record("UNINSTALL_OK: own Windows endpoint device, service, ASIO registration and payload removed; card profiles retained.");
         }
         private static void CloseOwnPanel() {
             foreach (var process in Process.GetProcessesByName("ReyAudioControl")) {

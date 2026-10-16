@@ -1,4 +1,5 @@
 #include "manager.hpp"
+#include "../engine/transport_tuning.hpp"
 #include <sstream>
 #include <limits>
 
@@ -18,16 +19,24 @@ std::string Manager::asio_request(const std::string &command, DWORD sender_pid) 
     if (in >> extra) return fail("Malformed INFO");
     std::ostringstream out;
     out << "REY_ASIO_INFO " << info.id << ' ' << info.rate << ' ' << info.bits << ' '
-        << info.block << ' ' << info.depth << ' ' << info.generation;
+        << info.block << ' ' << info.depth << ' ' << info.generation << ' '
+        << info.capture_buffer << ' ' << info.render_buffer << ' ' << info.render_delay;
     return out.str();
+  }
+  if (action == "CAN_RATE") {
+    unsigned rate = 0;
+    if (!(in >> rate) || (in >> extra) || !rey::asio::valid_rate(rate) ||
+        (session->settings().board_effects && rate > 96000)) return fail("Rate unavailable in the selected board mode");
+    return "REY_ASIO_OK";
   }
   if (!sender_pid) return fail("Unauthenticated client");
   if (action == "OPEN") {
     uint64_t pid = 0, mapping = 0, event = 0;
     unsigned block = 0, lead = 0;
     if (!(in >> pid >> mapping >> event >> block >> lead) || (in >> extra) || pid != sender_pid ||
-        !mapping || !event || !rey::asio::valid_block(block) || lead < 1 || lead > 4)
+        !mapping || !event || !rey::asio::valid_block(block) || lead < 1 || lead > rey::asio::max_lead_blocks)
       return fail("Malformed or unauthenticated OPEN");
+    if(lead != rey::engine::render_lead(info.rate,block))return fail("Automatic ASIO transport policy differs; reopen the current driver");
     std::string error;
     return session->asio().connect(sender_pid, mapping, event, block, lead, error)
         ? "REY_ASIO_OK" : fail(error);

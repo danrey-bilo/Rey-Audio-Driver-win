@@ -1,0 +1,1305 @@
+{
+  "version": "2.8.2-akm-dev.7",
+  "development_candidate": true,
+  "driver": {
+    "product": "Synchronous Audio Router",
+    "version": "0.13.1",
+    "source_tag": "v0.13.1",
+    "source_commit": "c521ce48ef99091bb1d031b82e04b6b9f14e2854",
+    "source_archive": "upstream-source.zip",
+    "source_archive_sha256": "129a5ade3db0e9c70679ee8fbf710b290a7299ffecf46fa2b57ba50bda428fb7",
+    "download": "https://github.com/eiz/SynchronousAudioRouter/releases/download/v0.13.1/SynchronousAudioRouter_x64_0_13_1.msi",
+    "copied_files_modified": false,
+    "kernel_signing_verification_exit": 0,
+    "catalog_signing_verification_exit": 0,
+    "network_filter_included": false,
+    "asio_wrapper_included": false,
+    "runtime": [
+      {
+        "name": "SynchronousAudioRouter.cat",
+        "sha256": "3402b42f433a1d64dff92953401c2e6e04a2836bdd3974ed5eba53542632ffc7"
+      },
+      {
+        "name": "SynchronousAudioRouter.inf",
+        "sha256": "313929f9291fbcedfd84a485c866c814fc4b34f9387a9ad13bbcd6418667af29"
+      },
+      {
+        "name": "SynchronousAudioRouter.sys",
+        "sha256": "f0bbaf5d4ce4d9e1ebfcbd6240f0660ff1dd90a179bc1beaad5a6fc828913fed"
+      }
+    ]
+  },
+  "installation": {
+    "captured_utc": "2026-10-16T23:36:49.7794740Z",
+    "version": "2.8.2-akm-dev.7",
+    "installed_payload": [
+      {
+        "name": "SAR-provenance.json",
+        "sha256": "beed108baa1d99ba14c6c31ace3b92ebd3543b49cba0142ef3da87950dde0b50",
+        "matches": true
+      },
+      {
+        "name": "SAR-upstream-source.zip",
+        "sha256": "129a5ade3db0e9c70679ee8fbf710b290a7299ffecf46fa2b57ba50bda428fb7",
+        "matches": true
+      },
+      {
+        "name": "ReyAudioControl.exe",
+        "sha256": "5e53110a9e0ee404b1ba9b0a51c221f204395fb11e09e5f170a776160d13f3be",
+        "matches": true
+      },
+      {
+        "name": "SAR-COPYING.txt",
+        "sha256": "c53a65c2fd561c87eaabf1072ef5dcab8653042bc15308465f52413585eb6271",
+        "matches": true
+      },
+      {
+        "name": "ReyAsioProbe.exe",
+        "sha256": "ec1973190f0c6d17e4d8f366463659cdaaa51b6c13783276815abc706de4de4c",
+        "matches": true
+      },
+      {
+        "name": "SAR-COPYING-V2.txt",
+        "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+        "matches": true
+      },
+      {
+        "name": "SynchronousAudioRouter.cat",
+        "sha256": "3402b42f433a1d64dff92953401c2e6e04a2836bdd3974ed5eba53542632ffc7",
+        "matches": true
+      },
+      {
+        "name": "SynchronousAudioRouter.sys",
+        "sha256": "f0bbaf5d4ce4d9e1ebfcbd6240f0660ff1dd90a179bc1beaad5a6fc828913fed",
+        "matches": true
+      },
+      {
+        "name": "ReyAudioService.exe",
+        "sha256": "51ccb164fbabaa2fd44ef34e61fc61cfdc35c479628600a37bf930fd627898e3",
+        "matches": true
+      },
+      {
+        "name": "SynchronousAudioRouter.inf",
+        "sha256": "313929f9291fbcedfd84a485c866c814fc4b34f9387a9ad13bbcd6418667af29",
+        "matches": true
+      },
+      {
+        "name": "ReyAudioAsio.dll",
+        "sha256": "09f13477d56e9166bda25da36887c87e4056bc2cd6c7ecfb5e1caafb3483ff94",
+        "matches": true
+      }
+    ],
+    "profile_preserved": true,
+    "state": "ready",
+    "asio_only": false,
+    "driver_present": true,
+    "usb_rate": 96000,
+    "inputs": 8,
+    "outputs": 8,
+    "service_state": "Running",
+    "service_command": "\"C:\\Program Files\\ReyAudio\\USBASIO\\ReyAudioService.exe\" --service",
+    "service_start_mode": "Auto",
+    "owned_device_status": "OK",
+    "owned_device_name": "Rey Audio",
+    "installed_kernel_signature": "Valid",
+    "installed_kernel_signer": "CN=Mackenzie Straight, O=Mackenzie Straight, L=Dunwoody, S=Georgia, C=US",
+    "installed_kernel_sha256": "f0bbaf5d4ce4d9e1ebfcbd6240f0660ff1dd90a179bc1beaad5a6fc828913fed",
+    "tray_processes": 1,
+    "setup_sha256": "fa08ff571d1552b85dba345cf3c0eb12267f27f905c5d7997b9464168c37679e",
+    "windows_build": 26300
+  },
+  "endpoint_names": [
+    {
+      "flow": "render",
+      "name": "Output 3-4 (Rey Audio)"
+    },
+    {
+      "flow": "render",
+      "name": "Output 5-6 (Rey Audio)"
+    },
+    {
+      "flow": "render",
+      "name": "Output 7-8 (Rey Audio)"
+    },
+    {
+      "flow": "render",
+      "name": "Output 1-2 (Rey Audio)"
+    },
+    {
+      "flow": "capture",
+      "name": "Input 1-2 (Rey Audio)"
+    },
+    {
+      "flow": "capture",
+      "name": "Input 7-8 (Rey Audio)"
+    },
+    {
+      "flow": "capture",
+      "name": "Input 3-4 (Rey Audio)"
+    },
+    {
+      "flow": "capture",
+      "name": "Input 5-6 (Rey Audio)"
+    }
+  ],
+  "protections": {
+    "secure_boot": false,
+    "memory_integrity": false,
+    "already_disabled_before_test": true,
+    "changed_by_installer": false
+  },
+  "contracts": {
+    "native_ctest": 44,
+    "board_control": 23,
+    "mixer_pair_contract": "passed",
+    "installer_api_compile": "passed"
+  },
+  "synthetic_kernel_loop": {
+    "seconds_per_case": 3,
+    "cases": [
+      {
+        "rate": 44100,
+        "pair": "1-2",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "0",
+          "rate": "44100",
+          "wall_ms": "2989.786",
+          "sent": "133270",
+          "received": "131859",
+          "matched": "127890",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "439",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 44100,
+        "pair": "3-4",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "1",
+          "rate": "44100",
+          "wall_ms": "2999.886",
+          "sent": "133711",
+          "received": "132300",
+          "matched": "127890",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "440",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 44100,
+        "pair": "5-6",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "2",
+          "rate": "44100",
+          "wall_ms": "2999.139",
+          "sent": "133270",
+          "received": "132300",
+          "matched": "127890",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "440",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 44100,
+        "pair": "7-8",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "3",
+          "rate": "44100",
+          "wall_ms": "2988.701",
+          "sent": "132829",
+          "received": "131859",
+          "matched": "127890",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "440",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 48000,
+        "pair": "1-2",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "0",
+          "rate": "48000",
+          "wall_ms": "2999.142",
+          "sent": "145056",
+          "received": "144000",
+          "matched": "139200",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "477",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 48000,
+        "pair": "3-4",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "1",
+          "rate": "48000",
+          "wall_ms": "2999.521",
+          "sent": "145536",
+          "received": "144000",
+          "matched": "139200",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "478",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 48000,
+        "pair": "5-6",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "2",
+          "rate": "48000",
+          "wall_ms": "2999.399",
+          "sent": "145536",
+          "received": "144000",
+          "matched": "139200",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "479",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 48000,
+        "pair": "7-8",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "3",
+          "rate": "48000",
+          "wall_ms": "2989.626",
+          "sent": "145056",
+          "received": "143520",
+          "matched": "139200",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "479",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 88200,
+        "pair": "1-2",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "0",
+          "rate": "88200",
+          "wall_ms": "2999.274",
+          "sent": "267422",
+          "received": "264600",
+          "matched": "255780",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "875",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 88200,
+        "pair": "3-4",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "1",
+          "rate": "88200",
+          "wall_ms": "2989.287",
+          "sent": "265658",
+          "received": "263718",
+          "matched": "255780",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "878",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 88200,
+        "pair": "5-6",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "2",
+          "rate": "88200",
+          "wall_ms": "2999.443",
+          "sent": "266540",
+          "received": "264600",
+          "matched": "255780",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "879",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 88200,
+        "pair": "7-8",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "3",
+          "rate": "88200",
+          "wall_ms": "2999.544",
+          "sent": "267422",
+          "received": "264600",
+          "matched": "255780",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "880",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 96000,
+        "pair": "1-2",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "0",
+          "rate": "96000",
+          "wall_ms": "2999.191",
+          "sent": "290112",
+          "received": "288000",
+          "matched": "278400",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "951",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 96000,
+        "pair": "3-4",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "1",
+          "rate": "96000",
+          "wall_ms": "2989.317",
+          "sent": "289152",
+          "received": "287040",
+          "matched": "278400",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "955",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 96000,
+        "pair": "5-6",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "2",
+          "rate": "96000",
+          "wall_ms": "2999.163",
+          "sent": "290112",
+          "received": "288000",
+          "matched": "278400",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "957",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 96000,
+        "pair": "7-8",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "3",
+          "rate": "96000",
+          "wall_ms": "2989.321",
+          "sent": "289152",
+          "received": "287040",
+          "matched": "278400",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "957",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 176400,
+        "pair": "1-2",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "0",
+          "rate": "176400",
+          "wall_ms": "2989.605",
+          "sent": "531316",
+          "received": "527436",
+          "matched": "511560",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1737",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 176400,
+        "pair": "3-4",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "1",
+          "rate": "176400",
+          "wall_ms": "2989.628",
+          "sent": "531316",
+          "received": "527436",
+          "matched": "511560",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1750",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 176400,
+        "pair": "5-6",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "2",
+          "rate": "176400",
+          "wall_ms": "2999.062",
+          "sent": "533080",
+          "received": "529200",
+          "matched": "511560",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1754",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 176400,
+        "pair": "7-8",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "3",
+          "rate": "176400",
+          "wall_ms": "2999.419",
+          "sent": "534844",
+          "received": "529200",
+          "matched": "511560",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1757",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 192000,
+        "pair": "1-2",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "0",
+          "rate": "192000",
+          "wall_ms": "2989.059",
+          "sent": "578304",
+          "received": "574080",
+          "matched": "556800",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1888",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 192000,
+        "pair": "3-4",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "1",
+          "rate": "192000",
+          "wall_ms": "2990.222",
+          "sent": "580224",
+          "received": "574080",
+          "matched": "556800",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1903",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 192000,
+        "pair": "5-6",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "2",
+          "rate": "192000",
+          "wall_ms": "2989.636",
+          "sent": "580224",
+          "received": "574080",
+          "matched": "556800",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1909",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 192000,
+        "pair": "7-8",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "3",
+          "rate": "192000",
+          "wall_ms": "2999.650",
+          "sent": "580224",
+          "received": "576000",
+          "matched": "556800",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1911",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      }
+    ],
+    "usb": false,
+    "physical_audio": false
+  },
+  "real_usb_windows_asio": {
+    "rate": 96000,
+    "windows_seconds": 20,
+    "asio_seconds": 45.019,
+    "cases": [
+      {
+        "pair": "1-2",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "0",
+          "rate": "96000",
+          "wall_ms": "19998.978",
+          "sent": "1922112",
+          "received": "1920000",
+          "matched": "1910400",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "951",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0",
+          "client3_capture": "1"
+        }
+      },
+      {
+        "pair": "3-4",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "1",
+          "rate": "96000",
+          "wall_ms": "19999.106",
+          "sent": "1922112",
+          "received": "1920000",
+          "matched": "1910400",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "955",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0",
+          "client3_capture": "0"
+        }
+      },
+      {
+        "pair": "5-6",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "2",
+          "rate": "96000",
+          "wall_ms": "19999.078",
+          "sent": "1922112",
+          "received": "1920000",
+          "matched": "1910400",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "957",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0",
+          "client3_capture": "0"
+        }
+      },
+      {
+        "pair": "7-8",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "3",
+          "rate": "96000",
+          "wall_ms": "19989.265",
+          "sent": "1921152",
+          "received": "1919040",
+          "matched": "1910400",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "957",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0",
+          "client3_capture": "0"
+        }
+      }
+    ],
+    "asio_stream": {
+      "seconds": "45.019",
+      "callbacks": "269864",
+      "frames": "4317824",
+      "pulses": "0",
+      "received": "0",
+      "missing": "0",
+      "invalid": "0",
+      "duplicates": "0",
+      "rtt_p50_us": "0.000",
+      "rtt_p95_us": "0.000",
+      "rtt_p99_us": "0.000",
+      "rtt_max_us": "0.000",
+      "capture_dropped": "0",
+      "render_late_frames": "0",
+      "render_missing_frames": "0",
+      "render_overflow": "0",
+      "callback_gap_max_us": "480.400",
+      "processing_max_us": "11.800",
+      "capture_age_max_us": "485.300",
+      "service_gap_max_us": "359.300",
+      "positions_backwards": "0",
+      "mmcss_failures": "0",
+      "cadence_seconds": "44.976105800",
+      "cadence_frames": "4317808",
+      "dense_markers": "0",
+      "stream_only": "1",
+      "gap_p50_us": "136.500",
+      "gap_p95_us": "264.700",
+      "gap_p99_us": "284.900",
+      "gap_max_us": "480.800",
+      "okay": "1",
+      "physical_audio": "0",
+      "ableton_host": "0"
+    },
+    "jack": {
+      "xruns": "0",
+      "steady_xruns": "0",
+      "startup_seconds": "5",
+      "physical_audio": "0"
+    },
+    "adc_source_connections_restored": {
+      "connections": "8",
+      "errors": "0"
+    },
+    "physical_audio": false
+  },
+  "real_usb_windows_only": {
+    "seconds_per_case": 5,
+    "cases": [
+      {
+        "rate": 44100,
+        "pair": "1-2",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "0",
+          "rate": "44100",
+          "wall_ms": "4997.716",
+          "sent": "221470",
+          "received": "220500",
+          "matched": "216090",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "439",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 44100,
+        "pair": "3-4",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "1",
+          "rate": "44100",
+          "wall_ms": "4999.183",
+          "sent": "221470",
+          "received": "220500",
+          "matched": "216090",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "440",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 44100,
+        "pair": "5-6",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "2",
+          "rate": "44100",
+          "wall_ms": "4999.182",
+          "sent": "221470",
+          "received": "220500",
+          "matched": "216090",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "440",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 44100,
+        "pair": "7-8",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "3",
+          "rate": "44100",
+          "wall_ms": "4999.258",
+          "sent": "221470",
+          "received": "220500",
+          "matched": "216531",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "440",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 192000,
+        "pair": "1-2",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "0",
+          "rate": "192000",
+          "wall_ms": "4987.388",
+          "sent": "962304",
+          "received": "958080",
+          "matched": "940800",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1888",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 192000,
+        "pair": "3-4",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "1",
+          "rate": "192000",
+          "wall_ms": "4999.228",
+          "sent": "964224",
+          "received": "960000",
+          "matched": "940800",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1903",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 192000,
+        "pair": "5-6",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "2",
+          "rate": "192000",
+          "wall_ms": "4989.422",
+          "sent": "962304",
+          "received": "958080",
+          "matched": "940800",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1909",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      },
+      {
+        "rate": 192000,
+        "pair": "7-8",
+        "exit_code": 0,
+        "metrics": {
+          "pair": "3",
+          "rate": "192000",
+          "wall_ms": "4989.529",
+          "sent": "962304",
+          "received": "958080",
+          "matched": "940800",
+          "wrong": "0",
+          "duplicates": "0",
+          "skipped": "0",
+          "discontinuities": "1",
+          "startup_wrong": "1911",
+          "steady_discontinuities": "0",
+          "warmup_ms": "100",
+          "okay": "1",
+          "physical_audio": "0"
+        }
+      }
+    ],
+    "asio_active": false,
+    "physical_audio": false
+  },
+  "real_usb_registered_asio_rtt": {
+    "registered_asio": true,
+    "scope": "permanent Windows and Pi / real USB digital JACK loop",
+    "physical_audio": false,
+    "ableton_host": false,
+    "seconds": 20.018,
+    "native_counter_deltas": {
+      "receive_overflow_frames": 0,
+      "receive_underflow_frames": 0,
+      "send_overflow_frames": 0,
+      "send_underflow_frames": 0,
+      "jack_xruns": 0,
+      "conversion_errors": 0,
+      "lease_timeouts": 0
+    },
+    "native_counter_max_deltas": {
+      "receive_overflow_frames": 0,
+      "receive_underflow_frames": 0,
+      "send_overflow_frames": 0,
+      "send_underflow_frames": 0,
+      "jack_xruns": 0,
+      "conversion_errors": 0,
+      "lease_timeouts": 0
+    },
+    "usb_packets_observed": 146374,
+    "max_native_status_age_seconds": 0.09993338584899902,
+    "pc_host": {
+      "seconds": "20.018",
+      "callbacks": "119851",
+      "frames": "1917616",
+      "pulses": "738",
+      "received": "738",
+      "missing": "0",
+      "invalid": "0",
+      "duplicates": "0",
+      "rtt_p50_us": "4628.500",
+      "rtt_p95_us": "4737.700",
+      "rtt_p99_us": "4742.600",
+      "rtt_max_us": "4858.700",
+      "capture_dropped": "0",
+      "render_late_frames": "0",
+      "render_missing_frames": "0",
+      "render_overflow": "0",
+      "callback_gap_max_us": "523.900",
+      "processing_max_us": "8.500",
+      "capture_age_max_us": "509.700",
+      "service_gap_max_us": "436.800",
+      "positions_backwards": "0",
+      "mmcss_failures": "0",
+      "cadence_seconds": "19.974436600",
+      "cadence_frames": "1917600",
+      "dense_markers": "0",
+      "stream_only": "0",
+      "gap_p50_us": "135.100",
+      "gap_p95_us": "276.600",
+      "gap_p99_us": "286.000",
+      "gap_max_us": "524.100",
+      "okay": "1",
+      "physical_audio": "0",
+      "ableton_host": "0"
+    },
+    "sample_rtt": {
+      "p50_us": "4718.750",
+      "p95_us": "4718.750",
+      "p99_us": "4718.750",
+      "max_us": "4718.750",
+      "rejected_peak_candidates": "0",
+      "digital_jack_loop": "1",
+      "physical_audio": "0"
+    },
+    "helper": {
+      "xruns": "0",
+      "steady_xruns": "0",
+      "startup_seconds": "5",
+      "physical_audio": "0"
+    },
+    "service_cpu_one_core_percent": 77.3002129122434,
+    "pi_cpu_one_core_percent": {
+      "rey-effects-usb-native": 18.727180803780836,
+      "rey-effects-jack": 10.670959627814716,
+      "rey-effects-io": 8.904244457646723
+    },
+    "scm_layout_log_counters": "not available from installed SCM stdout; isolated console qualification recorded separately",
+    "goal_pcm_p99_below_5ms": true,
+    "okay": true
+  },
+  "windows_capture_only_cold_start": {
+    "seconds_per_rate": 20,
+    "warmup_ms": 5000,
+    "cases": [
+      {
+        "rate": 44100,
+        "metrics": {
+          "flow": "capture",
+          "seconds": "20.000",
+          "period": "441",
+          "capacity": "970",
+          "frames": "880677",
+          "events": "1997",
+          "discontinuities": "3",
+          "timestamp_errors": "0",
+          "silent_packets": "0",
+          "event_gap_p50_us": "9999.9",
+          "event_gap_p95_us": "10018.8",
+          "event_gap_p99_us": "10071.3",
+          "event_gap_max_us": "26110.4",
+          "timing_overflow": "0",
+          "mmcss": "1",
+          "okay": "1",
+          "position_gaps": "2",
+          "lost_frames": "887",
+          "repeated_frames": "0",
+          "capture_warmup_ms": "5000",
+          "steady_frames": "661941",
+          "steady_discontinuities": "0",
+          "steady_position_gaps": "0",
+          "steady_lost_frames": "0",
+          "steady_repeated_frames": "0"
+        },
+        "flags": [
+          {
+            "second": "0.023876",
+            "position": "0",
+            "expected": "0",
+            "frames": "441",
+            "flags": "1"
+          },
+          {
+            "second": "0.049974",
+            "position": "1327",
+            "expected": "441",
+            "frames": "441",
+            "flags": "1"
+          },
+          {
+            "second": "0.100090",
+            "position": "3533",
+            "expected": "3532",
+            "frames": "441",
+            "flags": "1"
+          }
+        ]
+      },
+      {
+        "rate": 192000,
+        "metrics": {
+          "flow": "capture",
+          "seconds": "20.008",
+          "period": "1920",
+          "capacity": "4224",
+          "frames": "3836160",
+          "events": "1998",
+          "discontinuities": "11",
+          "timestamp_errors": "0",
+          "silent_packets": "0",
+          "event_gap_p50_us": "9999.7",
+          "event_gap_p95_us": "10016.3",
+          "event_gap_p99_us": "10060.0",
+          "event_gap_max_us": "26864.1",
+          "timing_overflow": "0",
+          "mmcss": "1",
+          "okay": "1",
+          "position_gaps": "10",
+          "lost_frames": "3876",
+          "repeated_frames": "0",
+          "capture_warmup_ms": "5000",
+          "steady_frames": "2881920",
+          "steady_discontinuities": "0",
+          "steady_position_gaps": "0",
+          "steady_lost_frames": "0",
+          "steady_repeated_frames": "0"
+        },
+        "flags": [
+          {
+            "second": "0.021551",
+            "position": "0",
+            "expected": "0",
+            "frames": "1920",
+            "flags": "1"
+          },
+          {
+            "second": "0.048402",
+            "position": "5760",
+            "expected": "1920",
+            "frames": "1920",
+            "flags": "1"
+          },
+          {
+            "second": "0.508630",
+            "position": "94081",
+            "expected": "94080",
+            "frames": "1920",
+            "flags": "1"
+          },
+          {
+            "second": "0.518632",
+            "position": "96004",
+            "expected": "96001",
+            "frames": "1920",
+            "flags": "1"
+          },
+          {
+            "second": "0.528630",
+            "position": "97928",
+            "expected": "97924",
+            "frames": "1920",
+            "flags": "1"
+          },
+          {
+            "second": "0.538634",
+            "position": "99851",
+            "expected": "99848",
+            "frames": "1920",
+            "flags": "1"
+          },
+          {
+            "second": "0.548634",
+            "position": "101775",
+            "expected": "101771",
+            "frames": "1920",
+            "flags": "1"
+          },
+          {
+            "second": "0.558628",
+            "position": "103698",
+            "expected": "103695",
+            "frames": "1920",
+            "flags": "1"
+          },
+          {
+            "second": "0.568630",
+            "position": "105621",
+            "expected": "105618",
+            "frames": "1920",
+            "flags": "1"
+          },
+          {
+            "second": "0.578640",
+            "position": "107543",
+            "expected": "107541",
+            "frames": "1920",
+            "flags": "1"
+          },
+          {
+            "second": "3.438632",
+            "position": "656676",
+            "expected": "656663",
+            "frames": "1920",
+            "flags": "1"
+          }
+        ]
+      }
+    ],
+    "known_signal_injected": false,
+    "analog_rtt_measured": false
+  },
+  "idle": {
+    "duration_seconds": 10,
+    "state_before": "ready",
+    "state_after": "ready",
+    "callbacks_delta": 0,
+    "frames_delta": 0,
+    "service_cpu_one_core_percent": 0.0,
+    "asio_connected": false,
+    "usb_present": 1
+  },
+  "startup": {
+    "warmup_ms": 100,
+    "windows_initial_discontinuity_per_stream": 1,
+    "startup_wrong_samples": "retained in each case; Windows audio-engine fade-in is excluded only from steady ramp checks"
+  },
+  "initial_failures": [
+    "Exact real-USB ramp failed when ADC sources remained summed into the diagnostic return. Temporarily disconnected those sources; all eight transient connections restored after the isolated loop. Original failure logs retained locally.",
+    "Exclusive WASAPI constant-marker trials did not establish sample cadence; exclusive mode remains unqualified.",
+    "Initial diagnostic-only JACK helper failed compilation and service executable access; repaired before the successful isolated test.",
+    "First rate-change harness could not open the CDC port already held by the Rey tray. Closed only the owned panel during the test, then restored it.",
+    "Cold-start IAudioClient3 captures flagged real position gaps. Final policy uses 1-ms client detection and bounded initialization prewarm; final 20-s cases retained startup losses but had zero position gaps/discontinuities after 5 s. An earlier candidate also recorded a 2-frame gap at 19.58 s. This is finite evidence, not proof of long-term stability."
+  ],
+  "limits": [
+    "Cold-start Windows capture can lose samples; it is not qualified as uninterrupted from Start",
+    "No analog ADC/DAC loop",
+    "No long DAW or overnight test",
+    "No exclusive WASAPI qualification",
+    "No physical hotplug/sleep/resume or production uninstall qualification",
+    "No proof for Secure Boot/Memory Integrity enabled PCs",
+    "Windows shared engine reports 10 ms period; ASIO RTT is a separate path",
+    "Windows endpoint IDs differ by hardware sample rate",
+    "New Windows-pair real-USB functional tests used USB PCM32"
+  ]
+}

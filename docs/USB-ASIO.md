@@ -1,65 +1,62 @@
 **English** · [Русский](USB-ASIO.ru.md)
 
-# Install Rey Audio USB ASIO 2.8.1
+# Rey Audio USB ASIO — AKM development candidate
 
-One USB board, eight inputs and eight outputs, PCM16/24/32, 44.1–192 kHz.
-Run **Rey-Audio-USB-ASIO-2.8.1-preview.2-x64.exe** and accept UAC. It installs
-the x64 user-mode ASIO DLL, automatic service and mixer/tray panel under
-`%ProgramFiles%\ReyAudio\USBASIO`. Microsoft WinUSB handles the USB interface.
-No custom SYS, test certificate, Test Mode, INI or boot/security change is needed.
-System microphones/speakers for Chrome/Telegram are a [separate stage](ENDPOINTS.md).
+One Raspberry Pi 5 board, eight inputs and eight outputs, PCM16/24/32.
+Supported rates: **44.1 / 48 / 88.2 / 96 / 176.4 / 192 kHz**. 384 kHz is not advertised.
 
-Connect one configured Pi5-AUSB board; USB detection is automatic. Open
-**Rey Audio Driver → Settings (Настройки)**. The Pi needs runtime 0.1.1 for the documented tests.
-The package allows one ASIO host at a time and retains saved manual settings.
+Install the matching **Rey-Audio-USB-ASIO-Setup-x64.exe** and accept Windows UAC.
+The dev.7 package contains the ASIO DLL, automatic service, desktop/tray panel
+and the original signed SAR kernel for four Windows stereo pairs each way.
+Close the DAW before upgrading a loaded ASIO DLL. All four payloads must come
+from the same build. The installer verifies their hashes and preserves preferences.
 
-## Ableton settings
+The Pi must run the coordinated Rey Effects native USB integration. The pinned
+Pi5-AUSB 0.3 dependency supplies WinUSB/FunctionFS, not an analog converter driver.
+The device exposes vendor audio and CDC management only, without UAC2.
+ASIO uses native WinUSB without a class-audio fallback. Windows applications
+use the embedded endpoint kernel through the same service. No external routing
+application is needed. See [Windows devices and signature-policy limitations](ENDPOINTS.md).
 
-| Field | Observed Ableton profile |
-|---|---|
-| Driver Type | ASIO |
-| Audio Device | Rey Audio USB ASIO |
-| In/Out Sample Rate | 192000 Hz or 96000 Hz |
-| Buffer Size | 64 Samples at 192 kHz; 32 at 96 kHz |
-| Hardware Setup | Rey → Settings → ASIO |
-| ASIO render reserve | 3 blocks; test the intended project |
-| USB format | PCM32, queue4 |
+## Controls
 
-Check the [measured profiles and actual Ableton observations](USB-LATENCY-2.8.1.md)
-before treating a small block as stable. Increase reserve manually if deadline
-counters rise. USB depth and ASIO block/reserve are separate controls.
+**Device** contains two PC modes: **Audio interface** and **Combined**. Combined
+supports 44.1–96 kHz. Higher rates require Audio interface, which disables effects.
+On unplug the Pi selects its saved standalone effects profile; reconnect restores
+the last PC mode and per-channel routes. USB owns the profile while connected.
 
-1. Select **No Device** in Ableton before changing USB rate/bits/depth.
-2. Apply the USB format in Rey. Select ASIO block/reserve and **Save** on the ASIO card.
-3. Select **Rey Audio USB ASIO** again. Verify the displayed rate and Buffer Size.
+The audio format has three fields: **Rate**, **Buffer**, **PCM bits**. USB request
+count and render reserve are fixed internal policies for each rate. Legacy manual
+queue/reserve values are ignored. The DAW may choose its ASIO buffer; 16 ASIO
+frames use a 32-frame JACK period. Start with 64 or 128 and qualify the actual project.
 
-The panel shows live settings and selected settings separately. Saving changes
-the next ASIO opening. Reopen ASIO after USB loss/reappearance or format changes.
+For each channel, the optional route disclosure selects capture before/after
+effects and playback directly to the DAC/through effects. There is no mode
+selector in the Pi web interface.
 
-Reported latency uses integer frames:
-`input = N + depth × ceil(rate / 8000)`, `output = (lead − 1) × N + 1`.
-At depth4/lead3, 192 kHz/64 reports **1.5052 ms** and 96 kHz/32 reports
-**1.5104 ms**. These are buffer calculations. Digital RTT has occasional peaks
-above 3 ms; physical ADC/DAC latency remains unmeasured. A 125 µs microframe
-does not imply 125 µs end-to-end audio. [Buffer guide](BUFFER-GUIDE.md).
+1. Stop the DAW audio engine before changing rate, bits or board mode.
+2. Apply the format in Rey; choose **Rey Audio USB ASIO** in the DAW.
+3. Reopen ASIO after a USB disconnect/reappearance or driver update.
 
-## Update and remove
+The tray panel starts hidden at login and its icon remains available even if USB
+is absent. Windows may place it in the notification-area overflow. Audio status
+changes the icon state; it does not control the panel's lifetime.
 
-Fully exit Ableton before a driver-DLL update: No Device can retain the DLL.
-The installer checks all payload hashes and replaces only changed owned files.
-A byte-identical DLL need not be rewritten during a service/panel update.
-An update of the final service/panel with the unchanged DLL loaded was checked
-locally; changes to a loaded DLL remain blocked until the host exits.
+## Timing and validation
 
-The installer registers COM/ASIO and `ReyAudioService --service --asio-only`,
-enables service/tray startup, preserves preferences and rolls back replacement
-errors. It migrates previous USB/mixer settings without activating network transport.
-Uninstall is available in Installed apps; preferences are retained. Installation/
-upgrade passed locally, while uninstall and physical hotplug are not yet qualified.
+The Diagnostics page reports ASIO queue/callback counters. The displayed ASIO
+buffer calculation excludes Pi/JACK and ADC/DAC latency; it is
+not measured round-trip latency. The real digital USB/JACK loop is measured
+separately. A 125 microsecond USB interval is not the complete audio latency.
 
-[Release](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.2)
-· [Exact-build report](USB-LATENCY-2.8.1.md) · [2.8.0 history](USB-ONLY-2.8.md).
+See the current coordinated qualification report and retained
+[2.8.1 measurements](USB-LATENCY-2.8.1.md) for the earlier digital fixture. These
+are development candidates; successful transport tests do not qualify an analog
+loop or every DAW project.
 
-The panel starts automatically after installation and at login, with its window
-hidden. Its icon appears when the service detects the board; Windows may place
-it in the notification-area overflow. [Preview 2 changes](USB-PREVIEW2-20261004.md).
+## Build
+
+Initialize the pinned transport with `git submodule update --init --recursive`.
+An external Steinberg ASIO SDK is required and is never bundled. A build with
+`REY_FINITE_QUALIFICATION=ON` uses an isolated pipe, is console-only and cannot
+register its DLL or be packaged by the installer tool. It is a test artifact.

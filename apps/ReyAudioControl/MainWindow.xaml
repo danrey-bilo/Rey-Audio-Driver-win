@@ -41,24 +41,57 @@
     <Style TargetType="Expander"><Setter Property="Foreground" Value="#405970"/><Setter Property="FontSize" Value="13"/></Style>
     <Style x:Key="MixSwitch" TargetType="ToggleButton">
       <Setter Property="Foreground" Value="#B6C6D8"/><Setter Property="Background" Value="#304056"/><Setter Property="Cursor" Value="Hand"/>
-      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton"><Border x:Name="Face" Background="{TemplateBinding Background}" CornerRadius="5" Padding="5,8"><ContentPresenter HorizontalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="Face" Property="Background" Value="#167E6D"/><Setter Property="Foreground" Value="White"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Face" Property="Opacity" Value="0.8"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Face" Property="BorderBrush" Value="#85E5C6"/><Setter TargetName="Face" Property="BorderThickness" Value="1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton"><Border x:Name="Face" Background="{TemplateBinding Background}" CornerRadius="5" Padding="4,3"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsChecked" Value="True"><Setter TargetName="Face" Property="Background" Value="#167E6D"/><Setter Property="Foreground" Value="White"/></Trigger><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Face" Property="Opacity" Value="0.8"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Face" Property="BorderBrush" Value="#85E5C6"/><Setter TargetName="Face" Property="BorderThickness" Value="1"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
     </Style>
     <Style x:Key="MixFader" TargetType="Slider">
       <Setter Property="Orientation" Value="Vertical"/><Setter Property="Minimum" Value="-60"/><Setter Property="Maximum" Value="12"/><Setter Property="SmallChange" Value="0.1"/><Setter Property="LargeChange" Value="1"/>
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Slider"><Grid Width="34"><Border Width="3" Background="#42536A" CornerRadius="2" HorizontalAlignment="Center"/><Track x:Name="PART_Track" Orientation="Vertical" IsDirectionReversed="False"><Track.DecreaseRepeatButton><RepeatButton Command="Slider.DecreaseLarge" Focusable="False"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.DecreaseRepeatButton><Track.Thumb><Thumb Width="32" Height="25"><Thumb.Template><ControlTemplate TargetType="Thumb"><Border x:Name="Cap" Background="#88E5C6" CornerRadius="5" BorderBrush="#BAF1E0" BorderThickness="1"><Border Height="2" Background="#245C52" Margin="5,0" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsDragging" Value="True"><Setter TargetName="Cap" Property="Background" Value="#CEFFEE"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Thumb.Template></Thumb></Track.Thumb><Track.IncreaseRepeatButton><RepeatButton Command="Slider.IncreaseLarge" Focusable="False"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.IncreaseRepeatButton></Track></Grid></ControlTemplate></Setter.Value></Setter>
     </Style>
-    <DataTemplate x:Key="ChannelStrip">
-      <Border Background="#1D2B3F" CornerRadius="9" Margin="3,0" Padding="8,13">
+    <DataTemplate x:Key="ChannelMeter">
+      <Grid Width="8" Height="84" Background="#111C2A" ToolTip="{Binding PeakLabel}">
+        <Border Height="{Binding MeterHeight}" VerticalAlignment="Bottom"><Border.Background><LinearGradientBrush StartPoint="0,1" EndPoint="0,0"><GradientStop Color="#20B99B" Offset="0"/><GradientStop Color="#9FCA4B" Offset="0.72"/><GradientStop Color="#F5BD57" Offset="1"/></LinearGradientBrush></Border.Background></Border>
+        <Border Height="3" Background="{Binding ClipColor}" VerticalAlignment="Top" ToolTip="{Binding ClipHint}"/>
+      </Grid>
+    </DataTemplate>
+    <DataTemplate x:Key="ChannelButtons">
+      <UniformGrid Columns="3" Height="27">
+        <ToggleButton Content="M" IsChecked="{Binding Mute, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="1,0" ToolTip="Приглушить"/>
+        <ToggleButton Content="S" IsChecked="{Binding Solo, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="1,0" ToolTip="Соло"/>
+        <ToggleButton Content="Ø" IsChecked="{Binding Invert, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="1,0" ToolTip="Полярность"/>
+      </UniformGrid>
+    </DataTemplate>
+    <DataTemplate x:Key="MonoStrip">
+      <StackPanel Margin="3,0">
+        <Grid><TextBlock Text="{Binding Number}" Foreground="#91A8C0" FontSize="11"/><TextBlock Text="{Binding GainLabel}" Foreground="#9AE8CF" FontSize="11" HorizontalAlignment="Right"/></Grid>
+        <Grid Height="84" Margin="5,8,4,4"><Grid.ColumnDefinitions><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ChannelMeter}" HorizontalAlignment="Left"/>
+          <Slider Grid.Column="1" Style="{StaticResource MixFader}" Height="84" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding GainLabel}" AutomationProperties.Name="{Binding Name}"/>
+        </Grid>
+        <TextBlock Text="{Binding PeakLabel}" Foreground="#8FABC5" FontSize="10" Margin="0,0,0,7" HorizontalAlignment="Center"/>
+        <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ChannelButtons}"/>
+      </StackPanel>
+    </DataTemplate>
+    <DataTemplate x:Key="PairStrip">
+      <Border Background="#1D2B3F" CornerRadius="9" Margin="3,0" Padding="9,10">
         <StackPanel>
-          <TextBlock Text="{Binding Name}" Foreground="#EFF6FF" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-          <TextBlock Text="{Binding GainLabel}" Foreground="#9AE8CF" FontSize="12" Margin="0,10,0,15" HorizontalAlignment="Center"/>
-          <Grid Height="140"><Grid.ColumnDefinitions><ColumnDefinition Width="13"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-            <StackPanel><Border Height="8" Background="{Binding ClipColor}" CornerRadius="2" Margin="0,0,0,10" ToolTip="{Binding ClipHint}"/><Grid Height="110" Background="#121D2D"><Border Height="{Binding MeterHeight}" VerticalAlignment="Bottom"><Border.Background><LinearGradientBrush StartPoint="0,1" EndPoint="0,0"><GradientStop Color="#20B99B" Offset="0"/><GradientStop Color="#9FCA4B" Offset="0.72"/><GradientStop Color="#F5BD57" Offset="1"/></LinearGradientBrush></Border.Background></Border></Grid></StackPanel>
-            <Slider Grid.Column="1" Style="{StaticResource MixFader}" Height="128" VerticalAlignment="Bottom" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="Уровень канала, dB" AutomationProperties.Name="{Binding Name}"/>
+          <Grid Margin="2,0,2,10"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Name}" Foreground="#EFF6FF" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
+            <ToggleButton Grid.Column="1" Content="{Binding LinkLabel}" IsChecked="{Binding Linked, Mode=TwoWay}" Style="{StaticResource MixSwitch}" FontSize="9" MinWidth="55" Height="25" ToolTip="Связать или разделить управление соседними каналами" AutomationProperties.Name="{Binding Name, StringFormat=Stereo link {0}}"/>
           </Grid>
-          <TextBlock Text="{Binding PeakLabel}" Foreground="#8FABC5" FontSize="10" Margin="0,9,0,14" HorizontalAlignment="Center" ToolTip="Пиковый уровень после регулировки, dBFS"/>
-          <UniformGrid Columns="2"><ToggleButton Content="M" IsChecked="{Binding Mute, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="0,0,3,0" ToolTip="Mute · выключить этот канал"/><ToggleButton Content="S" IsChecked="{Binding Solo, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="3,0,0,0" ToolTip="Solo · оставить выбранные каналы этого направления"/></UniformGrid>
-          <ToggleButton Content="Ø" IsChecked="{Binding Invert, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="0,8,0,0" ToolTip="Инвертировать полярность PCM"/>
+          <Grid Visibility="{Binding MonoVisibility}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <ContentControl Content="{Binding Left}" ContentTemplate="{StaticResource MonoStrip}"/>
+            <ContentControl Grid.Column="1" Content="{Binding Right}" ContentTemplate="{StaticResource MonoStrip}"/>
+          </Grid>
+          <StackPanel Visibility="{Binding StereoVisibility}">
+            <Grid><TextBlock Text="L / R" Foreground="#91A8C0" FontSize="11"/><TextBlock Text="{Binding Left.GainLabel}" Foreground="#9AE8CF" FontSize="11" HorizontalAlignment="Right"/></Grid>
+            <Grid Height="84" Margin="5,8,4,4"><Grid.ColumnDefinitions><ColumnDefinition Width="14"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+              <ContentControl Content="{Binding Left}" ContentTemplate="{StaticResource ChannelMeter}" HorizontalAlignment="Left"/>
+              <ContentControl Grid.Column="1" Content="{Binding Right}" ContentTemplate="{StaticResource ChannelMeter}" HorizontalAlignment="Left"/>
+              <Slider Grid.Column="2" Style="{StaticResource MixFader}" Height="84" Value="{Binding Left.Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="{Binding Left.GainLabel}" AutomationProperties.Name="{Binding Name}"/>
+            </Grid>
+            <UniformGrid Columns="2" Margin="0,0,0,7"><TextBlock Text="{Binding Left.PeakLabel}" Foreground="#8FABC5" FontSize="10" HorizontalAlignment="Center"/><TextBlock Text="{Binding Right.PeakLabel}" Foreground="#8FABC5" FontSize="10" HorizontalAlignment="Center"/></UniformGrid>
+            <ContentControl Content="{Binding Left}" ContentTemplate="{StaticResource ChannelButtons}"/>
+          </StackPanel>
         </StackPanel>
       </Border>
     </DataTemplate>
@@ -73,63 +106,64 @@
         </StackPanel>
         <StackPanel Grid.Row="1">
           <RadioButton x:Name="NavMixer" GroupName="Pages" IsChecked="True" Style="{StaticResource Nav}" Content="Микшер" AutomationProperties.Name="Mixer"/>
-          <RadioButton x:Name="NavUsb" GroupName="Pages" Style="{StaticResource Nav}" Content="Настройки" AutomationProperties.Name="USB settings"/>
+          <RadioButton x:Name="NavUsb" GroupName="Pages" Style="{StaticResource Nav}" Content="Устройство" AutomationProperties.Name="USB settings"/>
           <RadioButton x:Name="NavDiagnostics" GroupName="Pages" Style="{StaticResource Nav}" Content="Диагностика"/>
         </StackPanel>
-        <TextBlock Grid.Row="2" Text="2.8.1" Foreground="#63758E" FontSize="11" Margin="28,0,0,0" VerticalAlignment="Center"/>
+        <TextBlock Grid.Row="2" Text="2.8.2" Foreground="#63758E" FontSize="11" Margin="28,0,0,0" VerticalAlignment="Center"/>
       </Grid>
     </Border>
     <Grid Grid.Column="1" Margin="32,26,32,22">
       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-      <TextBlock Text="{Binding PageTitle}" FontSize="30" FontWeight="SemiBold" Margin="0,0,0,20"/>
-      <Border Grid.Row="1" Style="{StaticResource Card}" Padding="20,16"><StackPanel>
-        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-          <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Border Background="#E4F2ED" CornerRadius="6" Padding="8,4" Margin="0,0,12,0"><TextBlock Text="USB" Foreground="#137F6C" FontSize="11" FontWeight="SemiBold"/></Border><TextBlock x:Name="AudioDeviceLabel" Text="{Binding DeviceLabel}" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
-          <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"><Ellipse Width="7" Height="7" Fill="{Binding StatusColor}" Margin="0,0,9,0"/><TextBlock Text="{Binding StatusTitle}" Foreground="{Binding StatusColor}" FontSize="12"/></StackPanel>
-        </Grid>
-        <TextBlock Text="{Binding StatusBody}" Visibility="{Binding StatusBodyVisibility}" Style="{StaticResource Caption}" Margin="0,10,0,0"/>
-      </StackPanel></Border>
+      <Grid Margin="0,0,0,20"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <StackPanel><TextBlock Text="{Binding PageTitle}" FontSize="27" FontWeight="SemiBold"/><TextBlock x:Name="AudioDeviceLabel" Text="{Binding DeviceLabel}" Style="{StaticResource Caption}" Margin="0,7,0,0"/></StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"><Ellipse Width="7" Height="7" Fill="{Binding StatusColor}" Margin="0,0,9,0"/><TextBlock Text="{Binding StatusTitle}" Foreground="{Binding StatusColor}" FontSize="12"/></StackPanel>
+      </Grid>
+      <Border Grid.Row="1" Background="#EDF2F6" CornerRadius="8" Padding="14,11" Margin="0,0,0,14" Visibility="{Binding StatusBodyVisibility}"><TextBlock Text="{Binding StatusBody}" Style="{StaticResource Caption}"/></Border>
       <Border Grid.Row="2" Background="#E4F2ED" Padding="16,11" CornerRadius="9" Margin="0,0,0,16" Visibility="{Binding MessageVisibility}"><TextBlock Text="{Binding Message}" Foreground="#246553" FontSize="12"/></Border>
       <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,9,0">
         <Grid>
-          <StackPanel Visibility="{Binding MixerVisibility}">
-            <Border Style="{StaticResource Card}" Padding="16,13"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-              <StackPanel Orientation="Horizontal"><RadioButton x:Name="MixerInputs" GroupName="MixerDirection" Content="Входы" IsChecked="True" Margin="0,0,24,0" VerticalAlignment="Center"/><RadioButton x:Name="MixerOutputs" GroupName="MixerDirection" Content="Выходы" VerticalAlignment="Center"/></StackPanel>
-              <TextBlock Grid.Column="1" Text="{Binding MixerFormat}" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
-            </Grid></Border>
-            <Border Style="{StaticResource Card}" Padding="12,18"><StackPanel>
-              <Grid IsEnabled="{Binding CanEditMixer}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="126"/></Grid.ColumnDefinitions>
-                <ItemsControl x:Name="MixerStrips" ItemsSource="{Binding VisibleChannels}" ItemTemplate="{StaticResource ChannelStrip}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="8"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
-                <Border Grid.Column="2" Background="#26394A" CornerRadius="9" Padding="12,13"><StackPanel DataContext="{Binding Master}">
-                  <TextBlock Text="MASTER" Foreground="#DBF5EB" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"/>
-                  <TextBlock Text="Выходы 1–8" Foreground="#97B6C7" FontSize="10" HorizontalAlignment="Center" Margin="0,6,0,0"/>
-                  <TextBlock Text="{Binding GainLabel}" Foreground="#9AE8CF" FontSize="14" Margin="0,12,0,17" HorizontalAlignment="Center"/>
-                  <Slider Style="{StaticResource MixFader}" Maximum="6" Height="120" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="Общий уровень выходов"/>
-                  <ToggleButton Content="MUTE" IsChecked="{Binding Mute, Mode=TwoWay}" Style="{StaticResource MixSwitch}" Margin="0,26,0,0" ToolTip="Выключить все выходы"/>
-                </StackPanel></Border>
-              </Grid>
-            </StackPanel></Border>
-            <Button x:Name="ResetMixer" Content="Сбросить микшер" IsEnabled="{Binding CanEditMixer}" HorizontalAlignment="Right" Padding="14,9"/>
+          <StackPanel x:Name="MixerStrips" Visibility="{Binding MixerVisibility}">
+            <Grid Margin="3,0,3,9"><TextBlock Text="Входы" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/><TextBlock Text="{Binding MixerFormat}" Style="{StaticResource Caption}" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid>
+            <ItemsControl x:Name="InputMixerPairs" IsEnabled="{Binding CanEditMixer}" ItemsSource="{Binding InputPairs}" ItemTemplate="{StaticResource PairStrip}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
+            <TextBlock Text="Выходы" FontSize="15" FontWeight="SemiBold" Margin="3,17,3,9"/>
+            <ItemsControl x:Name="OutputMixerPairs" IsEnabled="{Binding CanEditMixer}" ItemsSource="{Binding OutputPairs}" ItemTemplate="{StaticResource PairStrip}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel></ItemsControl>
+            <Button x:Name="ResetMixer" Content="Сбросить" IsEnabled="{Binding CanEditMixer}" HorizontalAlignment="Right" Padding="13,6" FontSize="11" Margin="0,12,3,0"/>
           </StackPanel>
           <StackPanel Visibility="{Binding UsbVisibility}">
-            <Border Style="{StaticResource Card}"><StackPanel>
-              <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="ASIO" FontSize="17" FontWeight="SemiBold"/><TextBlock Grid.Column="1" Text="{Binding AsioStateLabel}" Foreground="{Binding AsioHealthColor}" FontSize="12" VerticalAlignment="Center"/></Grid>
-              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Буфер ASIO" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="AsioBlock" ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioBlock}" AutomationProperties.Name="ASIO buffer size" ToolTip="Меньший буфер снижает задержку и увеличивает нагрузку"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="Задержка ASIO (расчёт)" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding AsioLatencyLabel}" ToolTip="{Binding AsioLatencyDetail}" FontSize="24" FontWeight="SemiBold" Foreground="#137F6C"/></StackPanel>
+            <Border x:Name="BoardModeCard" Style="{StaticResource Card}"><StackPanel>
+              <TextBlock Text="Режим платы" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,14"/>
+              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <ComboBox x:Name="BoardMode" ItemsSource="{Binding BoardModes}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding BoardMode}" IsEnabled="{Binding CanApplyBoard}" AutomationProperties.Name="Board operating mode" Margin="0,0,12,0"/>
+                <Button x:Name="SaveBoard" Grid.Column="1" Content="Применить" Style="{StaticResource Primary}" IsEnabled="{Binding CanApplyBoard}"/>
               </Grid>
-              <Expander Header="Дополнительно" Margin="0,14,0,10"><StackPanel Margin="0,14,0,0"><TextBlock Text="Запас ASIO" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="AsioLead" ItemsSource="{Binding AsioLeads}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioLead}" AutomationProperties.Name="ASIO render lead"/></StackPanel></Expander>
-              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="{Binding AsioApplyHint}" Visibility="{Binding AsioApplyHintVisibility}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,16,0"/><Button x:Name="SaveAsio" Grid.Column="1" Content="Сохранить" IsEnabled="{Binding CanSaveAsio}"/></Grid>
+              <TextBlock Text="{Binding BoardSummary}" ToolTip="{Binding BoardStatus}" Style="{StaticResource Caption}" Margin="0,10,0,8"/>
+              <Expander x:Name="BoardRoutesSection" Header="Маршруты каналов" Margin="0,0,0,14" ToolTip="Возврат через эффекты заменяет вход АЦП соответствующего канала. Отправка до эффектов берётся с АЦП.">
+                <StackPanel>
+                  <ItemsControl x:Name="BoardRoutes" ItemsSource="{Binding BoardRoutes}" IsEnabled="{Binding CanEditBoardRoutes}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><Border BorderBrush="#E1E7EF" BorderThickness="1" CornerRadius="8" Padding="10" Margin="3"><StackPanel>
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                      <TextBlock Text="На ПК" Style="{StaticResource Caption}"/>
+                      <ComboBox ItemsSource="{Binding DataContext.CaptureRoutes, RelativeSource={RelativeSource AncestorType=Window}}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Capture}" AutomationProperties.Name="Capture before or after effects"/>
+                      <TextBlock Text="С ПК" Style="{StaticResource Caption}" Margin="0,8,0,0"/>
+                      <ComboBox ItemsSource="{Binding DataContext.PlaybackRoutes, RelativeSource={RelativeSource AncestorType=Window}}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Playback}" AutomationProperties.Name="Playback direct or through effects"/>
+                    </StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </Expander>
             </StackPanel></Border>
+
             <Border Style="{StaticResource Card}"><StackPanel>
               <TextBlock Text="Формат аудио" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
-              <Grid IsEnabled="{Binding CanApplyUsb}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Частота дискретизации" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="UsbRate" ItemsSource="{Binding Rates}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbRate}" AutomationProperties.Name="USB sample rate"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="Разрядность PCM" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Bits}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbBits}" AutomationProperties.Name="USB PCM bits"/></StackPanel>
+              <Grid IsEnabled="{Binding CanApplyUsb}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel><TextBlock Text="Частота" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="UsbRate" ItemsSource="{Binding Rates}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbRate}" AutomationProperties.Name="USB sample rate"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="Буфер, сэмплов" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="AsioBlock" ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioBlock}" AutomationProperties.Name="ASIO buffer size"/></StackPanel>
+                <StackPanel Grid.Column="4"><TextBlock Text="Разрядность" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Bits}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbBits}" AutomationProperties.Name="USB PCM bits"/></StackPanel>
               </Grid>
-              <Expander Header="Дополнительно" Margin="0,14,0,10" IsEnabled="{Binding CanApplyUsb}"><StackPanel Margin="0,14,0,0"><TextBlock Text="Очередь USB" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="UsbDepth" ItemsSource="{Binding Depths}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbDepth}" AutomationProperties.Name="USB queue depth" ToolTip="{Binding QueueHint}"/></StackPanel></Expander>
-              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Формат задаёт аудиоприложение." Visibility="{Binding UsbBusyHintVisibility}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,16,0"/><Button x:Name="SaveUsb" Grid.Column="1" Content="Применить" Style="{StaticResource Primary}" IsEnabled="{Binding CanApplyUsb}" ToolTip="Применить формат и перезапустить USB-подключение"/></Grid>
+              <Grid Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Остановите аудиоприложение для изменения формата." Visibility="{Binding UsbBusyHintVisibility}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,16,0"/><Button x:Name="SaveUsb" Grid.Column="1" Content="Применить" Style="{StaticResource Primary}" IsEnabled="{Binding CanApplyUsb}" ToolTip="Применить формат и перезапустить USB-подключение"/></Grid>
             </StackPanel></Border>
+
+
           </StackPanel>
           <StackPanel Visibility="{Binding DiagnosticsVisibility}">
             <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Состояние системы" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,17"/>
@@ -139,14 +173,14 @@
                 <StackPanel Grid.Column="2"><TextBlock Text="USB-устройство" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding ShortIdentity}" FontSize="18" FontWeight="SemiBold"/></StackPanel>
               </Grid><TextBlock Text="{Binding BackendLabel, StringFormat=Источник · {0}}" Style="{StaticResource Caption}" Margin="0,16,0,0"/>
             </StackPanel></Border>
-            <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Текущая сессия" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
-              <UniformGrid Columns="4">
+            <Border Style="{StaticResource Card}"><Expander Header="Аудиопоток"><StackPanel Margin="0,14,0,0">
+              <TextBlock Text="{Binding AsioLatencyLabel, StringFormat=Буферы ASIO · {0}}" ToolTip="{Binding AsioLatencyDetail}" Style="{StaticResource Caption}" Margin="0,0,0,14"/><UniformGrid Columns="4">
                 <StackPanel><TextBlock Text="Обработано блоков" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding CallbackLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>
                 <StackPanel><TextBlock Text="Кадров PCM" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding FrameLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>
                 <StackPanel><TextBlock Text="Пропущено кадров" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding MissingLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>
                 <StackPanel><TextBlock Text="Макс. пауза callback" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding GapLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>
               </UniformGrid><TextBlock Text="{Binding AsioCountersLabel}" Foreground="{Binding AsioHealthColor}" Style="{StaticResource Caption}" Margin="0,17,0,0" ToolTip="Счётчики текущей ASIO-сессии. Пауза callback не является RTT или задержкой ADC/DAC."/>
-            </StackPanel></Border>
+            </StackPanel></Expander></Border>
             <Border Style="{StaticResource Card}"><Expander Header="Журнал"><StackPanel Margin="0,14,0,0">
               <ItemsControl ItemsSource="{Binding Events}"><ItemsControl.ItemTemplate><DataTemplate><Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="72"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Time}" Foreground="#8695A8" FontSize="12"/><StackPanel Grid.Column="1"><TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold"/><TextBlock Text="{Binding Detail}" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,3,0,0"/></StackPanel></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
             </StackPanel></Expander></Border>

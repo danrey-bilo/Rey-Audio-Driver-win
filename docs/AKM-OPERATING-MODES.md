@@ -1,0 +1,114 @@
+# AKM board modes — development
+
+[Русский](AKM-OPERATING-MODES.ru.md) · [Documentation](README.md)
+
+The PC selects **two modes** in **Rey Audio Driver → Device → Board mode**.
+Development build identifier: `2.8.2-akm-dev.5` (not the published 2.8.1 preview).
+The third runtime state, standalone Effects processor, is automatic on USB
+disconnect. It is not a selectable PC mode and there is no Pi web mode selector.
+
+![Board mode and eight channel routes](assets/rey-akm-modes-fixture.png)
+
+The image is a WPF rendering fixture, not a physical USB connection report.
+
+| PC selection | Rates in this ASIO transport | Effects |
+| --- | --- | --- |
+| Audio interface | 44.1 / 48 / 88.2 / 96 / 176.4 / 192 kHz | Unloaded on the Pi; ADC → PC, PC → DAC |
+| Combined | 44.1 / 48 / 88.2 / 96 kHz | Enabled; independent capture/return settings for eight channels |
+
+384 kHz is removed from both applications and USB descriptors. The
+service and ASIO `canSampleRate` both enforce the selected mode's rate limit.
+
+## Channel routing
+
+For each of eight channels choose independently:
+
+* **To PC:** before effects (physical ADC), or the corresponding graph output.
+* **From PC:** directly to DAC, or through the effects graph.
+
+A USB return through effects replaces that graph input's ADC source. It does
+not create two parallel instances of the same chain. The post-effects PC tap
+therefore follows the selected source and the preset's cross-channel routing.
+Unplugging selects the saved standalone profile, limited to 96 kHz. Reconnect
+restores the previous PC mode, profile and channel settings.
+
+Stop the ASIO engine before applying mode/format changes. The panel disables
+these controls while ASIO runs, and the service independently rejects mode
+changes. Changes use revision checks, asynchronous admission, completion polling
+and state readback. A timeout is not automatically replayed as another mutation.
+
+## Connection prerequisite and current boundary
+
+This is a **development control integration**, not a qualified AKM USB audio
+release. The panel requires an already configured **Rey Effects CDC management
+function** on the Pi. It discovers one Linux gadget COM port, validates the
+`Rey Effects` protocol-1 handshake and keeps PCM out of the management channel.
+Without that function the controls remain unavailable with an explanation.
+
+The companion Linux application provides native WinUSB audio and CDC management,
+plus the JACK provider shared by analog routes and effects. UAC2 is not exposed.
+ASIO uses backend 3 (physical-clock JACK); backend 2 remains readable for an
+orderly update from dev.4 and backend 1 is a separate legacy digital echo fixture.
+There is no class-audio fallback. System audio without ASIO needs a separate
+native Windows endpoint driver. See [AUSB](AUSB-NATIVE.md).
+[Current qualification](USB-LATENCY-2026-10-16.md) measures real USB with a digital
+JACK loop. Analog ADC/DAC latency and full production installation remain separate
+checks. A successful control command alone is not audio proof.
+
+Companion source: [Rey Effects Linux ARM](https://github.com/danrey-bilo/Rey-Effects-Linux-arm),
+branch `codex/operating-modes` (repository access required).
+
+## Service and saved settings
+
+`BOARD_MODE soundcard|combined` stores the local policy. Selecting Combined
+clamps a previously saved high rate to 96 kHz. A later high-rate USB or ASIO RATE
+command is rejected. `STATUS.board_mode` reports the saved policy; it is not a
+remote Pi acknowledgement. The panel confirms the Pi first, then updates this
+local policy. The read-only command `ASIO CAN_RATE <identity> <rate>` queries it.
+
+Saved USB/mixer settings now use **format 4** (172 bytes), preserving the existing
+PCM/mixer fields and adding the board-mode flag. Formats 1, 2 and 3 migrate with
+Audio interface as the backward-compatible default. Older service binaries
+cannot read format 4: preserve the old registry/profile backup before downgrading.
+The ASIO shared-memory ABI is version 2; update the service and DLL together.
+
+## Validation, 2026-10-15
+
+* Service, ASIO DLL and probe compiled on Windows x64 with C++17/LLVM-MinGW.
+* **33/33 native CTests passed**, including installed-v3 settings migration,
+  mode persistence, high-rate rejection and prior IPC/mixer contracts.
+* **21 C# contracts passed** for two choices, rate ranges, eight ordered routes,
+  revision fields and invalid command rejection.
+* Real WPF binding/render fixture checked two modes and eight channel rows;
+  it did not enumerate a physical USB board.
+* The Pi's actual CDC dispatcher passed eight requests through a test-owned PTY.
+  The PTY is simulated transport; it does not qualify Windows serial/USB hardware.
+
+```powershell
+./tools/build_control.ps1
+./tools/check_board_control.ps1
+cmake --build build/usb
+ctest --test-dir build/usb --output-on-failure
+```
+
+The new Windows workflow compiles/tests the WPF control code without downloading
+the external ASIO SDK. Full native checks above were run separately with the SDK.
+The development installer was then applied to the existing idle Windows
+installation; service startup, all four payload hashes, ASIO registration and
+preserved USB/mixer settings were verified. Live service commands rejected
+`processor`, clamped Combined to 96 kHz and rejected 192 kHz in Combined;
+the original Audio interface / 192 kHz profile was restored. Saved settings now
+use format 4. The old files and format-3 profile were backed up before updating.
+
+The first installation attempt exposed a pre-existing stop/replace race and
+rolled back successfully. The installer now captures the SCM-owned process
+before STOP and waits for its normal exit, in addition to the Stopped service
+state, before replacing files. It uses a bounded wait and never kills the
+service to release its executable. The subsequent installation passed.
+The workflow also compiles the installer API without creating/running a payload.
+
+This is an installed **development build**, not a production release or a
+physical USB audio pass. See the companion Linux report for meter and
+mode-transaction measurements.
+Installed payload hashes and local-service results are recorded in
+[the evidence file](evidence/akm-operating-modes-20261015.json).
