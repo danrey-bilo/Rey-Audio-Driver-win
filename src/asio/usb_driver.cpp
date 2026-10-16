@@ -80,7 +80,7 @@ public:
     if (!query_info(info_.id, current, error) || current.rate != info_.rate || current.bits != info_.bits) {
       set_error(error.empty() ? "USB format changed; reopen ASIO" : error); return ASE_NoClock;
     }
-    lead_ = rey::engine::render_lead(current.rate,block_,current.capture_buffer!=0);
+    lead_ = rey::engine::render_lead(current.rate,block_);
     if (!client_.connect(current, block_, lead_, error)) { set_error(error); return ASE_HWMalfunction; }
     callbacks_count_ = dropped_ = gap_max_ = processing_max_ = age_max_ = 0;
     mmcss_failures_ = 0; half_ = 0; position_ = timestamp_ = 0; stream_lost_ = false;
@@ -109,7 +109,7 @@ public:
     if (query_info(info_.id, current, error) && current.rate == info_.rate && current.bits == info_.bits)
       info_ = current;
     const auto packet_frames = (info_.rate + 7999) / 8000;
-    const auto lead = rey::engine::render_lead(info_.rate,block_,info_.capture_buffer!=0);
+    const auto lead = rey::engine::render_lead(info_.rate,block_);
     *input = long(block_ + (info_.capture_buffer ? info_.capture_buffer : info_.depth * packet_frames));
     *output = long((lead - 1) * block_ + 1 + info_.render_buffer + info_.render_delay);
     return ASE_OK;

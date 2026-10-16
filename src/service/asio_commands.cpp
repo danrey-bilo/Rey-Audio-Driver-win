@@ -36,7 +36,7 @@ std::string Manager::asio_request(const std::string &command, DWORD sender_pid) 
     if (!(in >> pid >> mapping >> event >> block >> lead) || (in >> extra) || pid != sender_pid ||
         !mapping || !event || !rey::asio::valid_block(block) || lead < 1 || lead > rey::asio::max_lead_blocks)
       return fail("Malformed or unauthenticated OPEN");
-    if(lead != rey::engine::render_lead(info.rate,block,info.capture_buffer!=0))return fail("Automatic ASIO transport policy differs; reopen the current driver");
+    if(lead != rey::engine::render_lead(info.rate,block))return fail("Automatic ASIO transport policy differs; reopen the current driver");
     std::string error;
     return session->asio().connect(sender_pid, mapping, event, block, lead, error)
         ? "REY_ASIO_OK" : fail(error);

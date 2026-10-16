@@ -1,6 +1,5 @@
 #pragma once
 #include "../engine/audio_block.hpp"
-#include "../engine/uac2_session.hpp"
 #include "settings.hpp"
 #include "../asio/ipc_server.hpp"
 #include <deque>
@@ -40,7 +39,6 @@ private:
   bool bridge_present_ = false;
   rey::engine::UsbProfile active_;
   rey::audio::Mixer mixer_;
-  rey::engine::Uac2Stats uac2_stats_;
   struct Event {
     uint64_t utc_ms;
     std::string code, detail;

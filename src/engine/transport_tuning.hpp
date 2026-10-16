@@ -19,10 +19,7 @@ constexpr TransportTuning transport_tuning(unsigned rate) {
       return value;
   return {rate, 8, 1500};
 }
-constexpr unsigned render_lead(unsigned rate, unsigned block,
-                               bool uac2 = false) {
-  if (uac2)
-    return 1;
+constexpr unsigned render_lead(unsigned rate, unsigned block) {
   const auto frames =
       (uint64_t(rate) * transport_tuning(rate).reserve_us + 999999) / 1000000;
   return unsigned((frames + block - 1) / block) + 1;

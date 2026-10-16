@@ -58,7 +58,6 @@ void DeviceSession::start_worker(Settings s,
   }
   callbacks_ = frames_ = missing_ = gap_max_ = 0;
   processing_sum_ = processing_max_ = 0;
-  uac2_stats_.reset();
   worker_done_ = false;
   generation_.fetch_add(1, std::memory_order_relaxed);
   {
@@ -114,15 +113,12 @@ void DeviceSession::worker(Settings settings,
   struct AsioLifetime { rey::asio::Server &server; ~AsioLifetime() { server.offline(); } } asio_lifetime{asio_};
   std::string error;
   rey::engine::UsbSession session;
-  rey::engine::Uac2Session audio;
-  const bool uac2 = rey::engine::uac2_path(path);
-  if (uac2 && digital_test_) { state("device_unavailable", "Digital echo test is not available for physical USB Audio"); return; }
-  if (!(uac2 ? audio.open(settings.usb, path, expected, error) : session.open(settings.usb, expected, path, error))) {
+  if (!session.open(settings.usb, expected, path, error)) {
     state("device_unavailable", error);
     return;
   }
-  const auto id = uac2 ? audio.identity() : session.identity();
-  const bool native = !uac2 && session.jack_audio();
+  const auto id = session.identity();
+  const bool native = session.jack_audio();
   if(native && digital_test_) { state("device_unavailable","The JACK audio backend is not a digital echo fixture"); return; }
   REY_BRIDGE_PROFILE profile{sizeof(profile),
                                 REY_BRIDGE_VERSION,
@@ -138,7 +134,7 @@ void DeviceSession::worker(Settings settings,
     std::lock_guard<std::mutex> lock(mutex_);
     usb_id_ = id;
     active_ = settings.usb;
-    backend_ = uac2 ? "usb-audio2-akm" : native ? "winusb-jack" : "digital-loopback";
+    backend_ = native ? "winusb-jack" : "digital-loopback";
   }
   if (!digital_test_ && !asio_only_ && !bridge.attach(profile, error)) {
     state("driver_unavailable", error);
@@ -146,27 +142,12 @@ void DeviceSession::worker(Settings settings,
   }
   context.windows = !digital_test_ && !asio_only_;
   if (!digital_test_) asio_.configure(profile, settings.usb_depth, generation_.load());
-  const auto ready = [](void *opaque, unsigned capture, unsigned render, unsigned delay) {
-    auto &ctx = *static_cast<CallbackContext *>(opaque);
-    ctx.manager->asio_.transport_buffers(capture, render, delay);
-    if (ctx.manager->stream_requested_.load())
-      ctx.manager->state("streaming", "USB ASIO stream is running");
-  };
-  const auto render_ready = [](void *opaque, uint64_t end_frame) {
-    auto &ctx = *static_cast<CallbackContext *>(opaque);
-    return ctx.manager->asio_.render_ready(end_frame);
-  };
-  const auto render_span = [](void *opaque, uint64_t &first, uint64_t &last, unsigned &block) {
-    auto &ctx = *static_cast<CallbackContext *>(opaque);
-    return ctx.manager->asio_.render_span(first,last,block);
-  };
-  if ((uac2 || native) && asio_only_) {
+  if (native && asio_only_) {
     do {
       context.previous = 0;
       error.clear();
       bool okay=true;
-      if(uac2)okay=audio.run(process, &context, worker_stop_, uac2_stats_, error, ready, &stream_requested_, render_ready, render_span);
-      else if(stream_requested_.load()) {
+      if(stream_requested_.load()) {
         state("streaming","USB ASIO stream is running");
         okay=session.run(process,&context,worker_stop_,0,settings.usb_depth,error,&stream_requested_,asio_.block_size());
       }
@@ -175,13 +156,12 @@ void DeviceSession::worker(Settings settings,
         state("stream_error", error); return;
       }
       mixer_.reset();
-      state("ready", okay ? "USB ASIO service is ready" : "USB audio is in use by Windows; stop playback before starting ASIO");
+      state("ready", "USB ASIO service is ready");
       while (WaitForSingleObject(worker_stop_, 20) == WAIT_TIMEOUT && !stream_requested_.load(std::memory_order_acquire)) {}
     } while (WaitForSingleObject(worker_stop_, 0) != WAIT_OBJECT_0);
   } else {
     state(digital_test_ ? "digital_test" : "streaming", digital_test_ ? "USB digital test is running" : "USB audio endpoints are attached");
-    const bool okay = uac2 ? audio.run(process, &context, worker_stop_, uac2_stats_, error, ready)
-        : session.run(process, &context, worker_stop_, 0, settings.usb_depth, error);
+    const bool okay = session.run(process, &context, worker_stop_, 0, settings.usb_depth, error);
     if (!okay) state("stream_error", error.empty() ? "USB stream stopped with errors" : error);
   }
 
@@ -239,16 +219,6 @@ std::string DeviceSession::status_locked(const std::string &error) const {
       << ",\"callback_gap_max_us\":" << gap_max_.load() / 1000.0
       << ",\"processing_max_us\":" << processing_max_.load() / 1000.0
       << ",\"processing_average_us\":" << (callbacks_.load() ? double(processing_sum_.load()) / callbacks_.load() / 1000.0 : 0)
-      << "},\"uac2\":{\"capture_buffer_frames\":" << uac2_stats_.capture_buffer.load()
-      << ",\"render_buffer_frames\":" << uac2_stats_.render_buffer.load()
-      << ",\"startup_silence_frames\":" << uac2_stats_.startup_silence_frames.load()
-      << ",\"render_wait_max_us\":" << uac2_stats_.render_wait_max_ns.load()/1000.0
-      << ",\"render_wait_timeouts\":" << uac2_stats_.render_wait_timeouts.load()
-      << ",\"capture_position\":" << uac2_stats_.capture_position.load()
-      << ",\"render_position\":" << uac2_stats_.render_position.load()
-      << ",\"capture_discontinuities\":" << uac2_stats_.discontinuities.load()
-      << ",\"render_underrun_frames\":" << uac2_stats_.underrun_frames.load()
-      << ",\"render_overflow_frames\":" << uac2_stats_.overflow_frames.load()
       << "},\"asio\":" << asio_.status()
       << ",\"mixer\":{\"master_cdb\":" << s.mix.master_cdb << ",\"master_mute\":" << (s.mix.master_mute ? "true" : "false");
   const std::array<rey::audio::Channel, 8> *groups[] = {&s.mix.inputs, &s.mix.outputs};
