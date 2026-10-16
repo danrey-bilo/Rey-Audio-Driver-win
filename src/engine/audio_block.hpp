@@ -12,6 +12,7 @@ struct AudioBlock {
   // Capture batches need time for the ASIO host before their corresponding render.
   // WinUSB delivers microframes and leaves this at zero.
   unsigned render_delay_frames = 0;
+  bool capture_only = false, render_only = false;
 };
 using ProcessBlock = bool (*)(void *, const AudioBlock &);
 } // namespace rey::engine

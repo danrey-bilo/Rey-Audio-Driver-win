@@ -17,7 +17,11 @@ bool io(HANDLE pipe, HANDLE event, void *data, DWORD length, DWORD &bytes, bool 
 }
 } // namespace
 bool command(const std::string &text, std::string &reply, std::string &error) {
+#ifdef REY_FINITE_QUALIFICATION
+  constexpr auto name = L"\\\\.\\pipe\\ReyAudio.Test.Qualification.v1";
+#else
   constexpr auto name = L"\\\\.\\pipe\\ReyAudio.Control.v1";
+#endif
   Handle pipe, event;
   for (unsigned attempt = 0; attempt < 3; ++attempt) {
     pipe.value = CreateFileW(name, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
@@ -99,7 +103,11 @@ bool Client::capture(Slot &out, uint64_t &dropped) {
   // transport deadline. The user's lead stays fixed; indices remain absolute.
   const auto clock = load(shared_->clock_position);
   const auto initial_read = read;
-  while (read < written && shared_->capture.data[read % slots].frame_position +
+  // UAC2 delivers a whole endpoint buffer at once. The render clock can move
+  // while the host drains that batch; applying the microframe shortcut here
+  // discards valid capture. Its bounded rings and actual render deadlines still
+  // detect overload and reject genuinely late output.
+  while (!info_.capture_buffer && read < written && shared_->capture.data[read % slots].frame_position +
           uint64_t(shared_->lead_blocks) * shared_->block < clock) { ++dropped; ++read; }
   if (read != initial_read) add(shared_->client_capture_dropped, read - initial_read);
   if (read == written) { store(shared_->capture.read, read); return false; }

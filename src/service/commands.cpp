@@ -1,4 +1,5 @@
 #include "commands.hpp"
+#include "../engine/transport_tuning.hpp"
 #include <sstream>
 namespace rey::service {
 bool command_settings(const Settings &current, const std::string &command, Settings &next, std::string &error) {
@@ -28,6 +29,12 @@ bool command_settings(const Settings &current, const std::string &command, Setti
     if (next.board_effects && next.usb.rate > 96000) next.usb.rate = 96000;
   } else if (command == "MIX_RESET") {
     next.mix = rey::audio::Mix{}; accepted = true;
+  } else if (fields.size() == 3 && fields[0] == "FORMAT") {
+    unsigned rate=0,bits=0;
+    accepted=parse_unsigned(fields[1],rate,192000) && parse_unsigned(fields[2],bits,32);
+    next.usb.rate=rate;next.usb.bits=uint16_t(bits);
+    next.usb_depth=rey::engine::transport_tuning(rate).requests;
+    next.usb.safety=0;next.usb_auto=true;
   } else if (fields.size() == 7 && fields[0] == "USB") {
     unsigned rate = 0, bits = 0, depth = 0, block = 0, guard = 0, automatic = 0;
     accepted = parse_unsigned(fields[1], rate, 192000) &&

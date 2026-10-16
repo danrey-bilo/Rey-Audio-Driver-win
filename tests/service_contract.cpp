@@ -43,7 +43,9 @@ int main(int argc, char **argv) {
     }
   } else if (test == "commands") {
     Settings next;
-    ok = command_settings(s, "USB 44100 24 4 64 0 1", next, error) && next.usb.rate == 44100 && next.usb.bits == 24;
+    ok=command_settings(s,"FORMAT 96000 32",next,error) && next.usb.rate==96000 && next.usb_depth==8 && next.usb.safety==0;
+    ok &= !command_settings(s,"FORMAT 384000 32",next,error) && !command_settings(s,"FORMAT 96000 17",next,error);
+    ok &= command_settings(s, "USB 44100 24 4 64 0 1", next, error) && next.usb.rate == 44100 && next.usb.bits == 24;
     ok &= command_settings(next, "MIX 0:7 5800 1 0 1 apply", s, error) && s.mix.inputs[7].gain_cdb == -200 && s.mix.inputs[7].mute;
     ok &= command_settings(s, "BOARD_MODE combined", next, error) && next.board_effects && next.usb.rate <= 96000;
     ok &= !command_settings(next, "USB 192000 32 4 64 0 1", s, error);

@@ -105,6 +105,9 @@ int wmain(int argc, wchar_t **argv) {
       (console && (configuration.size() < 4 || configuration[1] != L':' ||
        (configuration[2] != L'\\' && configuration[2] != L'/'))))
     return 1;
+#ifdef REY_FINITE_QUALIFICATION
+  if (!console) return 1;
+#endif
   stop_event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
   if (!stop_event)
     return 1;

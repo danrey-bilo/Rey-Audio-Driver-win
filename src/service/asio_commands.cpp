@@ -1,4 +1,5 @@
 #include "manager.hpp"
+#include "../engine/transport_tuning.hpp"
 #include <sstream>
 #include <limits>
 
@@ -33,8 +34,9 @@ std::string Manager::asio_request(const std::string &command, DWORD sender_pid) 
     uint64_t pid = 0, mapping = 0, event = 0;
     unsigned block = 0, lead = 0;
     if (!(in >> pid >> mapping >> event >> block >> lead) || (in >> extra) || pid != sender_pid ||
-        !mapping || !event || !rey::asio::valid_block(block) || lead < 1 || lead > 4)
+        !mapping || !event || !rey::asio::valid_block(block) || lead < 1 || lead > rey::asio::max_lead_blocks)
       return fail("Malformed or unauthenticated OPEN");
+    if(lead != rey::engine::render_lead(info.rate,block,info.capture_buffer!=0))return fail("Automatic ASIO transport policy differs; reopen the current driver");
     std::string error;
     return session->asio().connect(sender_pid, mapping, event, block, lead, error)
         ? "REY_ASIO_OK" : fail(error);

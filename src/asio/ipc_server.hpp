@@ -18,6 +18,9 @@ public:
   bool info(Info &);
   std::string status() const;
   bool running() const;
+  unsigned block_size() const;
+  bool render_ready(uint64_t end_frame);
+  bool render_span(uint64_t &first_frame, uint64_t &end_frame, unsigned &block_frames);
   bool connect(DWORD pid, uint64_t mapping, uint64_t event, unsigned block,
                unsigned lead_blocks, std::string &error);
   bool disconnect(DWORD pid);

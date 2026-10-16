@@ -4,6 +4,7 @@
 #include "../platform/device_names.hpp"
 #include "pi5ausb/windows.hpp"
 #include "../engine/uac2_session.hpp"
+#include "../engine/transport_tuning.hpp"
 namespace rey::service {
 Manager::Manager(std::wstring path, bool test, bool asio_only)
     : path_(std::move(path)), digital_test_(test), asio_only_(asio_only) {}
@@ -11,6 +12,9 @@ Manager::~Manager() = default;
 bool Manager::initialize(std::string &error) {
   Settings settings; unsigned format = 0;
   if (!load(path_, settings, error, L"Software\\ReyAudio", &format)) return false;
+#ifndef REY_FINITE_QUALIFICATION
+  settings.usb_depth=rey::engine::transport_tuning(settings.usb.rate).requests;
+#endif
   migrate_profile_ = format < 3;
   session_ = std::make_unique<DeviceSession>("", path_, L"Software\\ReyAudio", settings, digital_test_, asio_only_);
   bridge_present_ = !asio_only_ && bridge::DriverBridge::available();
@@ -28,13 +32,18 @@ bool Manager::activate(const std::string &id, std::string &error) {
     if (!save(path_, settings, error)) return false;
     migrate_profile_ = false;
   }
+#ifndef REY_FINITE_QUALIFICATION
+  settings.usb_depth=rey::engine::transport_tuning(settings.usb.rate).requests;
+#endif
   auto next = std::make_unique<DeviceSession>(id, path_, L"Software\\ReyAudio", settings, digital_test_, asio_only_);
   session_ = std::move(next); // The old session closes its IPC and stream first.
   identity_ = id;
   return true;
 }
 bool Manager::persist(const Settings &next, std::string &error) {
-  if (!session_->update(next, error)) return false;
+  auto automatic=next;
+  automatic.usb_depth=rey::engine::transport_tuning(next.usb.rate).requests;
+  if (!session_->update(automatic, error)) return false;
   migrate_profile_ = false;
   return true;
 }

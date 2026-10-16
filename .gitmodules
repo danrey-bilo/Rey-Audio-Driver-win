@@ -1,0 +1,3 @@
+[submodule "lib/pi5-ausb"]
+	path = lib/pi5-ausb
+	url = https://github.com/danrey-bilo/Pi5-AUSB.git

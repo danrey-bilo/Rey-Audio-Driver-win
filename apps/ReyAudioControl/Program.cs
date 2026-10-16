@@ -19,8 +19,8 @@ using Forms = System.Windows.Forms;
 [assembly: AssemblyTitle("Rey Audio Driver")]
 [assembly: AssemblyProduct("Rey Audio Driver")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.2.2")]
-[assembly: AssemblyFileVersion("2.8.2.2")]
+[assembly: AssemblyVersion("2.8.2.4")]
+[assembly: AssemblyFileVersion("2.8.2.4")]
 namespace ReyAudio {
     internal sealed class Panel : IDisposable {
         private readonly Application app;
@@ -52,19 +52,12 @@ namespace ReyAudio {
             ((RadioButton)window.FindName("NavDiagnostics")).Checked += (s, e) => Navigate("diagnostics");
             Click("SaveUsb", SaveUsb);
             Click("SaveBoard", SaveBoard);
-            Click("SaveAsio", () => {
-                AsioPreferences.Save(view.AsioBlock, view.AsioLead);
-                view.Message = "Сохранено.";
-                view.Notify(); return Task.FromResult(0);
-            });
             Click("CopyReport", () => {
                 if (!string.IsNullOrEmpty(view.LastJson)) Clipboard.SetText(view.LastJson);
                 view.Message = string.IsNullOrEmpty(view.LastJson) ? "Диагностика станет доступна после запуска службы." : "Диагностика скопирована.";
                 view.Notify(); return Task.FromResult(0);
             });
-            ((ComboBox)window.FindName("UsbDepth")).SelectionChanged += (s, e) => view.Notify();
             ((ComboBox)window.FindName("AsioBlock")).SelectionChanged += (s, e) => view.Notify();
-            ((ComboBox)window.FindName("AsioLead")).SelectionChanged += (s, e) => view.Notify();
             window.Closing += (s, e) => { if (!exiting) { e.Cancel = true; window.Hide(); } };
             window.StateChanged += (s, e) => { if (window.WindowState == WindowState.Minimized && tray != null && tray.Visible) window.Hide(); };
             timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
@@ -109,18 +102,19 @@ namespace ReyAudio {
             return value;
         }
         private async Task SaveUsb() {
-            int guard = Number(view.UsbGuard, 0, 8192, "Запас USB");
+            if(!AsioPreferences.ValidBlock(view.AsioBlock))throw new ArgumentException("Недопустимый буфер.");
             if (view.BoardAvailable) {
-                view.UpdateBoard(await board.Apply(view.BoardMode, view.UsbRate, view.UsbBlock, view.BoardRoutes));
+                view.UpdateBoard(await board.Apply(view.BoardMode, view.UsbRate, Math.Max(32,view.AsioBlock), view.BoardRoutes));
                 await Command("BOARD_MODE " + (view.BoardMode == 0 ? "soundcard" : "combined"), "");
             }
-            await Command(string.Format(CultureInfo.InvariantCulture, "USB {0} {1} {2} {3} {4} 1", view.UsbRate, view.UsbBits, view.UsbDepth, view.UsbBlock, guard), "Сохранено.");
+            await Command(string.Format(CultureInfo.InvariantCulture, "FORMAT {0} {1}", view.UsbRate, view.UsbBits), "Сохранено.");
+            AsioPreferences.Save(view.AsioBlock);
         }
         private async Task SaveBoard() {
             if (view.AsioRunning) throw new ArgumentException("Остановите аудиодвижок ASIO перед сменой режима.");
             view.BoardBusy = true; view.Notify();
             try {
-                view.UpdateBoard(await board.Apply(view.BoardMode, view.UsbRate, view.UsbBlock, view.BoardRoutes));
+                view.UpdateBoard(await board.Apply(view.BoardMode, view.UsbRate, Math.Max(32,view.AsioBlock), view.BoardRoutes));
                 await Command("BOARD_MODE " + (view.BoardMode == 0 ? "soundcard" : "combined"), "Режим и восемь маршрутов подтверждены платой.");
             } finally { view.BoardBusy = false; view.Notify(); }
         }
@@ -214,7 +208,7 @@ namespace ReyAudio {
                 tray_button_absent = window.FindName("ToTray") == null,
                 windows_sound_button_absent = window.FindName("WindowsSound") == null,
                 all_channel_controls_visible = mixerBottom <= root.ActualHeight - 22,
-                asio_collapsed_by_default = !((Expander)window.FindName("AsioOptions")).IsExpanded,
+                transport_settings_hidden = window.FindName("UsbDepth") == null && window.FindName("AsioLead") == null,
                 asio_apply_hint = view.AsioApplyHint, asio_latency_label = view.AsioLatencyLabel,
                 width = root.ActualWidth, height = root.ActualHeight, fixture = fixture != null
             }));
@@ -223,19 +217,17 @@ namespace ReyAudio {
             VerifyBoardPanel(directory);
         }
         private void VerifyAsioPanel(string directory) {
-            // ASIO is an explicit disclosure; verify its controls after opening it.
+            // The one user buffer control shares the audio format card.
             window.WindowState = WindowState.Normal;
             Show();
             Navigate("usb");
             ((RadioButton)window.FindName("NavUsb")).IsChecked = true;
-            var options = (Expander)window.FindName("AsioOptions");
-            options.IsExpanded = true;
             window.UpdateLayout();
-            ((FrameworkElement)window.FindName("SaveAsio")).BringIntoView();
+            ((FrameworkElement)window.FindName("SaveUsb")).BringIntoView();
             window.UpdateLayout();
             var root = (FrameworkElement)window.Content;
             var first = (FrameworkElement)window.FindName("AsioBlock");
-            var save = (FrameworkElement)window.FindName("SaveAsio");
+            var save = (FrameworkElement)window.FindName("SaveUsb");
             var bounds = save.TransformToAncestor(root).TransformBounds(new Rect(0, 0, save.ActualWidth, save.ActualHeight));
             bool accessible = first.IsVisible && save.IsVisible && bounds.Top >= 0 && bounds.Bottom <= root.ActualHeight - 8;
             if (!accessible) throw new InvalidOperationException("Expanded ASIO controls are inaccessible");
@@ -243,7 +235,6 @@ namespace ReyAudio {
             bitmap.Render(root); var png = new PngBitmapEncoder(); png.Frames.Add(BitmapFrame.Create(bitmap));
             using (var output = File.Create(Path.Combine(directory, "rey-asio-expanded.png"))) png.Save(output);
             File.WriteAllText(Path.Combine(directory, "asio-disclosure-check.json"), new JavaScriptSerializer().Serialize(new { controls_accessible_after_expand = accessible }));
-            options.IsExpanded = false;
             window.Hide();
         }
         private void VerifyBoardPanel(string directory) {

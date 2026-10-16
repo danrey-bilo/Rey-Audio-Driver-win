@@ -131,23 +131,15 @@
 
             <Border Style="{StaticResource Card}"><StackPanel>
               <TextBlock Text="Формат аудио" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,18"/>
-              <Grid IsEnabled="{Binding CanApplyUsb}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Частота дискретизации" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="UsbRate" ItemsSource="{Binding Rates}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbRate}" AutomationProperties.Name="USB sample rate"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="Разрядность PCM" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Bits}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbBits}" AutomationProperties.Name="USB PCM bits"/></StackPanel>
+              <Grid IsEnabled="{Binding CanApplyUsb}"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel><TextBlock Text="Частота" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="UsbRate" ItemsSource="{Binding Rates}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbRate}" AutomationProperties.Name="USB sample rate"/></StackPanel>
+                <StackPanel Grid.Column="2"><TextBlock Text="Буфер, сэмплов" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="AsioBlock" ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioBlock}" AutomationProperties.Name="ASIO buffer size"/></StackPanel>
+                <StackPanel Grid.Column="4"><TextBlock Text="Разрядность" Style="{StaticResource FieldLabel}"/><ComboBox ItemsSource="{Binding Bits}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbBits}" AutomationProperties.Name="USB PCM bits"/></StackPanel>
               </Grid>
-              <Expander Header="Дополнительно" Margin="0,14,0,10" IsEnabled="{Binding CanApplyUsb}"><StackPanel Margin="0,14,0,0"><TextBlock Text="Очередь USB" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="UsbDepth" ItemsSource="{Binding Depths}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding UsbDepth}" AutomationProperties.Name="USB queue depth" ToolTip="{Binding QueueHint}"/></StackPanel></Expander>
-              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Формат задаёт аудиоприложение." Visibility="{Binding UsbBusyHintVisibility}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,16,0"/><Button x:Name="SaveUsb" Grid.Column="1" Content="Применить" Style="{StaticResource Primary}" IsEnabled="{Binding CanApplyUsb}" ToolTip="Применить формат и перезапустить USB-подключение"/></Grid>
+              <Grid Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Остановите аудиоприложение для изменения формата." Visibility="{Binding UsbBusyHintVisibility}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,16,0"/><Button x:Name="SaveUsb" Grid.Column="1" Content="Применить" Style="{StaticResource Primary}" IsEnabled="{Binding CanApplyUsb}" ToolTip="Применить формат и перезапустить USB-подключение"/></Grid>
             </StackPanel></Border>
 
-            <Border Style="{StaticResource Card}"><Expander x:Name="AsioOptions" Header="ASIO"><StackPanel Margin="0,14,0,0">
-              <TextBlock Text="{Binding AsioStateLabel}" Style="{StaticResource Caption}" Margin="0,0,0,12"/>
-              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="Буфер ASIO" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="AsioBlock" ItemsSource="{Binding Blocks}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioBlock}" AutomationProperties.Name="ASIO buffer size" ToolTip="Меньший буфер снижает задержку и увеличивает нагрузку"/></StackPanel>
-                <StackPanel Grid.Column="2"><TextBlock Text="Задержка ASIO (расчёт)" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding AsioLatencyLabel}" ToolTip="{Binding AsioLatencyDetail}" FontSize="24" FontWeight="SemiBold" Foreground="#137F6C"/></StackPanel>
-              </Grid>
-              <Expander Header="Дополнительно" Margin="0,14,0,10"><StackPanel Margin="0,14,0,0"><TextBlock Text="Запас ASIO" Style="{StaticResource FieldLabel}"/><ComboBox x:Name="AsioLead" ItemsSource="{Binding AsioLeads}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding AsioLead}" AutomationProperties.Name="ASIO render lead"/></StackPanel></Expander>
-              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="{Binding AsioApplyHint}" Visibility="{Binding AsioApplyHintVisibility}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,16,0"/><Button x:Name="SaveAsio" Grid.Column="1" Content="Сохранить" IsEnabled="{Binding CanSaveAsio}"/></Grid>
-            </StackPanel></Expander></Border>
+
           </StackPanel>
           <StackPanel Visibility="{Binding DiagnosticsVisibility}">
             <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Состояние системы" FontSize="17" FontWeight="SemiBold" Margin="0,0,0,17"/>
@@ -158,7 +150,7 @@
               </Grid><TextBlock Text="{Binding BackendLabel, StringFormat=Источник · {0}}" Style="{StaticResource Caption}" Margin="0,16,0,0"/>
             </StackPanel></Border>
             <Border Style="{StaticResource Card}"><Expander Header="Аудиопоток"><StackPanel Margin="0,14,0,0">
-              <UniformGrid Columns="4">
+              <TextBlock Text="{Binding AsioLatencyLabel, StringFormat=Буферы ASIO · {0}}" ToolTip="{Binding AsioLatencyDetail}" Style="{StaticResource Caption}" Margin="0,0,0,14"/><UniformGrid Columns="4">
                 <StackPanel><TextBlock Text="Обработано блоков" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding CallbackLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>
                 <StackPanel><TextBlock Text="Кадров PCM" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding FrameLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>
                 <StackPanel><TextBlock Text="Пропущено кадров" Style="{StaticResource FieldLabel}"/><TextBlock Text="{Binding MissingLabel}" FontSize="20" FontWeight="SemiBold"/></StackPanel>

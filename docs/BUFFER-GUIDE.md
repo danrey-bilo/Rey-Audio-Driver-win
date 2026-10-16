@@ -1,33 +1,40 @@
-# Manual USB-ASIO buffers
+# ASIO buffer and automatic transport policy
 
-ASIO block: 16, 32, 64, 128, 256 frames. Render lead: 1–4 blocks. USB depth:
-1–16 packets. Controls are independent and manual; there is no automatic
-minimum-buffer selection.
+The user selects one ASIO buffer: **16, 32, 64, 128 or 256 frames**. The DAW can
+choose it when opening the driver. The Pi uses the same JACK period except that
+16 ASIO frames use a 32-frame JACK period. Begin with 64 or 128, then check the
+actual project and its drop/late/overflow counters.
 
-The 2.8.1 control profiles for 96/192 kHz are documented in the
-[low-latency report](USB-LATENCY-2.8.1.md). The Pi needs the updated USB runtime
-with FIFO 40 and locked memory; a Windows buffer change alone is insufficient.
+USB requests and render reserve are internal, fixed per-rate policies:
 
-Buffer-model examples at USB depth4:
+| Rate, kHz | Outstanding requests | Host render reserve, µs |
+|---|---:|---:|
+| 44.1 | 8 | 1000 |
+| 48 | 8 | 1000 |
+| 88.2 | 8 | 750 |
+| 96 | 8 | 750 |
+| 176.4 | 8 | 1500 |
+| 192 | 8 | 1500 |
 
-| Rate / block / lead | Reported total |
-|---|---|
-| 192 kHz / 64 / 3 | 1.5052 ms |
-| 192 kHz / 64 / 4 | 1.8385 ms |
-| 96 kHz / 32 / 3 | 1.5104 ms |
-| 96 kHz / 32 / 4 | 1.8438 ms |
+The lead is `ceil(ceil(rate × reserve_us / 1e6) / block) + 1` blocks. The class
+UAC2 compatibility path uses its own actual Windows endpoint buffers. Legacy
+`RenderLeadBlocks`, queue and guard preferences do not override the current
+production policy. There are no packet/queue controls in the panel.
 
-These are ASIO getLatencies values, not measured analog round trip. A smaller
-block leaves less host scheduling time. The same block takes longer at lower
-rates. Earlier short 16/32 successes did not prove sustained stability; longer
-runs on the earlier build had errors. [2.8.0 history](USB-ONLY-2.8.md) is retained
-separately from the new measurements.
+Eight requests cover bus scheduling variation; their capacity is not itself an
+analog latency figure. The shared rings have 64 slots to absorb a Windows batch
+without forcing a matching extra render delay. The ASIO thread has a preferred
+physical core, with normal scheduler migration retained instead of a one-core
+CPU set. Caller affinity and diagnostic overrides remain respected.
 
-Device → ASIO → Save, then reopen the driver in Ableton. Apply USB rate/bits/depth
-separately after stopping ASIO. Test the intended project, drops/late/overflow,
-frame continuity and RTT; use 175 seconds, finishing within three minutes. A good median with
-missing frames is not stable. Check generation and connection_id when comparing
-counters. Earlier depth2 slowed the digital bench despite zero PCM errors, so
-zero counters alone are insufficient.
+The Pi reconciles its AKM clock with the USB stream using an allocation-free
+JACK callback and preconfigured resamplers. Its FIFO reserve and rate-specific
+filters also contribute latency. ASIO `getLatencies` and the panel's buffer
+calculation currently describe the PC queues, not the entire Pi/converter path.
+Measure an actual loop for full timing; do not use those numbers as physical RTT.
 
-ASIO reserve and USB queue are under **Advanced** on their respective cards.
+A good median with missing data is not a stable result. Check both PC counters
+and the Pi's native receive/send underflow/overflow, conversion and xrun counts.
+The current digital qualification is separate from the retained
+[2.8.1 fixture results](USB-LATENCY-2.8.1.md). Increasing the user buffer can help
+heavier projects; no short test proves every project or Windows workload.

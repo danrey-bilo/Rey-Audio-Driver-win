@@ -75,18 +75,21 @@ bool DeviceSession::process(void *opaque, const rey::engine::AudioBlock &b) {
   auto &context = *static_cast<CallbackContext *>(opaque);
   auto &m = *context.manager;
   const auto now = rey::now_ns();
-  if (context.previous) {
+  if (!b.render_only && context.previous) {
     const auto gap = now - context.previous;
     if (gap > m.gap_max_.load(std::memory_order_relaxed))
       m.gap_max_.store(gap, std::memory_order_relaxed);
   }
-  context.previous = now;
-  m.callbacks_.fetch_add(1, std::memory_order_relaxed);
-  m.frames_.fetch_add(b.frames, std::memory_order_relaxed);
+  if (!b.render_only) {
+    context.previous = now;
+    m.callbacks_.fetch_add(1, std::memory_order_relaxed);
+    m.frames_.fetch_add(b.frames, std::memory_order_relaxed);
+  }
   if (b.missing)
     m.missing_.fetch_add(b.frames, std::memory_order_relaxed);
   rey::engine::AudioBlock adjusted;
-  if (!m.mixer_.capture(b, adjusted)) return false;
+  adjusted = b;
+  if (!b.render_only && !m.mixer_.capture(b, adjusted)) return false;
   bool ok = true;
   if (context.echo) {
     for (unsigned f = 0; f < b.frames; ++f)
@@ -98,7 +101,7 @@ bool DeviceSession::process(void *opaque, const rey::engine::AudioBlock &b) {
     else std::fill_n(b.render, size_t(b.frames) * b.outputs, 0);
     m.asio_.process(adjusted, now);
   }
-  m.mixer_.render(adjusted);
+  if (!b.capture_only) m.mixer_.render(adjusted);
   const auto elapsed = rey::now_ns() - now;
   m.processing_sum_.fetch_add(elapsed, std::memory_order_relaxed);
   if (elapsed > m.processing_max_.load(std::memory_order_relaxed)) m.processing_max_.store(elapsed, std::memory_order_relaxed);
@@ -119,6 +122,8 @@ void DeviceSession::worker(Settings settings,
     return;
   }
   const auto id = uac2 ? audio.identity() : session.identity();
+  const bool native = !uac2 && session.jack_audio();
+  if(native && digital_test_) { state("device_unavailable","The JACK audio backend is not a digital echo fixture"); return; }
   REY_BRIDGE_PROFILE profile{sizeof(profile),
                                 REY_BRIDGE_VERSION,
                                 settings.usb.rate,
@@ -133,7 +138,7 @@ void DeviceSession::worker(Settings settings,
     std::lock_guard<std::mutex> lock(mutex_);
     usb_id_ = id;
     active_ = settings.usb;
-    backend_ = uac2 ? "usb-audio2-akm" : "digital-loopback";
+    backend_ = uac2 ? "usb-audio2-akm" : native ? "winusb-jack" : "digital-loopback";
   }
   if (!digital_test_ && !asio_only_ && !bridge.attach(profile, error)) {
     state("driver_unavailable", error);
@@ -141,18 +146,34 @@ void DeviceSession::worker(Settings settings,
   }
   context.windows = !digital_test_ && !asio_only_;
   if (!digital_test_) asio_.configure(profile, settings.usb_depth, generation_.load());
-  const auto ready = [](void *opaque, unsigned capture, unsigned render) {
+  const auto ready = [](void *opaque, unsigned capture, unsigned render, unsigned delay) {
     auto &ctx = *static_cast<CallbackContext *>(opaque);
-    ctx.manager->asio_.transport_buffers(capture, render, capture);
+    ctx.manager->asio_.transport_buffers(capture, render, delay);
     if (ctx.manager->stream_requested_.load())
       ctx.manager->state("streaming", "USB ASIO stream is running");
   };
-  if (uac2 && asio_only_) {
+  const auto render_ready = [](void *opaque, uint64_t end_frame) {
+    auto &ctx = *static_cast<CallbackContext *>(opaque);
+    return ctx.manager->asio_.render_ready(end_frame);
+  };
+  const auto render_span = [](void *opaque, uint64_t &first, uint64_t &last, unsigned &block) {
+    auto &ctx = *static_cast<CallbackContext *>(opaque);
+    return ctx.manager->asio_.render_span(first,last,block);
+  };
+  if ((uac2 || native) && asio_only_) {
     do {
       context.previous = 0;
       error.clear();
-      const bool okay = audio.run(process, &context, worker_stop_, uac2_stats_, error, ready, &stream_requested_);
-      if (!okay && stream_requested_.load()) { state("stream_error", error); return; }
+      bool okay=true;
+      if(uac2)okay=audio.run(process, &context, worker_stop_, uac2_stats_, error, ready, &stream_requested_, render_ready, render_span);
+      else if(stream_requested_.load()) {
+        state("streaming","USB ASIO stream is running");
+        okay=session.run(process,&context,worker_stop_,0,settings.usb_depth,error,&stream_requested_,asio_.block_size());
+      }
+      if (!okay && stream_requested_.load()) {
+        std::fprintf(stderr, "REY_USB_STREAM_ERROR %s\n", error.c_str());
+        state("stream_error", error); return;
+      }
       mixer_.reset();
       state("ready", okay ? "USB ASIO service is ready" : "USB audio is in use by Windows; stop playback before starting ASIO");
       while (WaitForSingleObject(worker_stop_, 20) == WAIT_TIMEOUT && !stream_requested_.load(std::memory_order_acquire)) {}
@@ -192,7 +213,7 @@ bool DeviceSession::update(const Settings &next, std::string &error) {
 std::string DeviceSession::status_locked(const std::string &error) const {
   const auto &s = settings_;
   std::ostringstream out;
-  out << "{\"version\":\"2.8.2-akm-dev.2\",\"ok\":" << (error.empty() ? "true" : "false")
+  out << "{\"version\":\"2.8.2-akm-dev.4\",\"ok\":" << (error.empty() ? "true" : "false")
       << ",\"error\":" << json_string(error)
       << ",\"state\":" << json_string(state_)
       << ",\"detail\":" << json_string(detail_)
@@ -221,6 +242,10 @@ std::string DeviceSession::status_locked(const std::string &error) const {
       << "},\"uac2\":{\"capture_buffer_frames\":" << uac2_stats_.capture_buffer.load()
       << ",\"render_buffer_frames\":" << uac2_stats_.render_buffer.load()
       << ",\"startup_silence_frames\":" << uac2_stats_.startup_silence_frames.load()
+      << ",\"render_wait_max_us\":" << uac2_stats_.render_wait_max_ns.load()/1000.0
+      << ",\"render_wait_timeouts\":" << uac2_stats_.render_wait_timeouts.load()
+      << ",\"capture_position\":" << uac2_stats_.capture_position.load()
+      << ",\"render_position\":" << uac2_stats_.render_position.load()
       << ",\"capture_discontinuities\":" << uac2_stats_.discontinuities.load()
       << ",\"render_underrun_frames\":" << uac2_stats_.underrun_frames.load()
       << ",\"render_overflow_frames\":" << uac2_stats_.overflow_frames.load()

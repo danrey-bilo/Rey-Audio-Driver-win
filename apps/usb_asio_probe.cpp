@@ -21,7 +21,7 @@ uint64_t first_ns = 0, last_ns = 0, previous_position = 0;
 bool dense_markers = false, stream_only = false;
 bool channel_tones = false;
 bool pulse_loop = false;
-unsigned next_received = 1;
+uint64_t rejected_peaks = 0;
 uint64_t detection_after = 0;
 std::atomic<uint64_t> emit_until_ns{UINT64_MAX};
 std::vector<int32_t> recorded;
@@ -53,18 +53,29 @@ void process(long half, ASIOBool) {
   if (pulse_loop) for (unsigned f = 0; f < block; ++f) {
     const double value = double(sample(static_cast<uint8_t *>(buffers[0].buffers[half])+size_t(f)*width)) /
         double(uint64_t(1) << (bits-1));
-    if (std::abs(value) < .0005 || previous_position+f < detection_after || next_received > pulse_id) continue;
-    auto &pulse = pulses[next_received];
-    bool correct = (value < 0) == ((next_received & 1) != 0);
+    if (value < .002 || previous_position+f < detection_after || !pulse_id) continue;
+    unsigned code = 0;
+    bool correct = true;
     for (unsigned ch = 1; ch < 8; ++ch) {
       const double other = double(sample(static_cast<uint8_t *>(buffers[ch].buffers[half])+size_t(f)*width)) /
           double(uint64_t(1) << (bits-1));
-      correct &= std::abs(other/value - double(8-ch)/8) < .04;
+      correct &= std::abs(std::abs(other/value) - double(8-ch)/8) < .04;
+      if(other<0)code|=1u<<(ch-1);
     }
-    if (!correct) { ++invalid; continue; }
+    if (!correct) { ++rejected_peaks; continue; }
+    // The seven channel signs identify a marker independently of earlier
+    // markers. A missing pulse must not turn every later RTT into a growing
+    // multiple of the marker interval.
+    unsigned id = 0;
+    for(unsigned candidate=pulse_id;candidate && candidate+64>pulse_id;--candidate)
+      if((candidate&127u)==code && pulses[candidate].sent<=now &&
+         now-pulses[candidate].sent<1000000000ull){id=candidate;break;}
+    if(!id){++rejected_peaks;continue;}
+    auto &pulse=pulses[id];
+    if(pulse.received){++duplicates;continue;}
     pulse.received = true; pulse.rtt = now-pulse.sent;
     pulse.rtt_frames = previous_position+f-pulse.position;
-    ++next_received; detection_after = previous_position+f+rate/1000;
+    detection_after = previous_position+f+rate/1000;
   }
   for (unsigned f = 0; !stream_only && !pulse_loop && f < block; ++f) {
     const auto id = sample(static_cast<uint8_t *>(buffers[0].buffers[half]) + size_t(f) * width);
@@ -93,7 +104,8 @@ void process(long half, ASIOBool) {
     pulses[pulse_id].position = previous_position;
     for (unsigned ch = 0; ch < 8; ++ch) {
       if (pulse_loop) {
-        const auto value = int32_t(double(uint64_t(1) << (bits-1))*.005*double(8-ch)/8) * ((pulse_id&1) ? -1 : 1);
+        const auto value = int32_t(double(uint64_t(1) << (bits-1))*.005*double(8-ch)/8) *
+            (ch && (pulse_id&(1u<<(ch-1))) ? -1 : 1);
         for (unsigned f = 0; f < 4; ++f) store(static_cast<uint8_t *>(buffers[ch+8].buffers[half])+size_t(f)*width,value);
       } else store(static_cast<uint8_t *>(buffers[ch + 8].buffers[half]), marker(pulse_id, ch));
     }
@@ -234,8 +246,8 @@ int wmain(int argc, wchar_t **argv) {
     const bool okay = channels_okay && stream_completed && callbacks > 100 && (stream_only || rtts.size() > 20) && !invalid && !duplicates && !missing &&
       !position_backwards && !stats.capture_dropped && !stats.render_late_frames && !stats.render_missing_frames &&
       !stats.render_overflow && !stats.mmcss_failures;
-    if (pulse_loop) std::printf("ASIO_SAMPLE_RTT p50_us=%.3f p95_us=%.3f p99_us=%.3f max_us=%.3f digital_jack_loop=1 physical_audio=0\n",
-                               sample_percentile(.5),sample_percentile(.95),sample_percentile(.99),sample_percentile(1));
+    if (pulse_loop) std::printf("ASIO_SAMPLE_RTT p50_us=%.3f p95_us=%.3f p99_us=%.3f max_us=%.3f rejected_peak_candidates=%llu digital_jack_loop=1 physical_audio=0\n",
+                               sample_percentile(.5),sample_percentile(.95),sample_percentile(.99),sample_percentile(1),(unsigned long long)rejected_peaks);
     std::printf("ASIO_RESULT seconds=%.3f callbacks=%llu frames=%llu pulses=%u received=%zu missing=%u invalid=%llu duplicates=%llu "
       "rtt_p50_us=%.3f rtt_p95_us=%.3f rtt_p99_us=%.3f rtt_max_us=%.3f capture_dropped=%llu render_late_frames=%llu "
       "render_missing_frames=%llu render_overflow=%llu callback_gap_max_us=%.3f processing_max_us=%.3f "

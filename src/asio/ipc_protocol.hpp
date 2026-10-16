@@ -13,6 +13,7 @@ constexpr uint32_t magic = 0x52415349, version = 2;
 // Windows delivers a USB Audio buffer in bursts: at 192 kHz its 3 ms
 // packet contains 36 ASIO blocks of 16 frames. Capacity is not added latency.
 constexpr unsigned channels = 8, max_frames = 256, slots = 64;
+constexpr unsigned max_lead_blocks = slots-2;
 constexpr long diagnostics_selector = 0x52455931;
 inline constexpr GUID clsid = {0x91ba2c4a, 0x56bc, 0x4c49,
     {0xa4, 0x99, 0x23, 0x19, 0x79, 0xec, 0x5f, 0x60}};

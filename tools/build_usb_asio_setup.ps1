@@ -2,11 +2,12 @@ param(
     [Parameter(Mandatory=$true)][string]$Bin,
     [string]$Output = 'build/usb-asio-setup',
     [ValidatePattern('^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$')]
-    [string]$Version = '2.8.2-akm-dev.2'
+    [string]$Version = '2.8.2-akm-dev.4'
 )
 $ErrorActionPreference = 'Stop'
 $project = Split-Path $PSScriptRoot -Parent
 $binary = [IO.Path]::GetFullPath($Bin)
+if (Test-Path -LiteralPath (Join-Path $binary 'QUALIFICATION_ONLY')) { throw 'An isolated qualification build cannot be installed or published as a driver.' }
 $target = [IO.Path]::GetFullPath($Output)
 [IO.Directory]::CreateDirectory($target) | Out-Null
 $source = Join-Path $project 'installer/UsbAsioSetup'

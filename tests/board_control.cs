@@ -31,6 +31,13 @@ namespace ReyAudio {
             Reject(()=>BoardControl.Request(state,0,96000,128,view.BoardRoutes.Take(7)));
             view.BoardRoutes[0].Capture=2;
             Reject(()=>BoardControl.Request(state,0,96000,128,view.BoardRoutes));
+            int reads=0, pauses=0;
+            BoardControl.WaitForIdle(()=>new Dictionary<string,object>{{"pending",++reads<3}},()=>++pauses,()=>false);
+            Check(reads==3 && pauses==2);
+            bool timedOut=false;
+            try { BoardControl.WaitForIdle(()=>new Dictionary<string,object>{{"pending",true}},()=>{throw new Exception("Expired wait slept");},()=>true); }
+            catch(TimeoutException){timedOut=true;}
+            Check(timedOut);
             Console.WriteLine("PC board control: "+checks+" contracts passed; no physical USB claim");return 0;
         }
     }

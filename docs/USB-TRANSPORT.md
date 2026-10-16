@@ -8,12 +8,14 @@ build has no network dependency or route preference.
 
 Transfers use bounded overlapped WinUSB slots. The protocol carries epoch,
 sequence and absolute frame indices; malformed packets or timeline errors
-stop the session. USB queue depth is manual. It must be evaluated together
-with ASIO block and render lead, under the intended workload.
+stop the session. USB requests and render reserve follow a fixed per-rate
+policy; the user selects the ASIO block. See [buffer tuning](BUFFER-GUIDE.md).
 
 125 µs bus microframes do not imply 125 µs end-to-end audio. Queueing, Windows
 completion delivery, ASIO scheduling and converter/backend delay also matter.
-The current bench is a digital loopback. [Exact build report](USB-ONLY-2.8.md).
+The current bench uses the real cable and native JACK backend on the AKM Pi,
+with synthetic PCM looped at JACK. [Current report](USB-LATENCY-2026-10-16.md).
+This excludes analog ADC/DAC latency. The older backend-1 echo remains a fixture.
 
 The service detects appearance/removal and retries; after a lost stream,
 reopen ASIO in the DAW. A second card cannot replace the owned interface.

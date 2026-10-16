@@ -5,13 +5,13 @@ Use a Windows x64 C++17 toolchain with Windows SDK libraries, CMake 3.20+ and
 ASIO SDK separately; its headers are not included in this repository or package.
 [ASIO SDK](ASIO-SDK.md).
 
-Supply a [Pi5-AUSB](https://github.com/danrey-bilo/Pi5-AUSB) checkout or installed
-0.1.0-compatible SDK. AoIP-lib and its former submodule are not required.
+Initialize the pinned [Pi5-AUSB](https://github.com/danrey-bilo/Pi5-AUSB) 0.2
+checkout at `lib/pi5-ausb` (repository access required), or supply an installed
+0.2 package. AoIP-lib is not required.
 From a Windows x64 compiler environment:
 
 ```powershell
 cmake -S . -B build/usb -G Ninja `
-  -DPI5AUSB_SOURCE_DIR=C:/src/Pi5-AUSB `
   -DASIO_SDK_DIR=C:/SDK/asio `
   -DCMAKE_BUILD_TYPE=Release
 cmake --build build/usb
@@ -36,17 +36,16 @@ Minimal LLVM-MinGW environments can supply `REY_SETUPAPI_LIBRARY`,
 `CMAKE_CXX_COMPILER` and `CMAKE_RC_COMPILER`. Standard SDK toolchains use their
 own import libraries. ARM64 is not supported.
 
-Validation covers 33 contracts (IPC ownership/timeline, settings migration,
+Validation covers 37 contracts (IPC ownership/timeline, settings migration,
 PCM alignment, mixer, endpoint mapping and single-device selection). Use the
 installed COM matrix and profile tools only with an idle ASIO host, one Pi,
 and unity mixer. Audio tests use at most 175 seconds, completing within three minutes.
-[Current report](USB-LATENCY-2.8.1.md). A build is not physical audio qualification.
+[Current report](USB-LATENCY-2026-10-16.md). A build is not physical audio qualification.
 
-The AKM mode-control development also has 21 C# contracts, independent of the
+The AKM mode-control development also has 23 C# contracts, independent of the
 external ASIO SDK: `./tools/check_board_control.ps1`. Run
 `./tools/build_control.ps1` for the WPF panel. See [AKM modes](AKM-OPERATING-MODES.md)
-for the separate PCM integration prerequisite; the prior digital-loopback
-measurements do not qualify this board.
+for the coordinated Pi USB/JACK integration and its qualification boundary.
 
 ## Release archives
 
@@ -54,10 +53,12 @@ After committing the tested source, package the EXE, documentation and source:
 
 ```powershell
 python tools/package_usb_release.py --setup build/usb-setup --out dist/usb-release `
-  --asio-notice C:/SDK/asio/LICENSE.txt --ref HEAD --version 2.8.1-preview.1
+  --asio-notice C:/SDK/asio/LICENSE.txt --ref HEAD --version 2.8.2-akm-dev.4
 ```
 
 The tool checks the installer hash and one-device manifest, archives committed
 files only, excludes external SDK headers/binaries and emits download checksums.
-It neither installs nor publishes. The source archive preserves retired code
-under `archive/`; this code is outside the active build.
+It neither installs nor publishes. Initialize the pinned transport separately
+when rebuilding the source archive; its private source is not exported by the
+Windows packager. `REY_FINITE_QUALIFICATION=ON` creates an isolated test build
+that cannot register ASIO or be admitted to the installer.

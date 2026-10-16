@@ -1,5 +1,6 @@
 #include "ipc_client.hpp"
 #include "../platform/realtime.hpp"
+#include "../engine/transport_tuning.hpp"
 #include <objbase.h>
 #include <shellapi.h>
 #include "iasiodrv.h"
@@ -44,22 +45,17 @@ public:
   ASIOBool init(void *) override {
     if (running_) return ASIOFalse;
     disposeBuffers();
-    char lead[16]{};
     const std::string choice = "auto";
     lead_ = 3;
     unsigned preferred = 0;
     HKEY preferences = nullptr;
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\ReyAudio\\ASIO", 0, KEY_READ, &preferences) == ERROR_SUCCESS) {
       DWORD value = 0, bytes = sizeof(value), type = 0;
-      if (RegQueryValueExW(preferences, L"RenderLeadBlocks", nullptr, &type, reinterpret_cast<BYTE *>(&value), &bytes) == ERROR_SUCCESS &&
-          type == REG_DWORD && value >= 1 && value <= 4) lead_ = value;
       bytes = sizeof(value);
       if (RegQueryValueExW(preferences, L"BufferSize", nullptr, &type, reinterpret_cast<BYTE *>(&value), &bytes) == ERROR_SUCCESS &&
           type == REG_DWORD && valid_block(value)) preferred = value;
       RegCloseKey(preferences);
     }
-    if (GetEnvironmentVariableA("REY_ASIO_LEAD_BLOCKS", lead, sizeof(lead)) == 1 && lead[0] >= '1' && lead[0] <= '4')
-      lead_ = unsigned(lead[0] - '0');
     std::string error;
     for (unsigned attempt = 0; attempt < 15; ++attempt) {
       if (query_info(choice, info_, error)) {
@@ -84,6 +80,7 @@ public:
     if (!query_info(info_.id, current, error) || current.rate != info_.rate || current.bits != info_.bits) {
       set_error(error.empty() ? "USB format changed; reopen ASIO" : error); return ASE_NoClock;
     }
+    lead_ = rey::engine::render_lead(current.rate,block_,current.capture_buffer!=0);
     if (!client_.connect(current, block_, lead_, error)) { set_error(error); return ASE_HWMalfunction; }
     callbacks_count_ = dropped_ = gap_max_ = processing_max_ = age_max_ = 0;
     mmcss_failures_ = 0; half_ = 0; position_ = timestamp_ = 0; stream_lost_ = false;
@@ -112,8 +109,9 @@ public:
     if (query_info(info_.id, current, error) && current.rate == info_.rate && current.bits == info_.bits)
       info_ = current;
     const auto packet_frames = (info_.rate + 7999) / 8000;
+    const auto lead = rey::engine::render_lead(info_.rate,block_,info_.capture_buffer!=0);
     *input = long(block_ + (info_.capture_buffer ? info_.capture_buffer : info_.depth * packet_frames));
-    *output = long((lead_ - 1) * block_ + 1 + info_.render_buffer + info_.render_delay);
+    *output = long((lead - 1) * block_ + 1 + info_.render_buffer + info_.render_delay);
     return ASE_OK;
   }
   ASIOError getBufferSize(long *minimum, long *maximum, long *preferred, long *granularity) override {
@@ -333,6 +331,9 @@ HRESULT registry(const std::wstring &path, const wchar_t *name, const std::wstri
 }
 }
 extern "C" HRESULT __stdcall DllRegisterServer() {
+#ifdef REY_FINITE_QUALIFICATION
+  return E_ACCESSDENIED;
+#endif
   wchar_t dll[32768]{}; const auto length = GetModuleFileNameW(rey::asio::module, dll, DWORD(std::size(dll)));
   if (!length || length == std::size(dll)) return E_FAIL;
   HRESULT result = registry(class_path, nullptr, L"Rey Audio USB ASIO");
@@ -343,5 +344,8 @@ extern "C" HRESULT __stdcall DllRegisterServer() {
   return result;
 }
 extern "C" HRESULT __stdcall DllUnregisterServer() {
+#ifdef REY_FINITE_QUALIFICATION
+  return E_ACCESSDENIED;
+#endif
   RegDeleteTreeW(HKEY_LOCAL_MACHINE, asio_path); RegDeleteTreeW(HKEY_LOCAL_MACHINE, class_path); return S_OK;
 }

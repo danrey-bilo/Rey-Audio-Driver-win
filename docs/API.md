@@ -8,7 +8,8 @@ not this pipe. There is one USB session and one mixer.
 | Request | Effect |
 |---|---|
 | `STATUS` | USB/ASIO state, identity, format, counters, mixer and recent events |
-| `USB rate bits depth block guard automatic` | Save the manual USB profile; restart stream when its settings change |
+| `FORMAT rate bits` | Save format with automatic per-rate transport parameters; refuse changes while ASIO runs |
+| `USB rate bits depth block guard automatic` | Legacy admission; queue/guard are canonicalized to production policy |
 | `MIX direction:channel gain mute solo polarity apply` | Live channel edit; direction 0=input, 1=output, channel 0–7 |
 | `MASTER gain mute` | Live output Master edit |
 | `MIX_RESET` | Unity gains, Mute/Solo/polarity disabled |
@@ -16,7 +17,8 @@ not this pipe. There is one USB session and one mixer.
 
 Gain is centi-dB biased by 6000: `6000` means 0 dB, `5800` means −2 dB.
 Channel gain 0–7200; Master 0–6600. Flags are 0/1. USB rates are the six
-supported rates, bits 16/24/32, depth 1–16, block 32/64/128/256, guard 0–8192.
+supported rates and bits 16/24/32. Legacy USB payloads admit depth 1–16,
+block 32/64/128/256 and guard 0–8192, then normalize requests/guard for production.
 Stop ASIO before applying a USB format. Live mixer edits do not restart USB.
 
 Status includes `version`, `identity`, `device_limit:1`, `device_warning`,
@@ -29,7 +31,7 @@ Internal ASIO commands are `INFO`, `OPEN`, `CLOSE`, `RATE`, `CAN_RATE`, with `au
 exact currently owned USB identity. Exact identity prevents a stopped host
 from accidentally reopening another card. It is not a multi-card selector.
 One host owns the connection; PID and mapping/event handles are authenticated.
-IPC ABI version 1 and strict structure size remain unchanged.
+IPC ABI is version 2 with 64 ring slots; service and DLL must be updated together.
 
 Service statistics reset on USB session restart; ASIO counters reset on host
 connection. Track `generation` and `connection_id` when comparing snapshots.

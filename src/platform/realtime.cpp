@@ -10,7 +10,7 @@ void prefer_audio_cpu(unsigned role) {
   std::vector<uint8_t> buffer(bytes);
   if(!GetSystemCpuSetInformation(reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.data()),bytes,&bytes,GetCurrentProcess(),0)) return;
   GROUP_AFFINITY allowed{}; if(!GetThreadGroupAffinity(GetCurrentThread(),&allowed)) return;
-  struct Cpu { ULONG id; BYTE core,performance; };
+  struct Cpu { BYTE processor,core,performance; };
   std::vector<Cpu> cores;
   for(size_t offset=0;offset+sizeof(SYSTEM_CPU_SET_INFORMATION)<=bytes;) {
     const auto* item=reinterpret_cast<const SYSTEM_CPU_SET_INFORMATION*>(buffer.data()+offset);
@@ -19,14 +19,17 @@ void prefer_audio_cpu(unsigned role) {
     if(item->Type==CpuSetInformation && cpu.Group==allowed.Group && cpu.LogicalProcessorIndex<sizeof(ULONG_PTR)*8 &&
       (allowed.Mask & (ULONG_PTR(1)<<cpu.LogicalProcessorIndex)) && (!cpu.Allocated || cpu.AllocatedToTargetProcess)) {
       bool duplicate=false; for(const auto& previous:cores) if(previous.core==cpu.CoreIndex) duplicate=true;
-      if(!duplicate) cores.push_back({cpu.Id,cpu.CoreIndex,cpu.EfficiencyClass});
+      if(!duplicate) cores.push_back({cpu.LogicalProcessorIndex,cpu.CoreIndex,cpu.EfficiencyClass});
     }
     offset+=item->Size;
   }
   std::stable_sort(cores.begin(),cores.end(),[](const Cpu& a,const Cpu& b) { return a.performance>b.performance; });
   if(cores.size()<4 || cores[3].performance!=cores.front().performance) return;
-  const ULONG chosen=cores[1+role%3].id; // separate physical cores; respect caller affinity/reservations
-  SetThreadSelectedCpuSets(GetCurrentThread(),&chosen,1);
+  // An ideal processor is a preference. A one-CPU selected set prevented the
+  // scheduler from moving an audio thread away from a temporarily busy core.
+  // Keep the caller's affinity/CPU-set restrictions and permit normal migration.
+  PROCESSOR_NUMBER ideal{allowed.Group,cores[1+role%3].processor,0};
+  SetThreadIdealProcessorEx(GetCurrentThread(),&ideal,nullptr);
 }
 }
 uint64_t now_ns() {

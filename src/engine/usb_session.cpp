@@ -44,13 +44,14 @@ bool UsbSession::open(const UsbProfile &cfg, const std::string &expected_id,
   return true;
 }
 bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
-                     unsigned seconds, unsigned depth, std::string &error) {
+                     unsigned seconds, unsigned depth, std::string &error,
+                     const std::atomic<bool> *requested,unsigned jack_block) {
   if (!process || !depth || depth > 16 || seconds > 300) {
     error = "Invalid USB run/depth";
     return false;
   }
-  const auto epoch = std::uint16_t((now_ns() & 65535u) | 1u);
-  if (!usb_.configure(profile_, epoch, error))
+  const auto epoch = std::uint32_t(now_ns() | 1u);
+  if (!usb_.configure(profile_, epoch, error,std::clamp(jack_block,32u,256u)))
     return false;
   std::atomic<std::uint64_t> mmcss_failures{0};
   RealtimeThread realtime(mmcss_failures);
@@ -101,7 +102,8 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
                            : UINT64_MAX;
   unsigned slot = 0;
   bool ok = true;
-  while (WaitForSingleObject(stop, 0) != WAIT_OBJECT_0 && now_ns() < end) {
+  while (WaitForSingleObject(stop, 0) != WAIT_OBJECT_0 && now_ns() < end &&
+         (!requested || requested->load(std::memory_order_acquire))) {
     const std::uint8_t *data = nullptr;
     std::size_t bytes = 0;
     bool ready = false;
@@ -116,14 +118,18 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
       gap_max = std::max(gap_max, received - previous);
     previous = received;
     pi5ausb::PacketView view;
-    if (pi5ausb::parse_packet(data, bytes, profile_,
+    const auto packet_error=pi5ausb::parse_packet(data, bytes, profile_,
                               pi5ausb::Direction::capture, epoch,
-                              view) != pi5ausb::PacketError::none ||
+                              view);
+    if (packet_error != pi5ausb::PacketError::none ||
         view.info.first_frame != expected_frame ||
         view.info.sequence != std::uint32_t(callbacks) ||
         !pi5ausb::unpack_pcm(capture.data(), view.info.frames * 8, view.pcm,
                              view.pcm_bytes, profile_.bits)) {
-      error = "USB capture timeline/PCM invalid";
+      error = "USB capture timeline/PCM invalid: parse="+std::to_string(unsigned(packet_error))+
+          " bytes="+std::to_string(bytes)+" expected_frame="+std::to_string(expected_frame)+
+          " frame="+std::to_string(view.info.first_frame)+" expected_sequence="+std::to_string(callbacks)+
+          " sequence="+std::to_string(view.info.sequence);
       ok = false;
       break;
     }
@@ -143,7 +149,7 @@ bool UsbSession::run(ProcessBlock process, void *context, HANDLE stop,
                            8,
                            profile_.bits,
                            0,
-                           epoch,
+                           std::uint16_t(epoch), // optional legacy bridge uses a 16-bit tag
                            view.info.first_frame,
                            received,
                            false};

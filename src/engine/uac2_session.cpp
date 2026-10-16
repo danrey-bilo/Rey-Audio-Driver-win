@@ -51,6 +51,20 @@ std::string serial_id(const wchar_t *instance) {
   return result == std::string(32, '0') ? std::string{} : result;
 }
 struct Board { GUID container; std::string id; };
+bool native_asio_container(const GUID &container) {
+  constexpr GUID native{0x87835b64,0xf7f6,0x403c,{0xbe,0x2c,0xd6,0xb8,0x09,0x8a,0xc7,0xd5}};
+  auto list=SetupDiGetClassDevsW(&native,nullptr,nullptr,DIGCF_PRESENT|DIGCF_DEVICEINTERFACE);
+  if(list==INVALID_HANDLE_VALUE)return false;
+  bool found=false;
+  for(DWORD i=0;;++i){
+    SP_DEVINFO_DATA device{};device.cbSize=sizeof(device);
+    if(!SetupDiEnumDeviceInfo(list,i,&device))break;
+    GUID value{};DEVPROPTYPE type=0;
+    if(SetupDiGetDevicePropertyW(list,&device,&DEVPKEY_Device_ContainerId,&type,reinterpret_cast<BYTE *>(&value),sizeof(value),nullptr,0) &&
+       type==DEVPROP_TYPE_GUID && IsEqualGUID(value,container)){found=true;break;}
+  }
+  SetupDiDestroyDeviceInfoList(list);return found;
+}
 std::vector<Board> boards() {
   std::vector<Board> result;
   auto list = SetupDiGetClassDevsW(nullptr, L"USB", nullptr, DIGCF_PRESENT | DIGCF_ALLCLASSES);
@@ -133,6 +147,9 @@ std::vector<Uac2Device> uac2_devices(std::string &error) {
   if (!check(CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator),
                              reinterpret_cast<void **>(enumerator.put())), "enumerator", error)) return result;
   for (const auto &board : physical) {
+    // The two interfaces belong to one board. ASIO uses its native transport;
+    // ordinary Windows applications continue to use the UAC2 endpoints.
+    if(native_asio_container(board.container))continue;
     Uac2Device pair; pair.identity = board.id;
     bool ambiguous = false;
     for (const auto flow : {eCapture, eRender}) {
@@ -168,7 +185,8 @@ bool Uac2Session::open(const UsbProfile &profile, const std::wstring &path, cons
 }
 
 bool Uac2Session::run(ProcessBlock process, void *context, HANDLE stop, Uac2Stats &stats, std::string &error,
-                      void (*ready)(void *, unsigned, unsigned), const std::atomic<bool> *requested) {
+                      void (*ready)(void *, unsigned, unsigned, unsigned), const std::atomic<bool> *requested,
+                      bool (*render_ready)(void *, uint64_t), bool (*render_span)(void *, uint64_t &, uint64_t &, unsigned &)) {
   Apartment apartment;
   if (!check(apartment.result, "COM", error)) return false;
   Com<IMMDeviceEnumerator> enumerator;
@@ -179,27 +197,18 @@ bool Uac2Session::run(ProcessBlock process, void *context, HANDLE stop, Uac2Stat
   Com<IAudioCaptureClient> reader; Com<IAudioRenderClient> writer;
   if (!check(capture.client->GetService(__uuidof(IAudioCaptureClient), reinterpret_cast<void **>(reader.put())), "capture service", error) ||
       !check(render.client->GetService(__uuidof(IAudioRenderClient), reinterpret_cast<void **>(writer.put())), "render service", error)) return false;
-  BYTE *initial = nullptr;
-  if (!check(writer->GetBuffer(render.capacity, &initial), "prefill", error) ||
-      !check(writer->ReleaseBuffer(render.capacity, AUDCLNT_BUFFERFLAGS_SILENT), "prefill release", error)) return false;
   stats.capture_buffer = capture.capacity; stats.render_buffer = render.capacity;
-  if (ready) ready(context, capture.capacity, render.capacity);
+  const bool split = render_ready && render_span;
+  if (ready) ready(context, capture.capacity, render.capacity, capture.capacity);
   // Probe the actual aligned buffers once, then release both endpoints while
   // ASIO is idle so ordinary Windows audio applications can use the device.
   if (requested && !requested->load(std::memory_order_acquire)) return true;
   Uac2Queue fifo(16384);
   std::array<int32_t, 256 * 8> input{}, output{};
-  uint64_t position = 0;
+  uint64_t position = 0, render_position = 0;
   bool primed = false;
   rey::RealtimeThread realtime(stats.realtime_failures);
-  if (!capture.start(error) || !render.start(error)) return false;
-  HANDLE events[]{stop, capture.event.handle, render.event.handle};
-  while (true) {
-    if (requested && !requested->load(std::memory_order_acquire)) return true;
-    const auto wait = WaitForMultipleObjects(3, events, FALSE, 2000);
-    if (wait == WAIT_OBJECT_0) return true;
-    if (wait != WAIT_OBJECT_0+1 && wait != WAIT_OBJECT_0+2) { error = "USB Audio stopped responding or was disconnected"; return false; }
-    if (wait == WAIT_OBJECT_0+1) {
+  const auto drain_capture = [&] {
       UINT32 available = 0;
       if (!check(reader->GetNextPacketSize(&available), "capture size", error)) return false;
       while (available) {
@@ -217,26 +226,109 @@ bool Uac2Session::run(ProcessBlock process, void *context, HANDLE stop, Uac2Stat
           output.fill(0);
           AudioBlock block{input.data(), output.data(), count, 8, 8, profile_.bits};
           block.frame_position = position; block.discontinuity = (flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY) != 0;
-          block.render_delay_frames = capture.capacity;
+          block.capture_only = split;
+          block.render_delay_frames = split ? 0 : capture.capacity;
           block.scheduled_ns = rey::now_ns(); position += count;
+          stats.capture_position = position;
           if (!process(context, block)) { error = "USB Audio processing callback failed"; ok = false; break; }
-          stats.overflow_frames.fetch_add(fifo.push(output.data(), count, profile_.bits));
+          if (!split) stats.overflow_frames.fetch_add(fifo.push(output.data(), count, profile_.bits));
         }
         const auto released = reader->ReleaseBuffer(frames);
         if (!ok || !check(released, "capture release", error)) return false;
         if (!check(reader->GetNextPacketSize(&available), "capture size", error)) return false;
       }
+      return true;
+  };
+  const auto fill_render = [&] {
+    BYTE *data = nullptr;
+    if (!check(writer->GetBuffer(render.capacity,&data), "render", error)) return false;
+    for (unsigned offset = 0; offset < render.capacity; offset += 256) {
+      const auto count = std::min(256u,render.capacity-offset);
+      output.fill(0);
+      AudioBlock block{input.data(),output.data(),count,8,8,profile_.bits};
+      block.frame_position = render_position+offset; block.render_only = true;
+      block.scheduled_ns = rey::now_ns();
+      if (!process(context,block)) {
+        writer->ReleaseBuffer(render.capacity,AUDCLNT_BUFFERFLAGS_SILENT);
+        error = "USB Audio render callback failed"; return false;
+      }
+      for (unsigned n = 0; n < count*8; ++n) {
+        const auto value = uac2_encode(output[n],profile_.bits);
+        std::memcpy(data+(size_t(offset)*8+n)*4,&value,4);
+      }
+    }
+    render_position += render.capacity;
+    stats.render_position = render_position;
+    return check(writer->ReleaseBuffer(render.capacity,0), "render release", error);
+  };
+  if (!capture.start(error)) return false;
+  if (split) {
+    // Establish the playback origin from real ASIO output. Windows may start
+    // the two endpoint clocks several buffers apart; counting their events
+    // from zero invents late playback on otherwise healthy repeated opens.
+    const auto deadline = rey::now_ns()+2000000000;
+    for (;;) {
+      if (WaitForSingleObject(stop,0) == WAIT_OBJECT_0 ||
+          (requested && !requested->load(std::memory_order_acquire))) return true;
+      uint64_t first = 0, last = 0;
+      unsigned block = 0;
+      if (render_span(context,first,last,block) && last-first+block > render.capacity) {
+        // A 288-frame Windows buffer is not divisible by a 64-frame ASIO
+        // callback. Prefix only its initial remainder with silence instead of
+        // waiting another whole Windows period for those few samples.
+        const auto prefix = last-first < render.capacity ? render.capacity-(last-first) : 0;
+        if (first < prefix) { error = "Invalid initial ASIO playback origin"; return false; }
+        render_position = first-prefix;
+        stats.startup_silence_frames.fetch_add(prefix);
+        break;
+      }
+      if (rey::now_ns() >= deadline) { error = "ASIO did not provide its initial playback buffers"; return false; }
+      if (WaitForSingleObject(capture.event.handle,1) == WAIT_OBJECT_0 && !drain_capture()) return false;
+    }
+    if (!fill_render()) return false;
+  } else {
+    BYTE *data = nullptr;
+    if (!check(writer->GetBuffer(render.capacity,&data), "prefill", error) ||
+        !check(writer->ReleaseBuffer(render.capacity,AUDCLNT_BUFFERFLAGS_SILENT), "prefill release", error)) return false;
+  }
+  if (!render.start(error)) return false;
+  HANDLE events[]{stop, capture.event.handle, render.event.handle};
+  while (true) {
+    if (requested && !requested->load(std::memory_order_acquire)) return true;
+    const auto wait = WaitForMultipleObjects(3, events, FALSE, 2000);
+    if (wait == WAIT_OBJECT_0) return true;
+    if (wait != WAIT_OBJECT_0+1 && wait != WAIT_OBJECT_0+2) { error = "USB Audio stopped responding or was disconnected"; return false; }
+    if (wait == WAIT_OBJECT_0+1) {
+      if (!drain_capture()) return false;
     } else {
+      if (split) {
+        // Hand off fresh capture to the ASIO thread before its playback buffer
+        // is due. A bounded wait replaces a whole extra 3 ms capture batch.
+        const auto begin = rey::now_ns();
+        const auto budget = std::min<uint64_t>(1500000, uint64_t(render.capacity)*1000000000/profile_.rate/2);
+        const auto end_frame = render_position+render.capacity;
+        while (!render_ready(context,end_frame) && rey::now_ns()-begin < budget) {
+          if (WaitForSingleObject(stop,0) == WAIT_OBJECT_0) return true;
+          if (WaitForSingleObject(capture.event.handle,0) == WAIT_OBJECT_0) {
+            if (!drain_capture()) return false;
+          } else SwitchToThread();
+        }
+        rey::max_counter(stats.render_wait_max_ns,rey::now_ns()-begin);
+        if (!render_ready(context,end_frame)) ++stats.render_wait_timeouts;
+        if (!fill_render()) return false;
+        continue;
+      }
       BYTE *data = nullptr;
       if (!check(writer->GetBuffer(render.capacity, &data), "render", error)) return false;
       if (!primed && fifo.available() < render.capacity) {
         stats.startup_silence_frames.fetch_add(render.capacity);
         if (!check(writer->ReleaseBuffer(render.capacity, AUDCLNT_BUFFERFLAGS_SILENT), "startup silence", error)) return false;
         continue;
+      } else {
+        primed = true;
+        const auto count = fifo.pop(data, render.capacity);
+        if (count != render.capacity) stats.underrun_frames.fetch_add(render.capacity-count);
       }
-      primed = true;
-      const auto count = fifo.pop(data, render.capacity);
-      if (count != render.capacity) stats.underrun_frames.fetch_add(render.capacity-count);
       if (!check(writer->ReleaseBuffer(render.capacity, 0), "render release", error)) return false;
     }
   }

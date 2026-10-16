@@ -80,13 +80,32 @@ namespace ReyAudio {
         Task<T> Run<T>(Func<T> action) {
             return Task.Run(() => {
                 gate.Wait();
-                try { Open(); return action(); }
+                try { return action(); }
                 catch { if (port != null) { port.Dispose(); port = null; } throw; }
                 finally { gate.Release(); }
             });
         }
+        Dictionary<string, object> ReadOnly(string operation) {
+            if (operation != "operation_state" && operation != "operation_status")
+                throw new ArgumentException("Only state reads may be retried.");
+            for (int attempt = 0; ; ++attempt) {
+                try { Open(); return Exchange(operation, new Dictionary<string, object>()); }
+                catch (Exception error) {
+                    if (!(error is IOException) && !(error is TimeoutException)) throw;
+                    if (port != null) { port.Dispose(); port = null; }
+                    if (attempt == 2 || disposed) throw;
+                    Thread.Sleep(150);
+                }
+            }
+        }
+        internal static void WaitForIdle(Func<Dictionary<string, object>> status, Action pause, Func<bool> expired) {
+            while (ViewModel.Bool(status(), "pending")) {
+                if (expired()) throw new TimeoutException("Предыдущее переключение платы ещё не завершилось.");
+                pause();
+            }
+        }
         public Task<Dictionary<string, object>> State() {
-            return Run(() => Exchange("operation_state", new Dictionary<string, object>()));
+            return Run(() => ReadOnly("operation_state"));
         }
         internal static object Request(Dictionary<string, object> state, int mode, int rate, int block, IEnumerable<BoardRoute> routes) {
             if (mode < 0 || mode > 1) throw new ArgumentException("На ПК доступны только аудиокарта и комбинированный режим.");
@@ -106,14 +125,21 @@ namespace ReyAudio {
             // Freeze UI intent before handing it to the worker thread.
             var frozen = routes.Select(r => new BoardRoute(r.Channel) { Capture = r.Capture, Playback = r.Playback }).ToArray();
             return Run(() => {
-                var state = Exchange("operation_state", new Dictionary<string, object>());
+                var timer = Stopwatch.StartNew();
+                // USB/ASIO close can already have triggered an automatic profile
+                // transaction. Wait for it before reading revision/admitting ours.
+                WaitForIdle(() => ReadOnly("operation_status"), () => Thread.Sleep(100),
+                    () => timer.ElapsedMilliseconds >= 90000 || disposed);
+                var state = ReadOnly("operation_state");
                 var accepted = Exchange("set_operating_mode", Request(state, mode, rate, block, frozen));
-                string id = ViewModel.String(accepted, "id"); var timer = Stopwatch.StartNew();
+                // Never replay a mutation after an ambiguous timeout. Once its
+                // ID is acknowledged, reconnect only the readback/status queries.
+                string id = ViewModel.String(accepted, "id");
                 while (timer.ElapsedMilliseconds < 90000 && !disposed) {
-                    var status = Exchange("operation_status", new Dictionary<string, object>());
+                    var status = ReadOnly("operation_status");
                     if (ViewModel.String(status, "id") == id && !ViewModel.Bool(status, "pending")) {
                         if (status.ContainsKey("error") && status["error"] != null) throw new ArgumentException(Convert.ToString(status["error"]));
-                        return Exchange("operation_state", new Dictionary<string, object>());
+                        return ReadOnly("operation_state");
                     }
                     Thread.Sleep(100);
                 }

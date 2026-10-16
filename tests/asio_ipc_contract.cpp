@@ -57,11 +57,24 @@ int main(int argc, char **argv) try {
     for(unsigned frame=0;frame<24;++frame) for(unsigned ch=0;ch<8;++ch) capture[frame*8+ch]=int(frame*8+ch)-50;
     rey::engine::AudioBlock block{capture.data(), render.data(), 24, 8, 8, 32};
     if (test == "batch") block.render_delay_frames = 24;
+    if (test == "split") block.capture_only = true;
     f.server.process(block, 1000000);
     require(rey::asio::load(f.shared->capture.written) == 1, "capture assembly");
     auto &first = f.shared->capture.data[0];
     require(first.frames == 16 && first.frame_position == 0 && first.pcm[0] == -50 && first.pcm[127] == 77, "capture layout");
-    if (test == "batch") {
+    if (test == "split") {
+      require(rey::asio::load(f.shared->clock_position) == 0, "capture advanced the playback deadline");
+      require(!f.server.render_ready(16), "empty render queue reported ready");
+      auto &out = f.shared->render.data[0]; out.frames = 16; out.frame_position = 0;
+      for (auto &sample : out.pcm) sample = 1234567;
+      rey::asio::store(f.shared->render.written, 1);
+      require(f.server.render_ready(16) && !f.server.render_ready(17), "render readiness ignored the frame deadline");
+      block.capture_only = false; block.render_only = true;
+      f.server.process(block,1125000);
+      require(render[0] == 1234567 && render[15*8+7] == 1234567 && render[16*8] == 0, "separate render mapping");
+      require(rey::asio::load(f.shared->capture.written) == 1, "render created duplicate capture");
+      require(rey::asio::load(f.shared->clock_position) == 24, "render deadline did not advance");
+    } else if (test == "batch") {
       auto &out = f.shared->render.data[0]; out.frames = 16; out.frame_position = 0;
       for (auto &sample : out.pcm) sample = 1234567;
       rey::asio::store(f.shared->render.written, 1);

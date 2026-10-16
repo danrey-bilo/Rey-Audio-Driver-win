@@ -3,7 +3,7 @@
 [Русский](AKM-OPERATING-MODES.ru.md) · [Documentation](README.md)
 
 The PC selects **two modes** in **Rey Audio Driver → Device → Board mode**.
-Development build identifier: `2.8.2-akm-dev.1` (not the published 2.8.1 preview).
+Development build identifier: `2.8.2-akm-dev.4` (not the published 2.8.1 preview).
 The third runtime state, standalone Effects processor, is automatic on USB
 disconnect. It is not a selectable PC mode and there is no Pi web mode selector.
 
@@ -16,8 +16,7 @@ The image is a WPF rendering fixture, not a physical USB connection report.
 | Audio interface | 44.1 / 48 / 88.2 / 96 / 176.4 / 192 kHz | Unloaded on the Pi; ADC → PC, PC → DAC |
 | Combined | 44.1 / 48 / 88.2 / 96 kHz | Enabled; independent capture/return settings for eight channels |
 
-The AKM converter/Linux application policy also permits 384 kHz in audio-interface
-mode. **The current Pi5-AUSB Windows transport does not support 384 kHz.** The
+384 kHz is removed from both applications and USB descriptors. The
 service and ASIO `canSampleRate` both enforce the selected mode's rate limit.
 
 ## Channel routing
@@ -46,13 +45,13 @@ function** on the Pi. It discovers one Linux gadget COM port, validates the
 `Rey Effects` protocol-1 handshake and keeps PCM out of the management channel.
 Without that function the controls remain unavailable with an explanation.
 
-The companion Linux application provides the mode engine and JACK port contract,
-plus an optional adapter for an already configured ALSA UAC2 8×8 gadget. UAC2
-and the vendor Pi5-AUSB WinUSB audio protocol are different transports. The
-existing Pi5-AUSB gadget is a digital-loopback backend; this change **does not
-connect it to AKM PCM, configure a composite USB gadget or prove duplex USB
-audio through the board**. A working ASIO → AKM bridge and physical qualification
-are still required. Do not substitute a successful control command for audio proof.
+The companion Linux application now provides a composite UAC2, CDC and optional
+native WinUSB function, plus the JACK provider shared by analog routes and effects.
+ASIO uses backend 2 (native JACK); backend 1 remains a separate legacy digital echo
+fixture. Ordinary Windows USB Audio uses UAC2 when ASIO releases the native path.
+[Current qualification](USB-LATENCY-2026-10-16.md) measures real USB with a digital
+JACK loop. Analog ADC/DAC latency and full production installation remain separate
+checks. A successful control command alone is not audio proof.
 
 Companion source: [Rey Effects Linux ARM](https://github.com/danrey-bilo/Rey-Effects-Linux-arm),
 branch `codex/operating-modes` (repository access required).
@@ -69,7 +68,7 @@ Saved USB/mixer settings now use **format 4** (172 bytes), preserving the existi
 PCM/mixer fields and adding the board-mode flag. Formats 1, 2 and 3 migrate with
 Audio interface as the backward-compatible default. Older service binaries
 cannot read format 4: preserve the old registry/profile backup before downgrading.
-The ASIO shared-memory ABI remains version 1.
+The ASIO shared-memory ABI is version 2; update the service and DLL together.
 
 ## Validation, 2026-10-15
 

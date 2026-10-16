@@ -30,11 +30,8 @@ namespace ReyAudio {
         private Choice[] allRates, effectRates;
         public Choice[] Rates { get { return BoardMode == 1 ? effectRates : allRates; } private set { allRates=value; effectRates=value.Where(r=>r.Value<=96000).ToArray(); } }
         public Choice[] Bits { get; private set; }
-        public Choice[] Depths { get; private set; }
         public Choice[] Blocks { get; private set; }
-        public Choice[] AsioLeads { get; private set; }
         public int AsioBlock { get; set; }
-        public int AsioLead { get; set; }
         public string AsioStateLabel { get; private set; }
         public string AsioCountersLabel { get; private set; }
         private int liveAsioBlock, liveAsioLead, activeUsbDepth;
@@ -54,7 +51,7 @@ namespace ReyAudio {
         public string AsioLatencyDetail { get { return AsioLatencyLabel == "—" ? "Нет активного ASIO-потока" : "Вход " + AsioInputLatency.ToString("0.00") + " мс · выход " + AsioOutputLatency.ToString("0.00") + " мс. Расчёт буферов; физическая задержка не измеряется."; } }
         public string AsioApplyHint {
             get {
-                return AsioRunning && (liveAsioBlock != AsioBlock || liveAsioLead != AsioLead)
+                return AsioRunning && liveAsioBlock != AsioBlock
                     ? "Применяется после перезапуска аудиодвижка." : "";
             }
         }
@@ -90,10 +87,8 @@ namespace ReyAudio {
             for(int i = 0; i < 8; ++i) { Inputs[i] = new MixerChannel(0, i); Outputs[i] = new MixerChannel(1, i); }
             Rates = new[] { new Choice(44100, "44,1 кГц"), new Choice(48000, "48 кГц"), new Choice(88200, "88,2 кГц"), new Choice(96000, "96 кГц"), new Choice(176400, "176,4 кГц"), new Choice(192000, "192 кГц") };
             Bits = new[] { new Choice(16, "16 бит"), new Choice(24, "24 бит"), new Choice(32, "32 бит") };
-            Depths = new[] { new Choice(1, "1 пакет"), new Choice(2, "2 пакета"), new Choice(3, "3 пакета"), new Choice(4, "4 пакета"), new Choice(6, "6 пакетов"), new Choice(8, "8 пакетов"), new Choice(12, "12 пакетов"), new Choice(16, "16 пакетов") };
-            Blocks = new[] { new Choice(16, "16 Samples"), new Choice(32, "32 Samples"), new Choice(64, "64 Samples"), new Choice(128, "128 Samples"), new Choice(256, "256 Samples") };
-            AsioLeads = new[] { new Choice(1, "1 блок"), new Choice(2, "2 блока"), new Choice(3, "3 блока"), new Choice(4, "4 блока") };
-            var asio = AsioPreferences.Load(); AsioBlock = asio.Block; AsioLead = asio.Lead;
+            Blocks = new[] { new Choice(16, "16"), new Choice(32, "32"), new Choice(64, "64"), new Choice(128, "128"), new Choice(256, "256") };
+            var asio = AsioPreferences.Load(); AsioBlock = asio.Block;
             AsioStateLabel = "ASIO не активен"; AsioCountersLabel = "—";
             UsbRate = 192000; UsbBits = 32; UsbDepth = 4; UsbBlock = 64; UsbGuard = "0"; UsbAutomatic = true;
             Message = "";

@@ -12,14 +12,17 @@ when the mixer window closes.
 **Development:** [AKM board modes](docs/AKM-OPERATING-MODES.md) adds two choices
 in the ASIO panel: Audio interface and Combined, with automatic standalone
 effects on disconnect. Combined is limited to 96 kHz; the existing USB transport
-remains limited to 192 kHz. AKM USB PCM integration is still pending.
+remains limited to 192 kHz. The coordinated native AKM USB/JACK integration,
+automatic per-rate tuning and simplified controls are in this development branch.
+See [2026-10-16 qualification](docs/USB-LATENCY-2026-10-16.md); its digital loop
+includes the real USB cable and Pi, but excludes the analog ADC/DAC path.
 
 **[Download 2.8.1 USB preview 2](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.2)**
 · [Install & Ableton](docs/USB-ASIO.md)
 · [Documentation](docs/README.md)
 · [Pi5-AUSB transport](https://github.com/danrey-bilo/Pi5-AUSB)
 
-> **Pre-release.** Native 96/192 kHz profiles completed 175 s with zero PCM
+> **Historical 2.8.1 digital echo preview.** Native 96/192 kHz profiles completed 175 s with zero PCM
 > errors and RTT p99 about 1.53 ms. Rare maxima still exceeded 3 ms.
 > Actual Ableton load checks and physical-audio limits are recorded in
 > the [2.8.1 report](docs/USB-LATENCY-2.8.1.md).
@@ -49,8 +52,9 @@ three pages: **Mixer**, **Settings** and **Diagnostics**, with access from the t
 2. Connect one configured Pi5-AUSB board over USB. Open **Rey Audio Driver**.
 3. In Ableton **Settings → Audio**, set **Driver Type: ASIO** and
    **Audio Device: Rey Audio USB ASIO**. Enable the required inputs/outputs.
-4. For the documented 192 kHz test, start with **64 Samples**. Set USB queue
-   and ASIO render reserve manually using the [buffer guide](docs/BUFFER-GUIDE.md).
+4. Start with **64 Samples**. The current development driver fixes USB requests
+   and render reserve automatically; only the ASIO buffer is adjustable.
+   See the [buffer guide](docs/BUFFER-GUIDE.md).
 
 Microsoft WinUSB handles the USB interface. The package needs no installation
 INI, custom kernel driver, test certificate, Test Mode or boot/security change.

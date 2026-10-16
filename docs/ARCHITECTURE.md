@@ -28,8 +28,9 @@ flowchart LR
 The service owns USB. Its transport callback exchanges PCM directly with the
 mixer and bounded ASIO rings; it does not wait on the control pipe, perform
 network operations, allocate buffers or run UI code. The host callback runs
-on its own Pro Audio MMCSS thread. USB depth and ASIO render lead are distinct
-manual controls. No queue is added by the channel faders.
+on its own Pro Audio MMCSS thread. USB requests and render reserve follow the
+[fixed per-rate policy](BUFFER-GUIDE.md). The user selects the ASIO buffer.
+No queue is added by the channel faders.
 
 In 2.8.1, IN is rearmed as soon as packet metadata and decoded PCM have moved
 into local storage, before mixer/IPC and the OUT completion wait. No pointer
@@ -46,11 +47,11 @@ replace a running card. If multiple interfaces exist with no current owner,
 stream startup waits until exactly one remains. This policy is covered by
 simulated enumeration tests; the bench contains one physical Pi.
 
-Format 3 stores only USB and mixer, as `HKLM\Software\ReyAudio\UsbProfile`.
-Formats 1/2 are accepted only for migration. The attached card's old profile
-is imported once; old selections, network settings and catalogs are inactive.
-ASIO BufferSize/RenderLeadBlocks remain per-user under
-`HKCU\Software\ReyAudio\ASIO`; DeviceId binding is no longer read.
+Format 4 stores USB, mixer and board mode as `HKLM\Software\ReyAudio\UsbProfile`.
+Formats 1/2/3 migrate without resetting the mixer. Old queue/guard values are
+canonicalized to current transport policy. Only BufferSize remains a per-user
+ASIO control under `HKCU\Software\ReyAudio\ASIO`; DeviceId and RenderLeadBlocks
+no longer override the production policy. Service/DLL shared memory uses ABI 2.
 
 Changing USB format/pause restarts the owned stream; changing a fader does
 not. After a USB removal or format change, reopen ASIO in the host. Physical
