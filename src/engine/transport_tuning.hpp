@@ -12,7 +12,7 @@ inline constexpr std::array<TransportTuning, 6> transport_tunings{
      {88200, 8, 333},
      {96000, 8, 333},
      {176400, 8, 333},
-     {192000, 8, 333}}};
+     {192000, 8, 500}}};
 constexpr TransportTuning transport_tuning(unsigned rate) {
   for (const auto &value : transport_tunings)
     if (value.rate == rate)
