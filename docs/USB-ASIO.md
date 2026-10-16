@@ -6,16 +6,17 @@ One Raspberry Pi 5 board, eight inputs and eight outputs, PCM16/24/32.
 Supported rates: **44.1 / 48 / 88.2 / 96 / 176.4 / 192 kHz**. 384 kHz is not advertised.
 
 Install the matching **Rey-Audio-USB-ASIO-Setup-x64.exe** and accept Windows UAC.
-The package contains the ASIO DLL, automatic service and desktop/tray panel.
+The dev.7 package contains the ASIO DLL, automatic service, desktop/tray panel
+and the original signed SAR kernel for four Windows stereo pairs each way.
 Close the DAW before upgrading a loaded ASIO DLL. All four payloads must come
 from the same build. The installer verifies their hashes and preserves preferences.
 
 The Pi must run the coordinated Rey Effects native USB integration. The pinned
 Pi5-AUSB 0.3 dependency supplies WinUSB/FunctionFS, not an analog converter driver.
 The device exposes vendor audio and CDC management only, without UAC2.
-ASIO uses native WinUSB; there is no class-audio/WASAPI fallback. Ordinary Windows
-system audio needs a separate native endpoint driver. See [AUSB](AUSB-NATIVE.md).
-The driver does not require a custom Windows SYS file or Test Mode.
+ASIO uses native WinUSB without a class-audio fallback. Windows applications
+use the embedded endpoint kernel through the same service. No external routing
+application is needed. See [Windows devices and signature-policy limitations](ENDPOINTS.md).
 
 ## Controls
 

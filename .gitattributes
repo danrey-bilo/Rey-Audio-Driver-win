@@ -2,3 +2,9 @@
 *.cmd text eol=crlf
 *.bat text eol=crlf
 *.svg text eol=lf
+
+# Preserve original vendor bytes: the INF is covered by the signed catalog.
+external/sar-0.13.1/runtime/* -text -diff -merge
+external/sar-0.13.1/sar.h -text
+external/sar-0.13.1/COPYING*.txt -text
+external/sar-0.13.1/upstream-source.zip -text

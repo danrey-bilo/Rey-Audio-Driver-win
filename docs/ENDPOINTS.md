@@ -1,44 +1,23 @@
-# Ordinary Windows audio endpoints
+# Windows stereo inputs and outputs
 
-The current delivered USB-ASIO EXE gives Ableton/ASIO eight inputs and eight
-outputs. It does **not** install system microphones/speakers for Chrome or
-Telegram. The Mixer identifies this mode explicitly; Windows Sound is disabled.
+**2.8.2-akm-dev.7** integrates the original signed [Synchronous Audio Router 0.13.1](https://github.com/eiz/SynchronousAudioRouter/releases/tag/v0.13.1) kernel. One Rey installer automatically creates four stereo recording devices and four stereo playback devices: **Input / Output 1-2, 3-4, 5-6 and 7-8 (Rey Audio)**. No external routing application, SAR ASIO wrapper or network filter is installed.
 
-The required user flow is one Rey installer, automatic device startup and all
-controls in Rey. Four stereo recording endpoints and four stereo playback
-endpoints map to 1–2, 3–4, 5–6 and 7–8. Linking MONO/STEREO controls in the
-mixer is independent of creating those system endpoints.
+Rey's mixer controls all channels. MONO/STEREO links share controls while preserving distinct left/right samples. Direct ASIO keeps all eight channels each way and can run alongside Windows audio. Windows and ASIO playback are added before the output mixer, with saturating PCM addition.
 
-## Native Rey backend
+## Audio path
 
-The ACX source now exposes exactly those eight stereo endpoints, without the
-additional 1–8 endpoints. Its bridge has independent capture/render phase
-clocks so native AUSB capture publication and later render collection do not
-advance a stream twice. Bridge ABI 2 requires matching service and kernel
-components. The package builds and passes INF/catalog checks; its SYS and CAT
-are unsigned and were not loaded. Passing mapping contracts is not a loaded
-Windows audio-driver or WASAPI qualification.
+Windows application → signed WaveRT pair → Rey shared-memory bridge → mixer → custom AUSB transport → Pi. Recording takes the reverse path. The service owns USB and follows the native hardware clock for both APIs. With no Windows/ASIO streams, USB audio idles; management remains available.
 
-## Ready-made driver integration
+Pairs use stereo PCM32 at the current USB rate; USB may use PCM16/24/32. Supported rates are **44.1 / 48 / 88.2 / 96 / 176.4 / 192 kHz**, with Combined limited to 96 kHz. Change the rate in Rey. SAR uses different Windows endpoint IDs per rate; reopen affected applications after changes. ASIO identity is unchanged.
 
-[Thin Audio Gateway](https://software.muzychenko.net/en/thin-audio-gateway/)
-provides a direct shared-buffer API controlled by the host application. It can
-serve as an embedded driver component with the Rey service owning the audio
-clock and routing, without a separate routing application. The vendor offers
-custom line layouts. A signed package supporting eight stereo lines is needed
-before this can satisfy the four-pair requirement. The earlier local demo
-qualified one multichannel recording/playback pair, not four stereo pairs;
-additional line creation failed. It is not a production eight-endpoint package.
+The Windows shared engine reported a **10 ms period** on this bench. Sub-5-ms ASIO digital RTT does not establish Windows shared-audio or analog ADC/DAC latency. ASIO bypasses that engine.
 
-An official VB-Audio Matrix trial was installed and its Microsoft-signed kernel
-driver loaded during the 16 October investigation. Its application opened Rey
-ASIO, which prevents an independent host from opening the same direct ASIO
-connection. Full four-pair routing and latency were not qualified. The trial
-was removed after the user required an integrated solution. Matrix is not a
-Rey dependency, payload or autostart component.
+## Installation and limits
 
-The delivered USB-ASIO setup still contains no system endpoint driver. To
-deliver the complete single-installer flow, supply a production-signed native
-Rey package or a suitable signed OEM component and qualify its installation,
-eight-channel routing, simultaneous Windows/ASIO operation and reconnects.
-The existing ASIO path remains separate from Windows shared-audio buffering.
+The original SYS/INF/CAT, their hashes, notices and corresponding source archive are bundled unchanged. Only `ROOT\REYAUDIO_SAR\0000` is owned. Another SAR root blocks takeover. The installer prepares dormant third-party `EP` property stores through SetupAPI because old SAR writes `MSEP`; signed binaries/INF are never patched. See [Microsoft's guidance](https://learn.microsoft.com/en-us/windows-hardware/drivers/audio/implementing-audio-processing-objects).
+
+The 2018 cross-signed driver loaded on Windows 11 build 26300, where Secure Boot and Memory Integrity were **already off**. Compatibility with stronger security policies is unverified. The installer never changes security/boot/signature policy. Driver rejection rolls back the new owned device and Rey payload/service. Uninstall removes the Rey root, preserving the shared driver-store package and card settings.
+
+See [qualification](WINDOWS-PAIRS-2026-10-17.md) and [evidence](evidence/rey-windows-pairs-20261017.json). Synthetic, real USB/JACK and physical ADC/DAC evidence are kept separate. Long DAW load, exclusive WASAPI, sleep/resume and physical hotplug remain unqualified. This is a development candidate.
+
+Unsigned Rey ACX and the earlier TAG prototype remain research and are not installed. The earlier Matrix trial was removed; Matrix is not a dependency or autostart component.

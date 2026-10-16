@@ -22,9 +22,10 @@ and fixed per-rate transport tuning. Start with installation, mixer and ASIO buf
 | Check ordinary Windows audio | [Windows endpoints](ENDPOINTS.md) · [Earlier TAG experiment](GATEWAY.md) |
 | Inspect retired work | [AoIP archive](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/18e6353fa767dcbcde1cef15dabab339848e62d1/archive/aoip/README.md) · [Old installer](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/18e6353fa767dcbcde1cef15dabab339848e62d1/archive/windows-endpoints-2.7/README.md) |
 
-The ASIO package installs without Test Mode or a new kernel driver. It does
-not create ordinary Windows microphones/speakers. Current tests use a digital
-loopback, with no physical ADC/DAC qualification. Keep these boundaries when
+The dev.7 package embeds the original signed SAR endpoint kernel and creates
+four Windows stereo pairs in each direction automatically. No external routing
+application is needed. See the [signature-policy limits](ENDPOINTS.md).
+Current tests use a digital loopback, with no physical ADC/DAC qualification. Keep these boundaries when
 comparing reported buffer latency and measured roundtrip.
 
 [Back to the project](../README.md)

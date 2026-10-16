@@ -24,7 +24,8 @@ calls during JACK teardown without adding a steady-state PCM queue.
 
 This is a custom user-space transport using Microsoft's existing WinUSB driver,
 not a newly implemented Windows kernel USB driver. Ordinary Windows system audio
-without ASIO needs a separate native endpoint driver and is not supplied here.
+without ASIO uses the embedded signed SAR endpoint kernel in dev.7. See
+[Windows endpoints](ENDPOINTS.md). USB transport remains native AUSB.
 
 Install matching Windows and Pi packages together. The board DeviceId and saved
 routes remain stable, although Windows can assign the CDC function a new COM

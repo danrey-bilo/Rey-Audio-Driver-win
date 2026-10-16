@@ -22,8 +22,9 @@ Pi 5 и аудио 8×8. Ветка разработки 2.8.2 добавляе�
 | Проверить обычный звук Windows | [Системные устройства](ENDPOINTS.ru.md) · [Прежний TAG](GATEWAY.ru.md) |
 | Посмотреть прежнюю работу | [Архив AoIP](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/18e6353fa767dcbcde1cef15dabab339848e62d1/archive/aoip/README.md) · [Старый установщик](https://github.com/danrey-bilo/Rey-Audio-Driver-win/blob/18e6353fa767dcbcde1cef15dabab339848e62d1/archive/windows-endpoints-2.7/README.md) |
 
-ASIO-пакет устанавливается без Test Mode и нового драйвера ядра. Системные
-микрофоны/динамики Windows он не создаёт. Текущие тесты используют цифровую
+В dev.7 встроен готовый подписанный драйвер SAR: четыре пары входов и выходов
+Windows создаются автоматически, внешняя программа настройки не нужна.
+См. [ограничения подписи](ENDPOINTS.ru.md). Текущие тесты используют цифровую
 петлю; ADC/DAC не квалифицирован. Учитывайте это при сравнении расчёта буферов
 и измеренного roundtrip.
 

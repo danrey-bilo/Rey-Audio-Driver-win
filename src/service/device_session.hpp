@@ -48,6 +48,7 @@ private:
   HANDLE worker_stop_ = nullptr;
   std::atomic<bool> worker_done_{true};
   std::atomic<bool> stream_requested_{false};
+  std::atomic<bool> windows_requested_{false};
   std::atomic<uint64_t> callbacks_{0}, frames_{0}, missing_{0}, gap_max_{0};
   std::atomic<uint64_t> processing_sum_{0}, processing_max_{0};
   struct CallbackContext {

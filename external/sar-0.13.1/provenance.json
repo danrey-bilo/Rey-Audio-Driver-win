@@ -1,0 +1,28 @@
+{
+  "product": "Synchronous Audio Router",
+  "version": "0.13.1",
+  "source_tag": "v0.13.1",
+  "source_commit": "c521ce48ef99091bb1d031b82e04b6b9f14e2854",
+  "source_archive": "upstream-source.zip",
+  "source_archive_sha256": "129a5ade3db0e9c70679ee8fbf710b290a7299ffecf46fa2b57ba50bda428fb7",
+  "download": "https://github.com/eiz/SynchronousAudioRouter/releases/download/v0.13.1/SynchronousAudioRouter_x64_0_13_1.msi",
+  "copied_files_modified": false,
+  "kernel_signing_verification_exit": 0,
+  "catalog_signing_verification_exit": 0,
+  "network_filter_included": false,
+  "asio_wrapper_included": false,
+  "runtime": [
+    {
+      "name": "SynchronousAudioRouter.cat",
+      "sha256": "3402b42f433a1d64dff92953401c2e6e04a2836bdd3974ed5eba53542632ffc7"
+    },
+    {
+      "name": "SynchronousAudioRouter.inf",
+      "sha256": "313929f9291fbcedfd84a485c866c814fc4b34f9387a9ad13bbcd6418667af29"
+    },
+    {
+      "name": "SynchronousAudioRouter.sys",
+      "sha256": "f0bbaf5d4ce4d9e1ebfcbd6240f0660ff1dd90a179bc1beaad5a6fc828913fed"
+    }
+  ]
+}

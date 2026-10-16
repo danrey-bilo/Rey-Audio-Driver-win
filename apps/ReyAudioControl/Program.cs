@@ -19,8 +19,8 @@ using Forms = System.Windows.Forms;
 [assembly: AssemblyTitle("Rey Audio Driver")]
 [assembly: AssemblyProduct("Rey Audio Driver")]
 [assembly: AssemblyCompany("Rey Audio")]
-[assembly: AssemblyVersion("2.8.2.6")]
-[assembly: AssemblyFileVersion("2.8.2.6")]
+[assembly: AssemblyVersion("2.8.2.7")]
+[assembly: AssemblyFileVersion("2.8.2.7")]
 namespace ReyAudio {
     internal sealed class Panel : IDisposable {
         private readonly Application app;

@@ -39,6 +39,7 @@ void DeviceSession::stop_worker() {
     SetEvent(worker_stop_);
   if (worker_.joinable())
     worker_.join();
+  windows_requested_.store(false,std::memory_order_release);
   mixer_.reset();
   if (worker_stop_)
     CloseHandle(worker_stop_);
@@ -96,7 +97,11 @@ bool DeviceSession::process(void *opaque, const rey::engine::AudioBlock &b) {
         b.render[size_t(f) * b.outputs + ch] =
             ch < b.inputs ? adjusted.capture[size_t(f) * b.inputs + ch] : 0;
   } else {
-    if (context.windows) ok = static_cast<rey::bridge::DriverBridge *>(context.bridge)->process(adjusted);
+    if (context.windows) {
+      auto &bridge=*static_cast<rey::bridge::DriverBridge *>(context.bridge);
+      ok=bridge.process(adjusted);
+      m.windows_requested_.store(bridge.running(),std::memory_order_release);
+    }
     else std::fill_n(b.render, size_t(b.frames) * b.outputs, 0);
     m.asio_.process(adjusted, now);
   }
@@ -142,22 +147,33 @@ void DeviceSession::worker(Settings settings,
   }
   context.windows = !digital_test_ && !asio_only_;
   if (!digital_test_) asio_.configure(profile, settings.usb_depth, generation_.load());
-  if (native && asio_only_) {
+  if (native) {
     do {
       context.previous = 0;
       error.clear();
       bool okay=true;
+      if(context.windows) windows_requested_.store(bridge.running(),std::memory_order_release);
+      stream_requested_.store(asio_.running() || windows_requested_.load(std::memory_order_acquire),std::memory_order_release);
       if(stream_requested_.load()) {
-        state("streaming","USB ASIO stream is running");
-        okay=session.run(process,&context,worker_stop_,0,settings.usb_depth,error,&stream_requested_,asio_.block_size());
+        state("streaming",context.windows?"USB audio stream is running":"USB ASIO stream is running");
+        // Windows pairs and ASIO share the native hardware clock. A 32-frame
+        // native quantum also preserves the existing 16-frame ASIO path.
+        okay=session.run(process,&context,worker_stop_,0,settings.usb_depth,error,&stream_requested_,context.windows?32u:asio_.block_size());
       }
       if (!okay && stream_requested_.load()) {
         std::fprintf(stderr, "REY_USB_STREAM_ERROR %s\n", error.c_str());
         state("stream_error", error); return;
       }
       mixer_.reset();
-      state("ready", "USB ASIO service is ready");
-      while (WaitForSingleObject(worker_stop_, 20) == WAIT_TIMEOUT && !stream_requested_.load(std::memory_order_acquire)) {}
+      state("ready", context.windows?"USB audio service is ready":"USB ASIO service is ready");
+      // A 20-ms idle poll could miss the first two Windows capture periods.
+      // Shared registers are cheap to inspect; detect a new client within 1 ms.
+      while (WaitForSingleObject(worker_stop_, context.windows?1:20) == WAIT_TIMEOUT && !stream_requested_.load(std::memory_order_acquire)) {
+        if(context.windows) {
+          windows_requested_.store(bridge.running(),std::memory_order_release);
+          stream_requested_.store(asio_.running() || windows_requested_.load(std::memory_order_acquire),std::memory_order_release);
+        }
+      }
     } while (WaitForSingleObject(worker_stop_, 0) != WAIT_OBJECT_0);
   } else {
     state(digital_test_ ? "digital_test" : "streaming", digital_test_ ? "USB digital test is running" : "USB audio endpoints are attached");
@@ -168,7 +184,7 @@ void DeviceSession::worker(Settings settings,
 }
 void DeviceSession::poll(uint64_t now, const std::wstring &path, bool bridge) {
   asio_.poll();
-  stream_requested_.store(asio_.running(), std::memory_order_release);
+  stream_requested_.store(asio_.running() || windows_requested_.load(std::memory_order_acquire), std::memory_order_release);
   Settings s;
   { std::lock_guard<std::mutex> lock(mutex_); s = settings_; bridge_present_ = bridge;
     usb_present_ = path.empty() ? 0 : 1; usb_id_ = path.empty() ? "" : identity_; }
@@ -194,7 +210,7 @@ bool DeviceSession::update(const Settings &next, std::string &error) {
 std::string DeviceSession::status_locked(const std::string &error) const {
   const auto &s = settings_;
   std::ostringstream out;
-  out << "{\"version\":\"2.8.2-akm-dev.6\",\"ok\":" << (error.empty() ? "true" : "false")
+  out << "{\"version\":\"2.8.2-akm-dev.7\",\"ok\":" << (error.empty() ? "true" : "false")
       << ",\"error\":" << json_string(error)
       << ",\"state\":" << json_string(state_)
       << ",\"detail\":" << json_string(detail_)

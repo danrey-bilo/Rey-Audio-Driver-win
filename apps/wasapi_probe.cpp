@@ -145,6 +145,11 @@ bool stream(IAudioClient3 *client, const WAVEFORMATEX *format, EDataFlow flow, u
   size_t gap_count = 0;
   uint64_t frames = 0, events = 0, discontinuities = 0, timestamp_errors = 0, silent = 0;
   uint64_t lost_timing = 0, last = 0;
+  uint64_t expected_position=0,position_gaps=0,lost_frames=0,repeated_frames=0;
+  uint64_t steady_frames=0,steady_discontinuities=0,steady_position_gaps=0,steady_lost_frames=0,steady_repeated_frames=0;
+  bool have_position=false;
+  struct CaptureFlag {uint64_t tick,position,expected;unsigned frames,flags;};
+  std::vector<CaptureFlag> capture_flags(64);size_t flag_count=0;
   bool okay = true;
   const auto hz = frequency();
   const auto start = ticks();
@@ -202,6 +207,22 @@ bool stream(IAudioClient3 *client, const WAVEFORMATEX *format, EDataFlow flow, u
           break;
         }
         frames += count;
+        const bool warmed=ticks()-start>=hz*5;
+        if(warmed){steady_frames+=count;steady_discontinuities+=(flags&AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY)!=0;}
+        if(have_position && device_position!=expected_position) {
+          ++position_gaps;
+          if(warmed)++steady_position_gaps;
+          if(device_position>expected_position) {
+            lost_frames+=device_position-expected_position;
+            if(warmed)steady_lost_frames+=device_position-expected_position;
+          } else {
+            repeated_frames+=expected_position-device_position;
+            if(warmed)steady_repeated_frames+=expected_position-device_position;
+          }
+        }
+        if((flags&AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY) && flag_count<capture_flags.size())
+          capture_flags[flag_count++]={ticks(),device_position,expected_position,count,flags};
+        expected_position=device_position+count;have_position=true;
         discontinuities += (flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY) != 0;
         timestamp_errors += (flags & AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR) != 0;
         silent += (flags & AUDCLNT_BUFFERFLAGS_SILENT) != 0;
@@ -227,11 +248,22 @@ bool stream(IAudioClient3 *client, const WAVEFORMATEX *format, EDataFlow flow, u
   std::printf("WASAPI_STREAM flow=%s seconds=%.3f period=%u capacity=%u frames=%llu events=%llu "
               "discontinuities=%llu timestamp_errors=%llu silent_packets=%llu "
               "event_gap_p50_us=%.1f event_gap_p95_us=%.1f event_gap_p99_us=%.1f "
-              "event_gap_max_us=%.1f timing_overflow=%llu mmcss=%u okay=%u\n",
+              "event_gap_max_us=%.1f timing_overflow=%llu mmcss=%u okay=%u "
+              "position_gaps=%llu lost_frames=%llu repeated_frames=%llu capture_warmup_ms=5000 "
+              "steady_frames=%llu steady_discontinuities=%llu steady_position_gaps=%llu steady_lost_frames=%llu steady_repeated_frames=%llu\n",
               flow == eRender ? "render" : "capture", double(ticks() - start) / hz, period,
               capacity, frames, events, discontinuities, timestamp_errors, silent, percentile(0.50),
               percentile(0.95), percentile(0.99), percentile(1), lost_timing,
-              unsigned(realtime.value != nullptr), unsigned(okay));
+              unsigned(realtime.value != nullptr), unsigned(okay),
+              (unsigned long long)position_gaps,(unsigned long long)lost_frames,(unsigned long long)repeated_frames,
+              (unsigned long long)steady_frames,(unsigned long long)steady_discontinuities,
+              (unsigned long long)steady_position_gaps,(unsigned long long)steady_lost_frames,(unsigned long long)steady_repeated_frames);
+  for(size_t n=0;n<flag_count;++n) {
+    const auto &record=capture_flags[n];
+    std::printf("WASAPI_CAPTURE_FLAG second=%.6f position=%llu expected=%llu frames=%u flags=%u\n",
+        double(record.tick-start)/hz,(unsigned long long)record.position,
+        (unsigned long long)record.expected,record.frames,record.flags);
+  }
   return okay;
 }
 bool inspect(IMMDevice *device, EDataFlow flow, const Options &options, const wchar_t *name) {

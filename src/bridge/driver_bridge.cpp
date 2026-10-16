@@ -1,6 +1,9 @@
 #include "driver_bridge.hpp"
 #include "../audio/pcm_alignment.hpp"
 #include <setupapi.h>
+#ifdef REY_ENABLE_SAR_BRIDGE
+#include "sar_bridge.hpp"
+#endif
 #ifdef REY_ENABLE_TAG_BRIDGE
 #include "gateway_bridge.hpp"
 #endif
@@ -14,6 +17,9 @@ DriverBridge::~DriverBridge() {
   detach();
 }
 bool DriverBridge::available() {
+#ifdef REY_ENABLE_SAR_BRIDGE
+  if (SarBridge::available()) return true;
+#endif
 #ifdef REY_ENABLE_TAG_BRIDGE
   if (GatewayBridge::available()) return true;
 #endif
@@ -34,6 +40,13 @@ bool DriverBridge::attach(const REY_BRIDGE_PROFILE &profile, std::string &error)
     error_ = ERROR_INVALID_PARAMETER;
     return false;
   }
+#ifdef REY_ENABLE_SAR_BRIDGE
+  if (SarBridge::available()) {
+    sar_=std::make_unique<SarBridge>();
+    if(sar_->attach(profile,error)) return true;
+    error_=sar_->last_error();sar_.reset();return false;
+  }
+#endif
 #ifdef REY_ENABLE_TAG_BRIDGE
   if (GatewayBridge::available()) {
     gateway_ = std::make_unique<GatewayBridge>();
@@ -83,6 +96,9 @@ bool DriverBridge::attach(const REY_BRIDGE_PROFILE &profile, std::string &error)
   return true;
 }
 bool DriverBridge::process(const engine::AudioBlock &block) {
+#ifdef REY_ENABLE_SAR_BRIDGE
+  if(sar_) return sar_->process(block);
+#endif
 #ifdef REY_ENABLE_TAG_BRIDGE
   if (gateway_) return gateway_->process(block);
 #endif
@@ -127,6 +143,9 @@ bool DriverBridge::process(const engine::AudioBlock &block) {
   return true;
 }
 void DriverBridge::detach() {
+#ifdef REY_ENABLE_SAR_BRIDGE
+  sar_.reset();
+#endif
 #ifdef REY_ENABLE_TAG_BRIDGE
   gateway_.reset();
 #endif
@@ -138,6 +157,9 @@ void DriverBridge::detach() {
   }
 }
 bool DriverBridge::stats(REY_BRIDGE_STATS &result) {
+#ifdef REY_ENABLE_SAR_BRIDGE
+  if(sar_) return sar_->stats(result);
+#endif
 #ifdef REY_ENABLE_TAG_BRIDGE
   if (gateway_) return gateway_->stats(result);
 #endif
@@ -148,6 +170,16 @@ bool DriverBridge::stats(REY_BRIDGE_STATS &result) {
          bytes == sizeof(result) && result.size == sizeof(result) &&
          result.version == REY_BRIDGE_VERSION;
 }
+bool DriverBridge::running() {
+#ifdef REY_ENABLE_SAR_BRIDGE
+  if(sar_) return sar_->running();
+#endif
+  REY_BRIDGE_STATS result{};
+  return stats(result) && (result.capture_running || result.render_running);
+}
+#ifdef REY_ENABLE_SAR_BRIDGE
+DWORD DriverBridge::sar_error() const { return sar_->last_error(); }
+#endif
 #ifdef REY_ENABLE_TAG_BRIDGE
 DWORD DriverBridge::gateway_error() const { return gateway_->last_error(); }
 #endif

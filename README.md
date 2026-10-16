@@ -17,6 +17,11 @@ automatic per-rate tuning and simplified controls are in this development branch
 See [2026-10-16 qualification](docs/USB-LATENCY-2026-10-16.md); its digital loop
 includes the real USB cable and Pi, but excludes the analog ADC/DAC path.
 
+**Windows pairs, dev.7:** one Rey installer now embeds the original signed SAR
+kernel and creates four stereo inputs plus four stereo outputs automatically.
+All controls stay in Rey; ASIO remains available alongside Windows audio.
+See [installation and qualification](docs/ENDPOINTS.md).
+
 **[Download 2.8.1 USB preview 2](https://github.com/danrey-bilo/Rey-Audio-Driver-win/releases/tag/v2.8.1-usb-preview.2)**
 · [Install & Ableton](docs/USB-ASIO.md)
 · [Documentation](docs/README.md)
@@ -59,8 +64,10 @@ installed-service and real USB checks are recorded [separately](docs/MIXER.md).
    and render reserve automatically; only the ASIO buffer is adjustable.
    See the [buffer guide](docs/BUFFER-GUIDE.md).
 
-Microsoft WinUSB handles the USB interface. The package needs no installation
-INI, custom kernel driver, test certificate, Test Mode or boot/security change.
+Microsoft WinUSB handles USB. The development package also embeds the original
+signed SAR endpoint kernel. No external routing application is needed.
+Installation does not change boot/security policy; compatibility with other
+PCs' signature policies is described in [Windows endpoints](docs/ENDPOINTS.md).
 Fully close the DAW before an update because it can keep the ASIO DLL loaded.
 The [installation guide](docs/USB-ASIO.md) describes format changes and reopening.
 
@@ -77,7 +84,7 @@ The [installation guide](docs/USB-ASIO.md) describes format changes and reopenin
 | Buffers | Selectable ASIO buffer; USB queue/reserve are automatic per rate |
 | Startup | Windows service at boot; panel/tray at login |
 | Settings | Atomic USB/mixer registry profile; migration of earlier USB settings |
-| Chrome / Telegram | System Windows audio endpoints remain a separate qualification stage |
+| Windows applications, dev.7 | Four stereo input/output pairs; finite bench qualification |
 
 ## Validation
 
